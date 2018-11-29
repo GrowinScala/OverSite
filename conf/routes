@@ -11,3 +11,23 @@ GET     /message                    controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(file)
+
+
+GET     /users/usersID/chats
+GET     /users/usersID/chats/chatID/emails
+GET     /users/usersID/chats/chatID/emails/emailID
+
+GET     /users/userID/shares
+GET     /users/userID/shares/shareID
+
+
+POST    /users/userID/email
+
+#Responding to an email
+POST    /users/userID/chats/chatID/emails
+
+PATCH   /users/userID/chats/chatID/emails
+
+POST    /users                      controllers.UsersController.users
+POST    /users/userID
+
