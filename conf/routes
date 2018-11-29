@@ -1,33 +1,26 @@
 # Routes
 # This file defines all application routes (Higher priority routes first)
-# ~~~~
-
-# An example controller showing a sample home page
-GET     /                           controllers.HomeController.index
-# An example controller showing how to use dependency injection
-GET     /count                      controllers.CountController.count
-# An example controller showing how to write asynchronous code
-GET     /message                    controllers.AsyncController.message
-
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(file)
 
 
-GET     /users/usersID/chats
-GET     /users/usersID/chats/chatID/emails
-GET     /users/usersID/chats/chatID/emails/emailID
 
-GET     /users/userID/shares
-GET     /users/userID/shares/shareID
+#GET     /users/:usersID/chats
+#GET     /users/:usersID/chats/:chatID/emails
+#GET     /users/:usersID/chats/:chatID/emails/:emailID
+
+#GET     /users/:userID/shares
+#GET     /users/:userID/shares/:shareID
 
 
 POST    /users/userID/email
 
-#Responding to an email
-POST    /users/userID/chats/chatID/emails
+#Replying to an email
+#POST    /users/:userID/chats/:chatID
 
-PATCH   /users/userID/chats/chatID/emails
+#PATCH   /users/:userID/chats/:chatID
 
-POST    /users                      controllers.UsersController.users
-POST    /users/userID
+
+#authentication:
+#POST    /signin                      controllers.UsersController.users
+#POST    /login
+#POST       /logout
 

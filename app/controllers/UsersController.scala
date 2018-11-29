@@ -13,7 +13,7 @@ class UsersController @Inject()(cc: ControllerComponents) (implicit assetsFinder
     * will be called when the application receives a `GET` request with
     * a path of `/users`.
     */
-  def users = Action {
+  def users: ??? = Action.async {
     Ok(views.html.index("Your user account is created"))
   }
 
