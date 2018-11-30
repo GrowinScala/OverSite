@@ -11,7 +11,7 @@
 #GET     /users/:userID/shares/:shareID
 
 
-POST    /users/userID/email
+POST     /users/userID/email
 
 #Replying to an email
 #POST    /users/:userID/chats/:chatID
@@ -22,5 +22,5 @@ POST    /users/userID/email
 #authentication:
 #POST    /signin                      controllers.UsersController.users
 #POST    /login
-#POST       /logout
+#POST    /logout
 
