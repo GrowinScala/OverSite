@@ -4,7 +4,7 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import slick.driver.MySQLDriver.api._
 
-class TablesMysql {
+object TablesMysql {
 
   //------------------------------------------Case Classes------------------------------------------//
 
@@ -47,6 +47,7 @@ class TablesMysql {
     def header = column[String]("header")
 
     def * = ( chatID,header) <> (Chat.tupled, Chat.unapply)
+
   }
 
   class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
@@ -58,10 +59,12 @@ class TablesMysql {
     def header = column[String]("header")
     def body  = column[String]("body")
 
-    def fileIdFK = foreignKey("chatID", chatID, TableQuery[ChatTable])(_.chatID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def fileIdFK = foreignKey("chatID", chatID, ChatTable)(_.chatID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
     def * = (emailID, chatID, fromAdress,dateOf,header,body) <> (Email.tupled, Email.unapply)
   }
+
+
 
   class ToAdressTable(tag: Tag) extends Table[ToAdress](tag,"toadresses"){
 
@@ -69,7 +72,7 @@ class TablesMysql {
     def emailID = column[String]("emailID")
     def username = column[String]("username")
 
-    def fileIdFK = foreignKey("emailID", emailID, TableQuery[EmailTable])(_.emailID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def fileIdFK = foreignKey("emailID", emailID, EmailTable)(_.emailID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
     def * = (toID,emailID,username) <> (ToAdress.tupled, ToAdress.unapply)
 
@@ -81,7 +84,7 @@ class TablesMysql {
     def emailID = column[String]("emailID")
     def username = column[String]("username")
 
-    def fileIdFK = foreignKey("emailID", emailID, TableQuery[EmailTable])(_.emailID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def fileIdFK = foreignKey("emailID", emailID, EmailTable)(_.emailID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
     def * = (CCID,emailID,username) <> (ToAdress.tupled, ToAdress.unapply)
 
@@ -93,10 +96,19 @@ class TablesMysql {
     def emailID = column[String]("emailID")
     def username = column[String]("username")
 
-    def fileIdFK = foreignKey("emailID", emailID, TableQuery[EmailTable])(_.emailID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def fileIdFK = foreignKey("emailID", emailID, EmailTable)(_.emailID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
     def * = (BCCID,emailID,username) <> (ToAdress.tupled, ToAdress.unapply)
 
   }
+
+  //------------------------------------------Table Quearies------------------------------------------//
+
+
+  lazy val ChatTable = TableQuery[ChatTable]
+  lazy val EmailTable = TableQuery[EmailTable]
+  lazy val ToAdressTable = TableQuery[ToAdressTable]
+  lazy val CCTable = TableQuery[CCTable]
+  lazy val BCCTable = TableQuery[BCCTable]
 
 }
