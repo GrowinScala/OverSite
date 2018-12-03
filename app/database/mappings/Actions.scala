@@ -1,11 +1,9 @@
 package database.mappings
 
-import database.mappings.TablesMysql._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import slick.jdbc.MySQLProfile.api._
-
 
 class Actions {
 
