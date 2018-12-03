@@ -4,9 +4,11 @@ import javax.inject._
 
 import akka.actor.ActorSystem
 import play.api.mvc._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent._
+
 
 /**
   * This controller creates an `Action` that demonstrates how to write
@@ -25,6 +27,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
   */
 @Singleton
 class EmailsController @Inject()(cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends AbstractController(cc) {
+  val db = Database.forConfig("mysql")
 
   /**
     * Creates an Action that returns a plain text message after a delay
@@ -35,10 +38,10 @@ class EmailsController @Inject()(cc: ControllerComponents, actorSystem: ActorSys
     * a path of `/message`.
     */
   /*def emails = Action.async {
-    //getFutureEmail(1.second).map { msg => Ok(msg) }
-  }*/
+    getFutureEmail(1.second).map { msg => Ok(msg) }
+  }
 
- /* private def getFutureMessage(delayTime: FiniteDuration): Future[String] = {
+  private def getFutureMessage(delayTime: FiniteDuration): Future[String] = {
     val promise: Promise[String] = Promise[String]()
     actorSystem.scheduler.scheduleOnce(delayTime) {
       promise.success("Hi!")
