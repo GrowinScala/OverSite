@@ -1,8 +1,10 @@
-import TablesMysql._
-import slick.driver.MySQLDriver.api._
+package database.mappings
+
+import database.mappings.TablesMysql._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import slick.jdbc.MySQLProfile.api._
 
 
 class Actions {
@@ -11,8 +13,8 @@ class Actions {
 
   //--------------------------------------Insert into db--------------------------------------------------------------------------
 
-  val insertChat = ChatTable += Chat( "3"  , "Hello World!" )
-  val insertEmail = EmailTable += Email( "1"  , "3" , "rvalente@growin.pt","2018-12-02","Hello World!", "How u doin?")
+  val insertChat = ChatTable += Chat( "4"  , "Hello World!" )
+  val insertEmail = EmailTable += Email( "2"  , "4" , "rvalente@growin.pt","2018-12-02","Hello World!", "How u doin?")
 
   /**
     * Execute an action to configured db

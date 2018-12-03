@@ -1,7 +1,7 @@
-package controllers
+package api.controllers
 
+import controllers.AssetsFinder
 import javax.inject._
-
 import play.api.mvc._
 
 class UsersController @Inject()(cc: ControllerComponents) (implicit assetsFinder: AssetsFinder)
@@ -14,7 +14,7 @@ class UsersController @Inject()(cc: ControllerComponents) (implicit assetsFinder
     * a path of `/users`.
     */
   def users = Action {
-    Ok(views.html.index("Your user account is created"))
+    Ok("Your user account is created")
   }
 
 }
