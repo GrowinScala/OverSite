@@ -15,20 +15,29 @@ class Tables {
     body : String
     )
 
+  case class Chat(
+    chatID : String,
+    header : String
+    )
 
+  class ChatTable(tag: Tag) extends Table[Chat](tag, "chats"){
 
-  class EmailTable(tag: Tag) extends Table[Email](tag, "email") {
+    def chatID = column[String]("chatID", O.PrimaryKey)
+    def header = column[String]("header")
 
-    def emailID = column[String]("artist", O.PrimaryKey)
-    def chatID  = column[String]("title")
-    def fromAdress = column[String]("artist")
-    def dateOf  = column[String]("title")
-    def header = column[String]("artist")
-    def body  = column[String]("title")
-    //def fileIdFK =
-    //                            filesTable Reference from the other table        _.fileID PK from the other table
-    //foreignKey("chatID", chatID, filesTable)(_.fileId, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def * = ( chatID,header) <> (Chat.tupled, Chat.unapply)
+  }
 
+  class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
+
+    def emailID = column[String]("emailID", O.PrimaryKey)
+    def chatID  = column[String]("chatID")
+    def fromAdress = column[String]("fromAdress")
+    def dateOf  = column[String]("dateOf")
+    def header = column[String]("header")
+    def body  = column[String]("body")
+
+    def fileIdFK = foreignKey("chatID", chatID, TableQuery[ChatTable])(_.chatID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
     def * = (emailID, chatID, fromAdress,dateOf,header,body) <> (Email.tupled, Email.unapply)
   }
