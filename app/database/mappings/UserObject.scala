@@ -1,7 +1,7 @@
 package database.mappings
 import slick.jdbc.MySQLProfile.api._
 
-object User {
+object UserObject {
   case class User(
                    username: String,
                    password: String)

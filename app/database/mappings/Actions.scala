@@ -4,6 +4,8 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import database.mappings.ChatObject._
+import database.mappings.EmailObject._
 
 class Actions {
 
@@ -12,7 +14,7 @@ class Actions {
   //--------------------------------------Insert into db--------------------------------------------------------------------------
 
   val insertChat = ChatTable += Chat( "4"  , "Hello World!" )
-  val insertEmail = EmailTable += Email( "2"  , "4" , "rvalente@growin.pt","2018-12-02","Hello World!", "How u doin?")
+  def insertEmail(email:Email) = EmailTable += email
 
   /**
     * Execute an action to configured db
@@ -21,5 +23,5 @@ class Actions {
     * @return
     */
   def exec[T](action: DBIO[T]): T =
-    Await.result(db.run(action), 50 seconds)
+    Await.result(db.run(action), 2 seconds)
 }

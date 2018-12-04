@@ -1,8 +1,18 @@
 package database.mappings
 import slick.jdbc.MySQLProfile.api._
-import database.mappings.Chat
+import database.mappings.ChatObject._
 
-object Email {
+import slick.jdbc.MySQLProfile.api._
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import database.mappings.ChatObject._
+import database.mappings.EmailObject._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
+
+object EmailObject {
+
   case class Email(
     emailID : String,
     chatID  : String,
@@ -11,11 +21,13 @@ object Email {
     header  : String,
     body : String
   )
+
   case class ToAdress(
    toID : String,
    emailID : String,
    username : String
  )
+
   case class CC(
    CCID : String,
    emailID : String,
@@ -36,7 +48,7 @@ object Email {
     def header = column[String]("header")
     def body  = column[String]("body")
 
-    def fileIdFK = foreignKey("chatID", chatID, Chat.ChatTable)(_.chatID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def fileIdFK = foreignKey("chatID", chatID, ChatObject.ChatTable)(_.chatID, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
     def * = (emailID, chatID, fromAdress,dateOf,header,body) <> (Email.tupled, Email.unapply)
   }
@@ -86,4 +98,11 @@ object Email {
 
   lazy val BCCTable = TableQuery[BCCTable]
 
+
+  def insertEmail(email:Email) = EmailTable += email
+
+  val db = Database.forConfig("mysql")
+
+  def execDB[T](action: DBIO[T]): T =
+    Await.result(db.run(action), 2 seconds)
 }

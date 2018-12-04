@@ -10,8 +10,11 @@
 #GET     /users/:userID/shares
 #GET     /users/:userID/shares/:shareID
 
+#apagar##################
 GET      /index                   api.controllers.EmailsController.index
-POST     /users/:userID/email    api.controllers.EmailsController.email(userID)
+#########################
+
+POST     /users/:userName/email     api.controllers.EmailsController.email(userName: String)
 
 #Replying to an email
 #POST    /users/:userID/chats/:chatID
