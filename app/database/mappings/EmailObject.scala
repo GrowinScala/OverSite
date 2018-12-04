@@ -1,16 +1,11 @@
 package database.mappings
-import slick.jdbc.MySQLProfile.api._
-import database.mappings.ChatObject._
+import java.util.UUID.randomUUID
 
+import dto.EmailCreationDTO.CreateEmailDTO
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import database.mappings.ChatObject._
-import database.mappings.EmailObject._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Await
-
 object EmailObject {
 
   case class Email(
@@ -99,7 +94,7 @@ object EmailObject {
   lazy val BCCTable = TableQuery[BCCTable]
 
 
-  def insertEmail(email:Email) = EmailTable += email
+  def insertEmail(email: CreateEmailDTO) = EmailTable += Email(randomUUID().toString,email.chatID,email.fromAdress,email.dateOf,email.header,email.body)
 
   val db = Database.forConfig("mysql")
 

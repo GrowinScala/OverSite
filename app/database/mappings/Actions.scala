@@ -1,5 +1,5 @@
 package database.mappings
-
+/*
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Await
@@ -25,3 +25,4 @@ class Actions {
   def exec[T](action: DBIO[T]): T =
     Await.result(db.run(action), 2 seconds)
 }
+*/

@@ -1,10 +1,13 @@
-import database.mappings.Actions
 import slick.jdbc.MySQLProfile.api._
 
-val actions = new Actions()
-val db = Database.forConfig("mysql")
+//val actions = new Actions()
+//val db = Database.forConfig("mysql")
 
 //db.run(actions.insertChat)
 
-actions.exec(actions.insertChat)
-actions.exec(actions.insertEmail)
+//actions.exec(actions.insertChat)
+//actions.exec(actions.insertEmail)
+
+import java.util.UUID.randomUUID
+randomUUID().toString
+
