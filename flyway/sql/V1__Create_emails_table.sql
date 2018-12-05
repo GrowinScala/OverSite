@@ -5,6 +5,7 @@ create table Emails (
     DATEOF date not null,
     HEADER varchar(256) null, -- In an email a header is not a mandatory parameter
     BODY varchar(10000) null, -- In an email a body is not a mandatory parameter
+    SENT boolean,
     PRIMARY KEY(EMAILID),
     FOREIGN KEY(CHATID)
 );

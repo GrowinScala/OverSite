@@ -15,7 +15,8 @@ class EmailRepository {
   def execDB[T](action: DBIO[T]): Future[T] = db.run(action)
 
   def insertEmail(email: CreateEmailDTO): Future[Int] = {
-    val queryAction = EmailTable += Email(randomUUID().toString, email.chatID, email.fromAddress, email.dateOf, email.header, email.body)
+    val queryAction = EmailTable += Email(randomUUID().toString, email.chatID, email.fromAddress, email.dateOf, email.header, email.body, email.sendNow)
+
     execDB(queryAction)
   }
 }

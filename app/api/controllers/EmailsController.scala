@@ -7,7 +7,7 @@ import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
@@ -30,8 +30,7 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
         email => {
           emailActions.insertEmail(email)
           Ok("Email received")
-        }
-      )
+        })
     }
   }
 }
