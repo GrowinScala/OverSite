@@ -8,7 +8,6 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-
 class EmailRepository {
   val db = Database.forConfig("mysql")
 
@@ -17,7 +16,7 @@ class EmailRepository {
     Await.result(db.run(action), 2 seconds)
 
   def insertEmail(email: CreateEmailDTO): Int = {
-    val queryAction = EmailTable += Email(randomUUID().toString,email.chatID,email.fromAddress,email.dateOf,email.header,email.body)
+    val queryAction = EmailTable += Email(randomUUID().toString, email.chatID, email.fromAddress, email.dateOf, email.header, email.body)
     execDB(queryAction)
   }
 }
