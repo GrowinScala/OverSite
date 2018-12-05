@@ -14,9 +14,12 @@ class EmailRepository {
 
   def execDB[T](action: DBIO[T]): Future[T] = db.run(action)
 
-  def insertEmail(email: CreateEmailDTO): Future[Int] = {
-    val queryAction = EmailTable += Email(randomUUID().toString, email.chatID, email.fromAddress, email.dateOf, email.header, email.body, email.sendNow)
+  def insertEmail(email: CreateEmailDTO) = {
+    val emailID = randomUUID().toString
+    val insertTableEmail = EmailTable += Email(emailID, email.chatID, email.fromAddress, email.dateOf, email.header, email.body, email.sendNow)
+    val insertTableToAddress = ToAddressTable ++= email.to.map(ToAddress(randomUUID().toString, emailID ,_))
+    execDB(insertTableEmail)
+    execDB(insertTableToAddress)
 
-    execDB(queryAction)
   }
 }

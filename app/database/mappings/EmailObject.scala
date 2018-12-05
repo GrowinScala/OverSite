@@ -5,28 +5,32 @@ import slick.jdbc.MySQLProfile.api._
 object EmailObject {
 
   case class Email(
-    emailID: String,
-    chatID: String,
+    emailID:     String,
+    chatID:      String,
     fromAddress: String,
-    dateOf: String,
-    header: String,
-    body: String,
-    sent: Boolean)
+    dateOf:      String,
+    header:      String,
+    body:        String,
+    sent:        Boolean
+  )
 
   case class ToAddress(
-    toID: String,
-    emailID: String,
-    username: String)
+    toID:     String,
+    emailID:  String,
+    username: String
+  )
 
   case class CC(
-    CCID: String,
-    emailID: String,
-    username: String)
+    CCID:     String,
+    emailID:  String,
+    username: String
+  )
 
   case class BCC(
-    BCCID: String,
-    emailID: String,
-    username: String)
+    BCCID:    String,
+    emailID:  String,
+    username: String
+  )
 
   class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
 
