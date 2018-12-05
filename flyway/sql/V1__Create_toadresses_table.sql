@@ -1,4 +1,4 @@
-create table ToAdresses (
+create table ToAddresses (
     TOID varchar(100) not null,
     EMAILID varchar(100) not null,
     USERNAME varchar(100) not null,
