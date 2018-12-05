@@ -7,7 +7,7 @@ import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
@@ -25,12 +25,13 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
     Future {
       emailResult.fold(
         errors => {
-          BadRequest("errors")
+          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
         },
         email => {
           emailActions.insertEmail(email)
           Ok("Email received")
-        })
+        }
+      )
     }
   }
 }
