@@ -7,29 +7,30 @@ import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
-class EmailsController @Inject()(cc: ControllerComponents, actorSystem: ActorSystem) (implicit exec: ExecutionContext)
+class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
-val emailActions = new EmailRepository()
+  val emailActions = new EmailRepository()
 
-  def index =  Action{
-    Ok("something")
+  def index = Action.async {
+    Future {
+      Ok("something")
+    }
   }
 
-
-  //TODO: Use async, implement implicit writable to show errors to client.
-  def email(userName: String) = Action(parse.json) { request: Request[JsValue]  =>
+  def email(userName: String) = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
-    emailResult.fold(
-      errors => {
-        BadRequest("errors")
-      },
-      email => {
-        emailActions.insertEmail(email)
-        Ok
-      }
-    )
+    Future {
+      emailResult.fold(
+        errors => {
+          BadRequest("errors")
+        },
+        email => {
+          emailActions.insertEmail(email)
+          Ok("Email received")
+        })
+    }
   }
 }
