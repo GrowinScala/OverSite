@@ -1,9 +1,15 @@
 package database.repository
 
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.UUID.randomUUID
+
 import api.dto.UserCreationDTO.CreateUserDTO
+import database.mappings.{ Login, User }
 import database.mappings.UserMappings._
 import encryption.EncryptString
 import slick.jdbc.MySQLProfile.api._
+import play.api.http.Status._
 
 import scala.concurrent.Future
 
@@ -15,4 +21,24 @@ class UserRepository(path: String) {
     val insertTableEmail = UserTable += User(user.username, encrypt.result.toString)
     db.run(insertTableEmail)
   }
+
+  def loginUser(user: CreateUserDTO) = {
+    val encrypt = new EncryptString(user.password)
+    val realUser = UserTable.filter(x => (x.username === user.username) && x.password === encrypt.result.toString).result
+    db.run(realUser)
+  }
+
+  def insertLogin(user: CreateUserDTO) = {
+    val insertTableLogin = LoginTable += Login(user.username, randomUUID().toString, validate1Hour)
+    db.run(insertTableLogin)
+  }
+
+  def validate1Hour = {
+    val miliiSecs = System.currentTimeMillis()
+    val sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm")
+    //3600000 mili secs is 1 hour
+    val resultDate = new Date(miliiSecs + 3600000)
+    sdf.format(resultDate)
+  }
+
 }

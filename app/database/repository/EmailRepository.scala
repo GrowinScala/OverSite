@@ -11,8 +11,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 class EmailRepository(path: String)(implicit val executionContext: ExecutionContext) {
   val db = Database.forConfig(path)
 
-  def execDB[T](action: DBIO[T]): Future[T] = db.run(action)
-
   def insertEmail(email: CreateEmailDTO) = {
     val randomEmailID = randomUUID().toString
     val randomChatID = randomUUID().toString

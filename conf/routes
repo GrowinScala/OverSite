@@ -24,6 +24,6 @@ POST     /users/:userID/email     api.controllers.EmailsController.email(userID:
 
 #authentication:
 POST    /signin                   api.controllers.UsersController.signin
-#POST    /login
+POST    /login                    api.controllers.UsersController.login
 #POST    /logout
 
