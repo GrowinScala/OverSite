@@ -23,7 +23,7 @@ POST     /users/:userID/email     api.controllers.EmailsController.email(userID:
 
 
 #authentication:
-#POST    /signin                      UsersController.users
+POST    /signin                   api.controllers.UsersController.signin
 #POST    /login
 #POST    /logout
 
