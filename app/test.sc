@@ -1,13 +1,4 @@
-import slick.jdbc.MySQLProfile.api._
+import encryption.EncryptString
 
-//val actions = new Actions()
-//val db = Database.forConfig("mysql")
-
-//db.run(actions.insertChat)
-
-//actions.exec(actions.insertChat)
-//actions.exec(actions.insertEmail)
-
-import java.util.UUID.randomUUID
-randomUUID().toString
-
+val encrypt = new EncryptString("")
+encrypt.result.toString
