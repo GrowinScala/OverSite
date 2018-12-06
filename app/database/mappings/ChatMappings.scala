@@ -1,7 +1,7 @@
 package database.mappings
 import slick.jdbc.MySQLProfile.api._
 
-object ChatObject {
+object ChatMappings {
 
   case class Chat(
     chatID: String,

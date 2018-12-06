@@ -2,39 +2,40 @@ package database.mappings
 
 import slick.jdbc.MySQLProfile.api._
 
-object EmailObject {
+object EmailMappings {
 
   case class Email(
-    emailID:     String,
-    chatID:      String,
-    fromAddress: String,
-    dateOf:      String,
-    header:      String,
-    body:        String,
-    sent:        Boolean
-  )
+                    emailID: String,
+                    chatID: String,
+                    fromAddress: String,
+                    dateOf: String,
+                    header: String,
+                    body: String,
+                    sent: Boolean)
+
+  case class Chats(
+                    chatID: String,
+                    header: String,
+                  )
 
   case class ToAddress(
-    toID:     String,
-    emailID:  String,
-    username: String
-  )
+                        toID: String,
+                        emailID: String,
+                        username: String)
 
   case class CC(
-    CCID:     String,
-    emailID:  String,
-    username: String
-  )
+                 CCID: String,
+                 emailID: String,
+                 username: String)
 
   case class BCC(
-    BCCID:    String,
-    emailID:  String,
-    username: String
-  )
+                  BCCID: String,
+                  emailID: String,
+                  username: String)
+
 
   class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
-
-    def fileIdFK = foreignKey("chatID", chatID, ChatObject.ChatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def fileIdFK = foreignKey("chatID", chatID, ChatMappings.ChatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
     def chatID = column[String]("chatID")
 
@@ -51,7 +52,15 @@ object EmailObject {
     def sent = column[Boolean]("sent")
 
     def * = (emailID, chatID, fromAddress, dateOf, header, body, sent) <> (Email.tupled, Email.unapply)
+  }
 
+  class ChatsTable(tag: Tag) extends Table[Chats](tag, "chats") {
+
+    def chatID = column[String]("chatID", O.PrimaryKey)
+
+    def header = column[String]("header")
+
+    def * = (chatID, header) <> (Chats.tupled, Chats.unapply)
   }
 
   class ToAddressTable(tag: Tag) extends Table[ToAddress](tag, "toaddresses") {
@@ -94,6 +103,7 @@ object EmailObject {
   }
 
   lazy val EmailTable = TableQuery[EmailTable]
+  lazy val ChatsTable = TableQuery[ChatsTable]
   lazy val ToAddressTable = TableQuery[ToAddressTable]
   lazy val CCTable = TableQuery[CCTable]
   lazy val BCCTable = TableQuery[BCCTable]
