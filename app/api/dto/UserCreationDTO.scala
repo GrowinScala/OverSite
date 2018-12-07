@@ -1,19 +1,13 @@
 package api.dto
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{OWrites, Reads, __}
+import play.api.libs.json._
+
+case class CreateUserDTO(
+                          username: String,
+                          password: String,
+                        )
 
 object UserCreationDTO {
-
-  case class CreateUserDTO(
-    username: String,
-    password: String,
-  )
-
-  implicit val EmailDTOReader: Reads[CreateUserDTO] =
-    (
-      (__ \ "username").read[String] and
-      (   __ \ "password").read[String]
-    )(CreateUserDTO.apply _)
-
+  implicit val UserDTOReader: OFormat[CreateUserDTO] = Json.format[CreateUserDTO]
 }
