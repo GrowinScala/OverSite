@@ -1,5 +1,4 @@
 package database.mappings
-import api.dto.UserCreationDTO.CreateUserDTO
 import database.mappings.UserMappings.UserTable
 import encryption.EncryptString
 import slick.jdbc.MySQLProfile.api._
@@ -23,6 +22,7 @@ class LoginTable(tag: Tag) extends Table[Login](tag, "logins") {
 case class User(
   username: String,
   password: String)
+
 class UserTable(tag: Tag) extends Table[User](tag, "users") {
   def username = column[String]("username", O.PrimaryKey)
   def password = column[String]("password")

@@ -4,13 +4,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID.randomUUID
 
-import api.dto.UserCreationDTO.CreateUserDTO
+import api.dto.CreateUserDTO
 import database.mappings.{ Login, User }
 import database.mappings.UserMappings._
 import encryption.EncryptString
 import slick.jdbc.MySQLProfile.api._
 import play.api.http.Status._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class UserRepository(path: String) {
@@ -29,8 +30,11 @@ class UserRepository(path: String) {
   }
 
   def insertLogin(user: CreateUserDTO) = {
-    val insertTableLogin = LoginTable += Login(user.username, randomUUID().toString, validate1Hour)
+    val token = randomUUID().toString
+    val insertTableLogin = LoginTable += Login(user.username, token, validate1Hour)
+
     db.run(insertTableLogin)
+    token
   }
 
   def validate1Hour = {

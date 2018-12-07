@@ -4,29 +4,28 @@ import database.mappings.ChatMappings.ChatTable
 import slick.jdbc.MySQLProfile.api._
 import database.mappings.EmailMappings._
 case class Email(
-                  emailID: String,
-                  chatID: String,
-                  fromAddress: String,
-                  dateOf: String,
-                  header: String,
-                  body: String,
-                  sent: Boolean)
+  emailID: String,
+  chatID: String,
+  fromAddress: String,
+  dateOf: String,
+  header: String,
+  body: String,
+  sent: Boolean)
 
 case class ToAddress(
-                      toID: String,
-                      emailID: String,
-                      username: String)
+  toID: String,
+  emailID: String,
+  username: String)
 
 case class CC(
-               CCID: String,
-               emailID: String,
-               username: String)
+  CCID: String,
+  emailID: String,
+  username: String)
 
 case class BCC(
-                BCCID: String,
-                emailID: String,
-                username: String)
-
+  BCCID: String,
+  emailID: String,
+  username: String)
 
 class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
   def fileIdFK = foreignKey("chatID", chatID, ChatMappings.ChatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
@@ -47,7 +46,6 @@ class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
 
   def * = (emailID, chatID, fromAddress, dateOf, header, body, sent) <> (Email.tupled, Email.unapply)
 }
-
 
 class ToAddressTable(tag: Tag) extends Table[ToAddress](tag, "toaddresses") {
 
