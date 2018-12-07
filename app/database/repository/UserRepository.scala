@@ -1,6 +1,7 @@
 package database.repository
 
-import api.dto.UserCreationDTO.CreateUserDTO
+import api.dto.CreateUserDTO
+import database.mappings.User
 import database.mappings.UserMappings._
 import encryption.EncryptString
 import slick.jdbc.MySQLProfile.api._
