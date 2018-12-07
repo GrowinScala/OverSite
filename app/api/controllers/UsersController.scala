@@ -1,7 +1,8 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.dto.UserCreationDTO.CreateUserDTO
+import api.dto.CreateUserDTO
+import api.dto.UserCreationDTO._
 import database.repository.UserRepository
 import javax.inject._
 import play.api.libs.json.{ JsError, JsValue, Json }
@@ -15,15 +16,9 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
 
   def signin = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
-    Future {
-      emailResult.fold(
-        errors => {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
-        },
-        user => {
-          userActions.insertUser(user)
-          Ok("User created")
-        })
-    }
+    emailResult.fold(
+      errors => Future.successful(BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))),
+      user => userActions.insertUser(user).map(_ => Ok))
   }
 }
+

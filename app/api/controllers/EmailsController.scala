@@ -1,7 +1,6 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import akka.stream.impl
 import api.dto.CreateEmailDTO
 import api.dto.EmailCreationDTO._
 import database.repository.EmailRepository
@@ -9,7 +8,7 @@ import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
 class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
