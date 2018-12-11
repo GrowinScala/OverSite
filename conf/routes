@@ -3,7 +3,7 @@
 
 
 
-#GET     /users/:usersID/chats
+#GET      /users/:usersID/chats    api.controllers.ChatControllers.inbox(userID: String)
 #GET     /users/:usersID/chats/:chatID/emails
 #GET     /users/:usersID/chats/:chatID/emails/:emailID
 
@@ -15,7 +15,7 @@ GET      /index                   api.controllers.EmailsController.index
 #########################
 
 #send an email
-POST     /users/:userID/email     api.controllers.EmailsController.email(userID: String)
+POST     /users/:userName/email     api.controllers.EmailsController.email(userName: String)
 
 #Replying to an email
 #POST    /users/:userID/chats/:chatID

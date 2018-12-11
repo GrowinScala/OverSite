@@ -10,11 +10,11 @@ import play.api.mvc._
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * Class that is injected with end-points
-  * @param cc
-  * @param actorSystem
-  * @param exec
-  */
+ * Class that is injected with end-points
+ * @param cc
+ * @param actorSystem
+ * @param exec
+ */
 @Singleton
 class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
@@ -29,10 +29,10 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
   }
 
   /**
-    *
-    * @param userName
-    * @return
-    */
+   *
+   * @param userName
+   * @return
+   */
   def email(userName: String) = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
     val authToken = request.headers.get("Token").getOrElse("")
@@ -45,7 +45,7 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
             emailActions.insertEmail(email)
             Ok("Mail sent")
 
-          case x => Forbidden("Please verify your login details \n Try to login again" + "\n" + x)
+          case _ => Forbidden("Please verify your login details \n Try to login again" + "\n")
         })
       })
   }

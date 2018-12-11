@@ -15,14 +15,13 @@ import database.mappings.EmailMappings._
  * @param sent
  */
 case class Email(
-  emailID:     String,
-  chatID:      String,
+  emailID: String,
+  chatID: String,
   fromAddress: String,
-  dateOf:      String,
-  header:      String,
-  body:        String,
-  sent:        Boolean
-)
+  dateOf: String,
+  header: String,
+  body: String,
+  sent: Boolean)
 
 /**
  * Case class of toAddress
@@ -31,10 +30,9 @@ case class Email(
  * @param username
  */
 case class ToAddress(
-  toID:     String,
-  emailID:  String,
-  username: String
-)
+  toID: String,
+  emailID: String,
+  username: String)
 
 /**
  * Case class of cc
@@ -43,10 +41,9 @@ case class ToAddress(
  * @param username
  */
 case class CC(
-  CCID:     String,
-  emailID:  String,
-  username: String
-)
+  CCID: String,
+  emailID: String,
+  username: String)
 
 /**
  * Case class of bcc
@@ -55,10 +52,9 @@ case class CC(
  * @param username
  */
 case class BCC(
-  BCCID:    String,
-  emailID:  String,
-  username: String
-)
+  BCCID: String,
+  emailID: String,
+  username: String)
 
 /**
  * Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key

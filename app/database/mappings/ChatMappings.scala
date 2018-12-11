@@ -9,8 +9,7 @@ import slick.jdbc.MySQLProfile.api._
  */
 case class Chat(
   chatID: String,
-  header: String
-)
+  header: String)
 
 /**
  * Case class of chatUser
@@ -19,9 +18,8 @@ case class Chat(
  */
 case class ChatUser(
   chatUserID: String,
-  chatID:     String,
-  username:   String
-)
+  chatID: String,
+  username: String)
 
 /**
  * Case class of share
@@ -31,11 +29,10 @@ case class ChatUser(
  * @param toID
  */
 case class Share(
-  shareID:  String,
-  chatID:   String,
+  shareID: String,
+  chatID: String,
   fromUser: String,
-  toID:     String
-)
+  toID: String)
 
 /**
  * Class that defines the chat table, establishing chatID as primary key in the database
@@ -80,7 +77,7 @@ class ShareTable(tag: Tag) extends Table[Share](tag, "shares") {
 }
 
 /**
- *???
+ * ???
  */
 object ChatMappings {
   implicit class QueryExtensions(q: Query[ChatTable, Chat, Seq]) {

@@ -2,22 +2,21 @@ package database.mappings
 import database.mappings.UserMappings.UserTable
 import slick.jdbc.MySQLProfile.api._
 
-
 /**
-  * Case class of login
-  * @param username
-  * @param token
-  * @param validDate
-  */
+ * Case class of login
+ * @param username
+ * @param token
+ * @param validDate
+ */
 case class Login(
   username: String,
   token: String,
   validDate: Long)
 
 /**
-  * Class that defines the login table, making username a foreign key in the database
-  * @param tag
-  */
+ * Class that defines the login table, making username a foreign key in the database
+ * @param tag
+ */
 class LoginTable(tag: Tag) extends Table[Login](tag, "logins") {
   //TODO Insert userID to improve the search
   def username = column[String]("username")
@@ -28,18 +27,18 @@ class LoginTable(tag: Tag) extends Table[Login](tag, "logins") {
 }
 
 /**
-  * Case class of user
-  * @param username
-  * @param password
-  */
+ * Case class of user
+ * @param username
+ * @param password
+ */
 case class User(
   username: String,
   password: String)
 
 /**
-  * Class that defines the user table, making username a primary key in the database
-  * @param tag
-  */
+ * Class that defines the user table, making username a primary key in the database
+ * @param tag
+ */
 class UserTable(tag: Tag) extends Table[User](tag, "users") {
   def username = column[String]("username", O.PrimaryKey)
   def password = column[String]("password")
@@ -47,8 +46,8 @@ class UserTable(tag: Tag) extends Table[User](tag, "users") {
 }
 
 /**
-  * Queries of user table and login table
-  */
+ * Queries of user table and login table
+ */
 object UserMappings {
   lazy val UserTable = TableQuery[UserTable]
   lazy val LoginTable = TableQuery[LoginTable]

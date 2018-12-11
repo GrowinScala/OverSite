@@ -4,10 +4,10 @@ import akka.actor.ActorSystem
 import api.dto.CreateUserDTO
 import database.repository.UserRepository
 import javax.inject._
-import play.api.libs.json.{JsError, JsValue, Json}
+import play.api.libs.json.{ JsError, JsValue, Json }
 import play.api.mvc._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points
@@ -33,15 +33,14 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
       user => {
         userActions.insertUser(user)
         Future { Ok("User created") }
-      }
-    )
+      })
   }
 
   /**
-    * Login action
-    * @return When a valid login is inserted, it is added in the database
-    * and the generated token is sent to user, otherwise an error message is sent
-    */
+   * Login action
+   * @return When a valid login is inserted, it is added in the database
+   * and the generated token is sent to user, otherwise an error message is sent
+   */
   def login = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
     // Getting the token from the request api call
@@ -55,9 +54,8 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
 
           case 1 => Ok("Your token is: " + userActions.insertLogin(user) + "\nThe token is valid for 1 hour")
 
-          case x => Forbidden("Username and password doesn´t match" + x)
+          case _ => Forbidden("Username and password doesn´t match")
         }
-      }
-    )
+      })
   }
 }
