@@ -4,6 +4,16 @@ import database.mappings.ChatMappings.ChatTable
 import slick.jdbc.MySQLProfile.api._
 import database.mappings.EmailMappings._
 
+/**
+ * Case class of email
+ * @param emailID
+ * @param chatID
+ * @param fromAddress
+ * @param dateOf
+ * @param header
+ * @param body
+ * @param sent
+ */
 case class Email(
   emailID: String,
   chatID: String,
@@ -13,16 +23,34 @@ case class Email(
   body: String,
   sent: Boolean)
 
+/**
+ * Case class of toAddress
+ * @param toID
+ * @param emailID
+ * @param username
+ */
 case class ToAddress(
   toID: String,
   emailID: String,
   username: String)
 
+/**
+ * Case class of cc
+ * @param CCID
+ * @param emailID
+ * @param username
+ */
 case class CC(
   CCID: String,
   emailID: String,
   username: String)
 
+/**
+ * Case class of bcc
+ * @param BCCID
+ * @param emailID
+ * @param username
+ */
 case class BCC(
   BCCID: String,
   emailID: String,
@@ -30,7 +58,7 @@ case class BCC(
 
 /**
  * Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key
- * @param tag slick tag
+ * @param tag
  */
 class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
   def fileIdFK = foreignKey("chatID", chatID, ChatMappings.ChatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
@@ -54,7 +82,7 @@ class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
 
 /**
  * Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key
- * @param tag slick tag
+ * @param tag
  */
 class ToAddressTable(tag: Tag) extends Table[ToAddress](tag, "toaddresses") {
 
@@ -71,7 +99,7 @@ class ToAddressTable(tag: Tag) extends Table[ToAddress](tag, "toaddresses") {
 
 /**
  * Class that defines the cc table,establishing ccID as primary key in the database and emailID as foreign key
- * @param tag slick tag
+ * @param tag
  */
 class CCTable(tag: Tag) extends Table[CC](tag, "ccs") {
 
@@ -88,7 +116,7 @@ class CCTable(tag: Tag) extends Table[CC](tag, "ccs") {
 
 /**
  * Class that defines the bcc table,establishing bccID as primary key in the database and emailID as foreign key
- * @param tag slick tag
+ * @param tag
  */
 class BCCTable(tag: Tag) extends Table[BCC](tag, "bccs") {
 

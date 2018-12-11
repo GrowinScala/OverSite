@@ -2,22 +2,20 @@
 # This file defines all application routes (Higher priority routes first)
 
 
-#inbox
-GET     /users/:usersID/chats    api.controllers.ChatController.inbox(usersID: String)
-#sent
-GET     /users/:usersID/emails/:status api.controllers.EmailsController.showEmails(usersID: String, status: String)
-#GET     /users/:usersID/emails/
+
+#GET     /users/:usersID/chats
+#GET     /users/:usersID/chats/:chatID/emails
 #GET     /users/:usersID/chats/:chatID/emails/:emailID
 
 #GET     /users/:userID/shares
 #GET     /users/:userID/shares/:shareID
 
 #apagar##################
-POST      /index                   api.controllers.EmailsController.index
+GET      /index                   api.controllers.EmailsController.index
 #########################
 
 #send an email
-POST     /email   api.controllers.EmailsController.email
+POST     /users/:userID/email     api.controllers.EmailsController.email(userID: String)
 
 #Replying to an email
 #POST    /users/:userID/chats/:chatID
@@ -28,5 +26,5 @@ POST     /email   api.controllers.EmailsController.email
 #authentication:
 POST    /signin                   api.controllers.UsersController.signin
 POST    /login                    api.controllers.UsersController.login
-#POST   /logout
+#POST    /logout
 

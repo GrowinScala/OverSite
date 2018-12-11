@@ -11,9 +11,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points
- * @param cc controller components
- * @param actorSystem actor system
- * @param exec execution context (for futures)
+ * @param cc
+ * @param actorSystem
+ * @param exec
  */
 @Singleton
 class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
@@ -24,7 +24,7 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
    * Sign in action
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
-  def signin: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
+  def signin = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
     emailResult.fold(
       errors => {
@@ -43,10 +43,7 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
    */
   def login: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
-
-    /**
-     * Getting the token from the request api call
-     */
+    // Getting the token from the request api call
     emailResult.fold(
       errors => {
         Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) }
@@ -57,7 +54,7 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
 
           case 1 => Ok("Your token is: " + userActions.insertLogin(user) + "\nThe token is valid for 1 hour")
 
-          case _ => Forbidden("Username and password doesn´t match")
+          case x => Forbidden("Username and password doesn´t match" + x)
         }
       })
   }
