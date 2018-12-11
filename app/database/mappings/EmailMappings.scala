@@ -3,30 +3,67 @@ package database.mappings
 import database.mappings.ChatMappings.ChatTable
 import slick.jdbc.MySQLProfile.api._
 import database.mappings.EmailMappings._
+
+/**
+ * Case class of email
+ * @param emailID
+ * @param chatID
+ * @param fromAddress
+ * @param dateOf
+ * @param header
+ * @param body
+ * @param sent
+ */
 case class Email(
-  emailID: String,
-  chatID: String,
+  emailID:     String,
+  chatID:      String,
   fromAddress: String,
-  dateOf: String,
-  header: String,
-  body: String,
-  sent: Boolean)
+  dateOf:      String,
+  header:      String,
+  body:        String,
+  sent:        Boolean
+)
 
+/**
+ * Case class of toAddress
+ * @param toID
+ * @param emailID
+ * @param username
+ */
 case class ToAddress(
-  toID: String,
-  emailID: String,
-  username: String)
+  toID:     String,
+  emailID:  String,
+  username: String
+)
 
+/**
+ * Case class of cc
+ * @param CCID
+ * @param emailID
+ * @param username
+ */
 case class CC(
-  CCID: String,
-  emailID: String,
-  username: String)
+  CCID:     String,
+  emailID:  String,
+  username: String
+)
 
+/**
+ * Case class of bcc
+ * @param BCCID
+ * @param emailID
+ * @param username
+ */
 case class BCC(
-  BCCID: String,
-  emailID: String,
-  username: String)
+  BCCID:    String,
+  emailID:  String,
+  username: String
+)
 
+/**
+ * Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key
+ * @param tag
+ */
 class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
   def fileIdFK = foreignKey("chatID", chatID, ChatMappings.ChatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
@@ -47,6 +84,10 @@ class EmailTable(tag: Tag) extends Table[Email](tag, "emails") {
   def * = (emailID, chatID, fromAddress, dateOf, header, body, sent) <> (Email.tupled, Email.unapply)
 }
 
+/**
+ * Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key
+ * @param tag
+ */
 class ToAddressTable(tag: Tag) extends Table[ToAddress](tag, "toaddresses") {
 
   def fileIdFK = foreignKey("emailID", emailID, EmailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
@@ -60,6 +101,10 @@ class ToAddressTable(tag: Tag) extends Table[ToAddress](tag, "toaddresses") {
   def username = column[String]("username")
 }
 
+/**
+ * Class that defines the cc table,establishing ccID as primary key in the database and emailID as foreign key
+ * @param tag
+ */
 class CCTable(tag: Tag) extends Table[CC](tag, "ccs") {
 
   def fileIdFK = foreignKey("emailID", emailID, EmailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
@@ -73,6 +118,10 @@ class CCTable(tag: Tag) extends Table[CC](tag, "ccs") {
   def username = column[String]("username")
 }
 
+/**
+ * Class that defines the bcc table,establishing bccID as primary key in the database and emailID as foreign key
+ * @param tag
+ */
 class BCCTable(tag: Tag) extends Table[BCC](tag, "bccs") {
 
   def fileIdFK = foreignKey("emailID", emailID, EmailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
@@ -87,6 +136,8 @@ class BCCTable(tag: Tag) extends Table[BCC](tag, "bccs") {
 }
 
 object EmailMappings {
+
+  //Example
   /*
     implicit class QueryExtensions(q: Query[JourneysTable, JourneysRow, Seq]) {
 
@@ -108,6 +159,10 @@ object EmailMappings {
   }
 
   lazy val all = TableQuery[JourneysTable]
+   */
+
+  /**
+   * Queries of user table and login table
    */
   lazy val EmailTable = TableQuery[EmailTable]
   lazy val ToAddressTable = TableQuery[ToAddressTable]

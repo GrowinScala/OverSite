@@ -2,45 +2,62 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.dto.CreateUserDTO
-import api.dto.UserCreationDTO._
 import database.repository.UserRepository
 import javax.inject._
-import play.api.libs.json.{ JsError, JsValue, Json }
+import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * Class that is injected with end-points
+ * @param cc
+ * @param actorSystem
+ * @param exec
+ */
+@Singleton
 class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
   val userActions = new UserRepository("mysql")
 
+  /**
+   * Sign in action
+   * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
+   */
   def signin = Action(parse.json).async { request: Request[JsValue] =>
-    val emailResult = request.body.validate[CreateUserDTO]
-    Future {
-      emailResult.fold(
-        errors => {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
-        },
-        user => {
-          userActions.insertUser(user)
-          Ok("User created")
-        })
-    }
-  }
-
-  def login = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
     emailResult.fold(
       errors => {
         Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) }
       },
       user => {
-        val loggedUser = userActions.loginUser(user)
-        loggedUser.map(_.length).map(_ match {
-          case 1 => Ok("Your token is: " + userActions.insertLogin(user))
+        userActions.insertUser(user)
+        Future { Ok("User created") }
+      }
+    )
+  }
 
-          case _ => Forbidden("Username and password doesn´t match")
-        })
-      })
+  /**
+    * Login action
+    * @return When a valid login is inserted, it is added in the database
+    * and the generated token is sent to user, otherwise an error message is sent
+    */
+  def login = Action(parse.json).async { request: Request[JsValue] =>
+    val emailResult = request.body.validate[CreateUserDTO]
+    // Getting the token from the request api call
+    emailResult.fold(
+      errors => {
+        Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) }
+      },
+      user => {
+        val loggedUser = userActions.loginUser(user)
+        loggedUser.map(_.length).map {
+
+          case 1 => Ok("Your token is: " + userActions.insertLogin(user) + "\nThe token is valid for 1 hour")
+
+          case x => Forbidden("Username and password doesn´t match" + x)
+        }
+      }
+    )
   }
 }
