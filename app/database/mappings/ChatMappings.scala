@@ -80,13 +80,12 @@ class ShareTable(tag: Tag) extends Table[Share](tag, "shares") {
  * ???
  */
 object ChatMappings {
+  //Example
+  /*
   implicit class QueryExtensions(q: Query[ChatTable, Chat, Seq]) {
     def byChatID(chatID: Option[String]): Query[ChatTable, Chat, Seq] =
       ChatTable.filter(_.chatID === chatID)
   }
-
-  //Example
-  /*
  implicit class QueryExtensions(q: Query[JourneysTable, JourneysRow, Seq]) {
      def byJourneyId(journeyId: JourneyId): Query[JourneysTable, JourneysRow, Seq] =
       q.filter(_.journeyId === journeyId)

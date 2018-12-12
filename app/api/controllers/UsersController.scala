@@ -43,7 +43,10 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
    */
   def login = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
-    // Getting the token from the request api call
+
+    /**
+     * Getting the token from the request api call
+     */
     emailResult.fold(
       errors => {
         Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) }

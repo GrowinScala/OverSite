@@ -2,7 +2,7 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.dto.CreateEmailDTO
-import database.repository.{ EmailRepository, UserRepository }
+import database.repository.{ ChatRepository, EmailRepository, UserRepository }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
@@ -21,11 +21,16 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
 
   val emailActions = new EmailRepository("mysql")
   val usersActions = new UserRepository("mysql")
+  val chatActions = new ChatRepository("mysql")
 
   def index = Action.async {
-    Future {
-      Ok("something")
+
+    chatActions.showInbox("pluis@cmail.com", "111").map {
+      inbox =>
+        val result = JsArray(inbox.map(JsString(_)))
+        Ok(result)
     }
+
   }
 
   /**
