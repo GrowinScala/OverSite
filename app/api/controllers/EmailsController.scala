@@ -25,10 +25,10 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
 
   def index = Action.async {
 
-    chatActions.showInbox("pluis@cmail.com", "111").map {
-      inbox =>
-        val result = JsArray(inbox.map(JsString(_)))
-        Ok(result)
+    chatActions.showInbox("pluis@hotmail.com", "111").map {
+      entry =>
+
+        Ok(entry.chatId + " " + entry.header)
     }
 
   }
@@ -40,6 +40,7 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
    */
   def email(userName: String) = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
+
     val authToken = request.headers.get("Token").getOrElse("")
 
     emailResult.fold(

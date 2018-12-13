@@ -26,6 +26,7 @@ class ChatController @Inject() (cc: ControllerComponents, actorSystem: ActorSyst
    */
   def inbox(userName: String) = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
+
     val authToken = request.headers.get("Token").getOrElse("")
 
     emailResult.fold(

@@ -83,7 +83,7 @@ object ChatMappings {
   //Example
   /*
   implicit class QueryExtensions(q: Query[ChatTable, Chat, Seq]) {
-    def byChatID(chatID: Option[String]): Query[ChatTable, Chat, Seq] =
+    def filterByChatID(chatID: Option[String]): Query[ChatTable, Chat, Seq] =
       ChatTable.filter(_.chatID === chatID)
   }
  implicit class QueryExtensions(q: Query[JourneysTable, JourneysRow, Seq]) {

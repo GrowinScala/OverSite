@@ -1,14 +1,14 @@
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.UUID.randomUUID
 
-import encryption.EncryptString
-import slick.lifted.Rep
+import api.dto.CreateEmailDTO
+import database.mappings.Chat
+import database.mappings.ChatMappings.ChatTable
+import slick.ast.Select
+import slick.jdbc.MySQLProfile.api._
 
-val encrypt = new EncryptString("")
-encrypt.result.toString
-System.currentTimeMillis/1000
+import scala.concurrent.ExecutionContext
 
-val yourmilliseconds = System.currentTimeMillis();
-val sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");
-val resultdate = new Date(yourmilliseconds + 3600000 );
-System.out.println(sdf.format(resultdate));
+
+val db = Database.forConfig()forConfig("mysql")/*
+val x = sqlu"""Select * from ChatTable """
+db.run(x)
