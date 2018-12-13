@@ -38,7 +38,7 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
     }
   }
 
-  def showInbox(userEmail: String, token: String) = {
+  def showInbox(userEmail: String) = {
     val queryEmailIds = EmailTable.filter(_.fromAddress === userEmail).map(_.emailID)
       .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
       .union(CCTable.filter(_.username === userEmail).map(_.emailID))

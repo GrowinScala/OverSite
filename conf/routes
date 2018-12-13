@@ -11,7 +11,7 @@
 #GET     /users/:userID/shares/:shareID
 
 #apagar##################
-GET      /index                   api.controllers.EmailsController.index
+POST      /index                   api.controllers.EmailsController.index
 #########################
 
 #send an email

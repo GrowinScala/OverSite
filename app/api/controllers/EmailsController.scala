@@ -2,13 +2,13 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.dto.CreateEmailDTO
-import com.mysql.cj.xdevapi.JsonString
-import database.repository.{ ChatRepository, EmailRepository, UserRepository }
+import api.validators.TokenValidator
+import database.repository.{ChatRepository, EmailRepository, UserRepository}
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Class that is injected with end-points
@@ -17,19 +17,16 @@ import scala.concurrent.{ ExecutionContext, Future }
  * @param exec
  */
 @Singleton
-class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
+class EmailsController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   val emailActions = new EmailRepository("mysql")
   val usersActions = new UserRepository("mysql")
   val chatActions = new ChatRepository("mysql")
 
-  def index = Action.async {
-    chatActions.showInbox("pluis@cmail.com", "111").map {
-      inbox =>
-        val resultChatID = JsObject(inbox.map(x => (x._1, JsString(x._2))))
-        Ok(resultChatID)
-    }
+  def index = tokenValidator.async {
+
+    Future { Ok("") }
   }
 
   /**
@@ -37,20 +34,15 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
    * @param userName
    * @return
    */
-  def email(userName: String) = Action(parse.json).async { request: Request[JsValue] =>
+  def email(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
-    val authToken = request.headers.get("Token").getOrElse("")
 
     emailResult.fold(
       errors => { Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) } },
       email => {
-        usersActions.validateToken(userName, authToken).map(_.length).map({
-          case 1 =>
-            emailActions.insertEmail(email)
-            Ok("Mail sent")
-
-          case _ => Forbidden("Please verify your login details \n Try to login again" + "\n")
-        })
-      })
+        emailActions.insertEmail(email)
+        Future { Ok("Mail sent") }
+      }
+    )
   }
 }

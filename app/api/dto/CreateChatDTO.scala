@@ -36,4 +36,4 @@ def reads(json: JsonValue): JsResult[CreateChatDTO] = {
 JsSuccess(CreateChatDTO(Tuple("", "")))
 }
 }
-*/ 
+*/
