@@ -3,12 +3,12 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dto.CreateUserDTO
 import api.validators.TokenValidator
-import database.repository.{ChatRepository, UserRepository}
+import database.repository.{ ChatRepository, UserRepository }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points
@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param exec
  */
 @Singleton
-class ChatController @Inject() (tokenValidator: TokenValidator,cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
+class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
   val userActions = new UserRepository("mysql")
   val chatActions = new ChatRepository("mysql")
@@ -33,6 +33,5 @@ class ChatController @Inject() (tokenValidator: TokenValidator,cc: ControllerCom
         Ok(resultChatID)
     }
   }
-
 
 }

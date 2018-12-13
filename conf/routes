@@ -2,9 +2,11 @@
 # This file defines all application routes (Higher priority routes first)
 
 
-
-#GET     /users/:usersID/chats    api.controllers.ChatControllers.inbox(userID: String)
-#GET     /users/:usersID/chats/:chatID/emails
+#inbox
+GET     /users/:usersID/chats    api.controllers.ChatController.inbox(usersID: String)
+#sent
+GET     /users/:usersID/emails/:status api.controllers.EmailsController.showEmails(usersID: String, status: String)
+#GET     /users/:usersID/emails/
 #GET     /users/:usersID/chats/:chatID/emails/:emailID
 
 #GET     /users/:userID/shares

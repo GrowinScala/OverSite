@@ -9,14 +9,14 @@ import play.api.mvc.Codec
 import play.libs.F.Tuple
 
 //TODO change to type UUID
-case class CreateChatDTO(
-  chatId: String,
+case class CreateEmailProfileDTO(
+  Id: String,
   header: String)
 
 //case class something(id: UUID, header: String)
 
-object CreateChatDTO {
-  implicit val ChatDTOReader: OFormat[CreateChatDTO] = Json.format[CreateChatDTO]
+object CreateEmailProfileDTO {
+  implicit val CreateEmailProfileDTO: OFormat[CreateEmailProfileDTO] = Json.format[CreateEmailProfileDTO]
 
 }
 /*
@@ -36,4 +36,4 @@ def reads(json: JsonValue): JsResult[CreateChatDTO] = {
 JsSuccess(CreateChatDTO(Tuple("", "")))
 }
 }
-*/
+*/ 

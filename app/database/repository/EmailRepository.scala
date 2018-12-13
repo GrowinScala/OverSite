@@ -54,4 +54,17 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
     chatID
   }
 
+  def showEmails(userEmail: String, status: String) = {
+    status match {
+      //fromAddress
+      case "sent" => {
+        val querySentEmailIds = EmailTable.filter(_.fromAddress === userEmail)
+          .filter(_.sent === true)
+          .sortBy(_.dateOf)
+          .map(x => (x.emailID, x.header)).result
+        db.run(querySentEmailIds)
+      }
+
+    }
+  }
 }

@@ -2,7 +2,7 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dto.{ CreateChatDTO, CreateEmailDTO }
+import api.dto.{ CreateEmailProfileDTO, CreateEmailDTO }
 import database.mappings.{ Chat, ChatTable }
 import database.mappings.ChatMappings.ChatTable
 import database.mappings.EmailMappings.{ BCCTable, CCTable, EmailTable, ToAddressTable }
@@ -47,6 +47,5 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
       .map(x => (x.chatID, x.header)).result
     db.run(queryResult2)
   }
-
 
 }

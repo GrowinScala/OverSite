@@ -20,10 +20,10 @@ class TokenValidator @Inject() (parser: BodyParsers.Default)(implicit ec: Execut
   val db = Database.forConfig("mysql")
 
   /**
-    * Validates the userName and token inserted by the user
-    * @param token
-    * @return
-    */
+   * Validates the userName and token inserted by the user
+   * @param token
+   * @return
+   */
   def validateToken(token: String) = {
     val validateTableToken = LoginTable.filter(x => (x.token === token) && x.validDate > System.currentTimeMillis()).result
     db.run(validateTableToken).map(_.length).map {
