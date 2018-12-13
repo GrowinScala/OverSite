@@ -43,8 +43,12 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
       .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
       .union(CCTable.filter(_.username === userEmail).map(_.emailID))
       .union(BCCTable.filter(_.username === userEmail).map(_.emailID))
-    val queryResult2 = EmailTable.filter(_.emailID in queryEmailIds).filter(_.sent === true).sortBy(_.dateOf)
-      .map(x => (x.chatID, x.header)).result
+    val queryResult2 = EmailTable
+      .filter(_.emailID in queryEmailIds)
+      .filter(_.sent === true)
+      .sortBy(_.dateOf)
+      .map(x => (x.chatID, x.header))
+      .result
     db.run(queryResult2)
   }
 

@@ -6,8 +6,9 @@ import api.dto.CreateEmailDTO
 import database.mappings.ChatMappings.ChatTable
 import database.mappings.EmailMappings._
 import database.mappings.{ BCCTable => _, CCTable => _, EmailTable => _, ToAddressTable => _, _ }
+import play.api.libs.json.{ JsError, Json }
 import slick.jdbc.MySQLProfile.api._
-
+import play.api.mvc.Results._
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
@@ -54,6 +55,7 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
     chatID
   }
 
+  //TODO BAD REQUEST MISSING
   def showEmails(userEmail: String, status: String) = {
     status match {
       //fromAddress
@@ -64,7 +66,19 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
           .map(x => (x.emailID, x.header)).result
         db.run(querySentEmailIds)
       }
-
+      case "received" => {
+        val queryReceivedEmailIds = ToAddressTable
+          .filter(_.username === userEmail).map(_.emailID)
+          .union(CCTable.filter(_.username === userEmail).map(_.emailID))
+          .union(BCCTable.filter(_.username === userEmail).map(_.emailID))
+        val queryReceivedEmailIdsAux = EmailTable.filter(_.emailID in queryReceivedEmailIds)
+          .filter(_.sent === true)
+          .sortBy(_.dateOf)
+          .map(x => (x.emailID, x.header))
+          .result
+        db.run(queryReceivedEmailIdsAux)
+      }
+      //case _ => Future { BadRequest("****-TE") }
     }
   }
 }
