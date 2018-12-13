@@ -10,21 +10,14 @@ import play.libs.F.Tuple
 
 //TODO change to type UUID
 case class CreateChatDTO(
-                     chatId: String,
-                     header: String
-                   )
+  chatId: String,
+  header: String)
 
-
-//case class somethig(id: UUID, header: String)
+//case class something(id: UUID, header: String)
 
 object CreateChatDTO {
   implicit val ChatDTOReader: OFormat[CreateChatDTO] = Json.format[CreateChatDTO]
-  implicit val locationWrites = new Writes[CreateChatDTO] {
-    def writes(chatRow: CreateChatDTO) = Json.arr(
-       chatRow,
 
-    )
-  }
 }
 /*
 implicit object CreateChatDTOFormat extends Format[CreateChatDTO] {
@@ -43,4 +36,4 @@ def reads(json: JsonValue): JsResult[CreateChatDTO] = {
 JsSuccess(CreateChatDTO(Tuple("", "")))
 }
 }
-*/
+*/ 

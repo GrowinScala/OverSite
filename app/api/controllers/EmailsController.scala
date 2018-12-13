@@ -2,6 +2,7 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.dto.CreateEmailDTO
+import com.mysql.cj.xdevapi.JsonString
 import database.repository.{ ChatRepository, EmailRepository, UserRepository }
 import javax.inject._
 import play.api.libs.json._
@@ -24,13 +25,11 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
   val chatActions = new ChatRepository("mysql")
 
   def index = Action.async {
-
-    chatActions.showInbox("pluis@hotmail.com", "111").map {
-      entry =>
-
-        Ok(entry.chatId + " " + entry.header)
+    chatActions.showInbox("pluis@cmail.com", "111").map {
+      inbox =>
+        val resultChatID = JsObject(inbox.map(x => (x._1, JsString(x._2))))
+        Ok(resultChatID)
     }
-
   }
 
   /**
@@ -40,7 +39,6 @@ class EmailsController @Inject() (cc: ControllerComponents, actorSystem: ActorSy
    */
   def email(userName: String) = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
-
     val authToken = request.headers.get("Token").getOrElse("")
 
     emailResult.fold(
