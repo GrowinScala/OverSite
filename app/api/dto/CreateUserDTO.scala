@@ -8,5 +8,5 @@ case class CreateUserDTO(
 )
 
 object CreateUserDTO {
-  implicit val UserDTOReader: OFormat[CreateUserDTO] = Json.format[CreateUserDTO]
+  implicit val UserDTO: OFormat[CreateUserDTO] = Json.format[CreateUserDTO]
 }

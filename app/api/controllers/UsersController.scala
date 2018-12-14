@@ -32,7 +32,7 @@ class UsersController @Inject() (cc: ControllerComponents, actorSystem: ActorSys
       },
       user => {
         userActions.insertUser(user)
-        Future {Created}
+        Future { Created }
       })
   }
 
