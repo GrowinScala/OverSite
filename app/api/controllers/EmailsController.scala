@@ -57,18 +57,12 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
           BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
         }
       },
-      email => {
+      sucess => {
         emailActions.showEmails(userName, status).map(
-          t => {
-            val resultEmailID = JsObject(t.map(x => (x._1, JsString(x._2))))
+          emails => {
+            val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
             Ok(resultEmailID)
           })
       })
-
-    emailActions.showEmails(userName, status).map {
-      email =>
-        val resultEmailID = JsObject(email.map(x => (x._1, JsString(x._2))))
-        Ok(resultEmailID)
-    }
   }
 }

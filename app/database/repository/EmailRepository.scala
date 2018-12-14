@@ -6,7 +6,7 @@ import akka.actor.Status.{ Failure, Success }
 import api.dto.CreateEmailDTO
 import database.mappings.ChatMappings.ChatTable
 import database.mappings.EmailMappings._
-import database.mappings.{ BCCTable => _, CCTable => _, EmailTable => _, ToAddressTable => _, _ }
+import database.mappings._
 import play.api.libs.json.{ JsError, Json }
 import slick.jdbc.MySQLProfile.api._
 import play.api.mvc.Results._

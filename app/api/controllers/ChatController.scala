@@ -1,14 +1,14 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.dto.{ CreateShareDTO, CreateUserDTO }
+import api.dto.{CreateEmailProfileDTO, CreateShareDTO, CreateUserDTO}
 import api.validators.TokenValidator
-import database.repository.{ ChatRepository, UserRepository }
+import database.repository.{ChatRepository, UserRepository}
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Class that is injected with end-points
@@ -27,11 +27,20 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
   def inbox(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
-    chatActions.showInbox(userName).map {
-      inbox =>
-        val resultChatID = JsObject(inbox.map(x => (x._1, JsString(x._2))))
-        Ok(resultChatID)
-    }
+    val chats = request.body.validate[CreateEmailProfileDTO]
+    chats.fold(
+      errors => Future {
+        BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+      },
+      sucess => {
+        chatActions.showInbox(userName).map {
+          inbox =>
+            val chatsResult = JsObject(inbox.map(x => (x._1, JsString(x._2))))
+            Ok(chatsResult)
+        }
+      }
+    )
+
   }
 
   def supervised(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
@@ -44,7 +53,8 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
       share => {
         chatActions.insertPermission(userName, share)
         Future { Ok }
-      })
+      }
+    )
   }
 
 }
