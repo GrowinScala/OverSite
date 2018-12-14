@@ -16,7 +16,7 @@ case class CreateEmailProfileDTO(
 //case class something(id: UUID, header: String)
 
 object CreateEmailProfileDTO {
-  implicit val CreateEmailProfileDTO: OFormat[CreateEmailProfileDTO] = Json.format[CreateEmailProfileDTO]
+  implicit val CreateEmailProfile: OFormat[CreateEmailProfileDTO] = Json.format[CreateEmailProfileDTO]
 
 }
 /*

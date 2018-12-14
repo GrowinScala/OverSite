@@ -49,20 +49,11 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
       })
   }
 
-  def showEmails(userName: String, status: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
-    val emailResult = request.body.validate[CreateEmailProfileDTO]
-    emailResult.fold(
-      errors => {
-        Future {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
-        }
-      },
-      sucess => {
-        emailActions.showEmails(userName, status).map(
-          emails => {
-            val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
-            Ok(resultEmailID)
-          })
+  def showEmails(userName: String, status: String) = tokenValidator.async { request =>
+    emailActions.showEmails(userName, status).map(
+      emails => {
+        val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
+        Ok(resultEmailID)
       })
   }
 }
