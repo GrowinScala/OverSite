@@ -1,7 +1,11 @@
 package api.controllers
 
 import akka.actor.ActorSystem
+
 import api.dto.CreateUserDTO
+
+import api.dto.{ CreateEmailProfileDTO, CreateShareDTO, CreateUserDTO }
+
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, UserRepository }
 import javax.inject._
@@ -29,8 +33,8 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
   def inbox(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
     chatActions.showInbox(userName).map {
       inbox =>
-        val resultChatID = JsObject(inbox.map(x => (x._1, JsString(x._2))))
-        Ok(resultChatID)
+        val chatsResult = JsObject(inbox.map(x => (x._1, JsString(x._2))))
+        Ok(chatsResult)
     }
   }
 

@@ -2,7 +2,6 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import akka.actor.Status.{ Failure, Success }
 import api.dto.CreateEmailDTO
 import database.mappings.ChatMappings.ChatTable
 import database.mappings.EmailMappings._
@@ -10,7 +9,6 @@ import database.mappings.{ BCCTable => _, CCTable => _, EmailTable => _, ToAddre
 import play.api.libs.json.{ JsError, Json }
 import slick.jdbc.MySQLProfile.api._
 import play.api.mvc.Results._
-
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
@@ -90,6 +88,7 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
       case "supervised" => {
 
       }
+      //case _ => Future { BadRequest("****-TE") }
     }
   }
 }
