@@ -12,9 +12,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points
- * @param cc
- * @param actorSystem
- * @param exec
  */
 @Singleton
 class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
@@ -26,7 +23,7 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
    * Sign in action
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
-  def inbox(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
+  def inbox(userName: String): Action[JsValue] = tokenValidator(parse.json).async { request: Request[JsValue] =>
     chatActions.showInbox(userName).map {
       inbox =>
         val chatsResult = JsObject(inbox.map(x => (x._1, JsString(x._2))))
@@ -34,7 +31,7 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
     }
   }
 
-  def supervised(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
+  def supervised(userName: String): Action[JsValue] = tokenValidator(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateShareDTO]
 
     emailResult.fold(

@@ -2,12 +2,6 @@ package database.mappings
 import database.mappings.UserMappings.UserTable
 import slick.jdbc.MySQLProfile.api._
 
-/**
- * Case class of login
- * @param username
- * @param token
- * @param validDate
- */
 case class Login(
   username: String,
   token: String,
@@ -15,7 +9,7 @@ case class Login(
 
 /**
  * Class that defines the login table, making username a foreign key in the database
- * @param tag
+ * @param tag slick tag
  */
 class LoginTable(tag: Tag) extends Table[Login](tag, "logins") {
   //TODO Insert userID to improve the search
@@ -26,18 +20,13 @@ class LoginTable(tag: Tag) extends Table[Login](tag, "logins") {
   def * = (username, token, validDate) <> (Login.tupled, Login.unapply)
 }
 
-/**
- * Case class of user
- * @param username
- * @param password
- */
 case class User(
   username: String,
   password: String)
 
 /**
  * Class that defines the user table, making username a primary key in the database
- * @param tag
+ * @param tag slick tag
  */
 class UserTable(tag: Tag) extends Table[User](tag, "users") {
   def username = column[String]("username", O.PrimaryKey)

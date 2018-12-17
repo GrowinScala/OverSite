@@ -15,12 +15,11 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
 
   /**
    * Insert a chat into database
-   *
-   * @param email
-   * @param random
+   * @param email email passed on json body
+   * @param chatID chatID
    * @return
    */
-  def insertChat(email: CreateEmailDTO, chatID: String) = {
+  def insertChat(email: CreateEmailDTO, chatID: String): Future[String] = {
     val randomChatID = randomUUID().toString
     existChatID(chatID).map {
       case true => chatID
@@ -40,7 +39,7 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
     }
   }
 
-  def showInbox(userEmail: String) = {
+  def showInbox(userEmail: String): Future[Seq[(String, String)]] = {
     val queryEmailIds = EmailTable.filter(_.fromAddress === userEmail).map(_.emailID)
       .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
       .union(CCTable.filter(_.username === userEmail).map(_.emailID))

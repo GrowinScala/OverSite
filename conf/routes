@@ -17,7 +17,7 @@ POST      /index                   api.controllers.EmailsController.index
 #########################
 
 #send an email
-POST     /users/:userName/email   api.controllers.EmailsController.email(userName: String)
+POST     /email   api.controllers.EmailsController.email
 
 #Replying to an email
 #POST    /users/:userID/chats/:chatID
@@ -28,5 +28,5 @@ POST     /users/:userName/email   api.controllers.EmailsController.email(userNam
 #authentication:
 POST    /signin                   api.controllers.UsersController.signin
 POST    /login                    api.controllers.UsersController.login
-#POST    /logout
+#POST   /logout
 

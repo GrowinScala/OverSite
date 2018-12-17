@@ -12,9 +12,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points
- * @param cc
- * @param actorSystem
- * @param exec
  */
 @Singleton
 class EmailsController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
@@ -24,19 +21,20 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
   val usersActions = new UserRepository("mysql")
   val chatActions = new ChatRepository("mysql")
 
-  def index = tokenValidator.async {
-
+  def index: Action[AnyContent] = tokenValidator.async {
     Future { Ok("") }
   }
 
   /**
    *
-   * @param userName
+   * @param userName username from json body
    * @return
    */
-  def email(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
+  def email: Action[JsValue] = tokenValidator(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
-
+    val authToken = request.headers.get("Token").getOrElse("")
+    println(authToken)
+    usersActions.getUserByToken(authToken).map(println(_))
     emailResult.fold(
       errors => {
         Future {
@@ -44,12 +42,13 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
         }
       },
       email => {
-        emailActions.insertEmail(email)
+        usersActions.getUserByToken(authToken).map(emailActions.insertEmail(email, _))
         Future { Ok("Mail sent") }
       })
   }
 
-  def showEmails(userName: String, status: String) = tokenValidator.async { request =>
+  def showEmails(userName: String, status: String): Action[AnyContent] = tokenValidator.async { request =>
+    println(request.path)
     emailActions.showEmails(userName, status).map(
       emails => {
         val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))

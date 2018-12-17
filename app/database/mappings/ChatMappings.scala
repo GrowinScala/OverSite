@@ -2,32 +2,15 @@ package database.mappings
 import database.mappings.ChatMappings._
 import slick.jdbc.MySQLProfile.api._
 
-/**
- * Case class of chat
- * @param chatID
- * @param header
- */
 case class Chat(
   chatID: String,
   header: String)
 
-/**
- * Case class of chatUser
- * @param chatID
- * @param header
- */
 case class ChatUser(
   chatUserID: String,
   chatID: String,
   username: String)
 
-/**
- * Case class of share
- * @param shareID
- * @param chatID
- * @param fromUser
- * @param toID
- */
 case class Share(
   shareID: String,
   chatID: String,
@@ -36,7 +19,7 @@ case class Share(
 
 /**
  * Class that defines the chat table, establishing chatID as primary key in the database
- * @param tag
+ * @param tag slick tag
  */
 class ChatTable(tag: Tag) extends Table[Chat](tag, "chats") {
 
@@ -49,7 +32,7 @@ class ChatTable(tag: Tag) extends Table[Chat](tag, "chats") {
 /**
  * Class that defines the chatUser table, establishing chatUserID as primary key in the database,
  * chatID and username as foreign keys
- * @param tag
+ * @param tag slick tag
  */
 class ChatUserTable(tag: Tag) extends Table[ChatUser](tag, "chatusers") {
   def chatUserID = column[String]("chatuserID", O.PrimaryKey)
@@ -64,7 +47,7 @@ class ChatUserTable(tag: Tag) extends Table[ChatUser](tag, "chatusers") {
 /**
  * Class that defines the share table, establishing shareID as primary key in the database
  * and chatID as foreign key
- * @param tag
+ * @param tag slick tag
  */
 class ShareTable(tag: Tag) extends Table[Share](tag, "shares") {
   def shareID = column[String]("shareID", O.PrimaryKey)

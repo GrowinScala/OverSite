@@ -5,14 +5,14 @@ import java.security.MessageDigest
 /**
  * Class that receives a password as a String and encrypts it
  *
- * @param toEncrypt
+ * @param toEncrypt password before it is encrypted
  */
 class EncryptString(toEncrypt: String, targetAlgorithm: String) {
 
   /**
    * Gets an instance of target algorithm
    */
-  val md = MessageDigest.getInstance(targetAlgorithm)
+  val md: MessageDigest = MessageDigest.getInstance(targetAlgorithm)
 
   /**
    * Converts String into bytes
@@ -22,7 +22,7 @@ class EncryptString(toEncrypt: String, targetAlgorithm: String) {
   /**
    * Gets digest
    */
-  val digest = md.digest
+  val digest: Array[Byte] = md.digest
   val result: StringBuffer = new StringBuffer
   for (b <- digest) {
     result.append(b & 0xff)
