@@ -27,12 +27,8 @@ class TokenValidator @Inject() (parser: BodyParsers.Default)(implicit ec: Execut
   def validateToken(token: String) = {
     val validateTableToken = LoginTable.filter(x => (x.token === token) && x.validDate > System.currentTimeMillis()).result
     db.run(validateTableToken).map(_.length).map {
-      case 1 =>
-        true
-
-      case _ =>
-        false
+      case 1 => true
+      case _ => false
     }
-
   }
 }
