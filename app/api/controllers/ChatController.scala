@@ -1,11 +1,7 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-
-import api.dto.CreateUserDTO
-
-import api.dto.{ CreateEmailProfileDTO, CreateUserDTO }
-
+import api.dto.{ CreateEmailProfileDTO, CreateShareDTO, CreateUserDTO }
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, UserRepository }
 import javax.inject._
@@ -38,4 +34,18 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
     }
   }
 
+  def supervised(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
+    val emailResult = request.body.validate[CreateShareDTO]
+
+    emailResult.fold(
+      errors => Future {
+        BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+      },
+      share => {
+        chatActions.insertPermission(userName, share)
+        Future {
+          Ok
+        }
+      })
+  }
 }

@@ -3,9 +3,9 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dto.CreateEmailDTO
-import database.mappings.ChatMappings.ChatTable
+import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
-import database.mappings.{ BCCTable => _, CCTable => _, EmailTable => _, ToAddressTable => _, _ }
+import database.mappings._
 import play.api.libs.json.{ JsError, Json }
 import slick.jdbc.MySQLProfile.api._
 import play.api.mvc.Results._
@@ -85,9 +85,18 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
           .map(x => (x.emailID, x.header)).result
         db.run(querySentEmailIds)
       }
-      /*case "supervised" => {
-
-      }*/
+      case "supervised" => {
+        val queryEmailIds = ShareTable.filter(_.toID === userEmail).map(x => (x.chatID, x.fromUser))
+        val queryFromUser = EmailTable.filter(_.fromAddress in queryEmailIds.map(x => x._2)).map(_.emailID)
+          .union(ToAddressTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
+          .union(CCTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
+          .union(BCCTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
+        val queryChatID = EmailTable.filter(_.chatID in queryEmailIds.map(x => x._1))
+          .filter(_.emailID in queryFromUser)
+          .sortBy(_.dateOf)
+          .map(x => (x.chatID, x.header)).result
+        db.run(queryChatID)
+      }
       //case _ => Future { BadRequest("****-TE") }
     }
   }

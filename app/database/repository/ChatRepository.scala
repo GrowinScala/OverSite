@@ -2,10 +2,10 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dto.{ CreateEmailProfileDTO, CreateEmailDTO }
-import database.mappings.{ Chat, ChatTable }
-import database.mappings.ChatMappings.ChatTable
+import api.dto.{ CreateEmailDTO, CreateShareDTO }
+import database.mappings.ChatMappings._
 import database.mappings.EmailMappings.{ BCCTable, CCTable, EmailTable, ToAddressTable }
+import database.mappings.{ Chat, Share }
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -51,4 +51,9 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
     db.run(queryResult2)
   }
 
+  def insertPermission(from: String, share: CreateShareDTO): Future[String] = {
+    val shareID = randomUUID().toString
+    db.run(ShareTable += Share(shareID, share.chatID, from, share.supervisor))
+    Future { shareID }
+  }
 }
