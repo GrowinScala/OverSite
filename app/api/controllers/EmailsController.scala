@@ -12,6 +12,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points
+ * @param cc
+ * @param actorSystem
+ * @param exec
  */
 @Singleton
 class EmailsController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
@@ -21,38 +24,34 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
   val usersActions = new UserRepository("mysql")
   val chatActions = new ChatRepository("mysql")
 
-  def index: Action[AnyContent] = tokenValidator.async {
+  def index = tokenValidator.async {
+
     Future { Ok("") }
   }
 
   /**
    *
-   * @param userName username from json body
+   * @param userName
    * @return
    */
-  def email: Action[JsValue] = tokenValidator(parse.json).async { request: Request[JsValue] =>
+  def email(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
-    val authToken = request.headers.get("Token").getOrElse("")
-    println(authToken)
-    usersActions.getUserByToken(authToken).map(println(_))
+
     emailResult.fold(
-      errors => {
-        Future {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
-        }
-      },
+      errors => { Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) } },
       email => {
-        usersActions.getUserByToken(authToken).map(emailActions.insertEmail(email, _))
+        emailActions.insertEmail(email)
         Future { Ok("Mail sent") }
       })
   }
 
-  def showEmails(userName: String, status: String): Action[AnyContent] = tokenValidator.async { request =>
-    println(request.path)
-    emailActions.showEmails(userName, status).map(
-      emails => {
-        val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
+  def showEmails(userName: String, status: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
+    //val emailResult = request.body.validate[CreateEmailProfileDTO]
+
+    emailActions.showEmails(userName, status).map {
+      email =>
+        val resultEmailID = JsObject(email.map(x => (x._1, JsString(x._2))))
         Ok(resultEmailID)
-      })
+    }
   }
 }
