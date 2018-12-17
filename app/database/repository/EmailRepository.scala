@@ -38,7 +38,7 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
      */
 
     val chatID = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
-
+    //(emailID, chatID, fromAddress, dateOf, header, body, sent)
     val insertEmailTable = chatID.map(EmailTable += Email(randomEmailID, _, email.fromAddress, email.dateOf, email.header, email.body, email.sendNow))
     val insertAddressTable = ToAddressTable ++= email.to.getOrElse(Seq("")).map(ToAddress(randomUUID().toString, randomEmailID, _))
     val insertCCTable = CCTable ++= email.CC.getOrElse(Seq("")).map(CC(randomUUID().toString, randomEmailID, _))

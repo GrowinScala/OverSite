@@ -11,11 +11,11 @@ import play.api.mvc._
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * Class that is injected with end-points
-  * @param cc
-  * @param actorSystem
-  * @param exec
-  */
+ * Class that is injected with end-points
+ * @param cc
+ * @param actorSystem
+ * @param exec
+ */
 @Singleton
 class EmailsController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
@@ -30,10 +30,10 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
   }
 
   /**
-    *
-    * @param userName
-    * @return
-    */
+   *
+   * @param userName
+   * @return
+   */
   def email(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
 
