@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 
 import api.dto.CreateUserDTO
 
-import api.dto.{ CreateEmailProfileDTO, CreateShareDTO, CreateUserDTO }
+import api.dto.{ CreateEmailProfileDTO, CreateUserDTO }
 
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, UserRepository }

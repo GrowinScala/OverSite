@@ -11,11 +11,11 @@ import play.api.mvc._
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
- * Class that is injected with end-points
- * @param cc
- * @param actorSystem
- * @param exec
- */
+  * Class that is injected with end-points
+  * @param cc
+  * @param actorSystem
+  * @param exec
+  */
 @Singleton
 class EmailsController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
@@ -30,28 +30,30 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
   }
 
   /**
-   *
-   * @param userName
-   * @return
-   */
+    *
+    * @param userName
+    * @return
+    */
   def email(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
 
     emailResult.fold(
-      errors => { Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) } },
+      errors => {
+        Future {
+          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+        }
+      },
       email => {
         emailActions.insertEmail(email)
         Future { Ok("Mail sent") }
       })
   }
 
-  def showEmails(userName: String, status: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
-    //val emailResult = request.body.validate[CreateEmailProfileDTO]
-
-    emailActions.showEmails(userName, status).map {
-      email =>
-        val resultEmailID = JsObject(email.map(x => (x._1, JsString(x._2))))
+  def showEmails(userName: String, status: String) = tokenValidator.async { request =>
+    emailActions.showEmails(userName, status).map(
+      emails => {
+        val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
         Ok(resultEmailID)
-    }
+      })
   }
 }

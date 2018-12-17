@@ -85,9 +85,9 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
           .map(x => (x.emailID, x.header)).result
         db.run(querySentEmailIds)
       }
-      case "supervised" => {
+      /*case "supervised" => {
 
-      }
+      }*/
       //case _ => Future { BadRequest("****-TE") }
     }
   }
