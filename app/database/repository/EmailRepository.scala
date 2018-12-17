@@ -78,6 +78,16 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
           .result
         db.run(queryReceivedEmailIdsAux)
       }
+      case "draft" => {
+        val querySentEmailIds = EmailTable.filter(_.fromAddress === userEmail)
+          .filter(_.sent === false)
+          .sortBy(_.dateOf)
+          .map(x => (x.emailID, x.header)).result
+        db.run(querySentEmailIds)
+      }
+      case "supervised" => {
+
+      }
       //case _ => Future { BadRequest("****-TE") }
     }
   }

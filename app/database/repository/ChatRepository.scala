@@ -2,9 +2,9 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dto.{ CreateEmailDTO, CreateEmailProfileDTO, CreateShareDTO }
-import database.mappings.{ Chat, ChatTable, Share }
-import database.mappings.ChatMappings.{ ChatTable, ShareTable }
+import api.dto.{ CreateEmailProfileDTO, CreateEmailDTO }
+import database.mappings.{ Chat, ChatTable }
+import database.mappings.ChatMappings.ChatTable
 import database.mappings.EmailMappings.{ BCCTable, CCTable, EmailTable, ToAddressTable }
 import slick.jdbc.MySQLProfile.api._
 
@@ -32,10 +32,8 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
   def existChatID(chatID: String): Future[Boolean] = {
     val tableSearch = ChatTable.filter(_.chatID === chatID).result
     db.run(tableSearch).map(_.length).map {
-      case 1 =>
-        true
-      case _ =>
-        false
+      case 1 => true
+      case _ => false
     }
   }
 
@@ -52,12 +50,5 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
       .result
     db.run(queryResult2)
   }
-
-  def insertPermission(from: String, share: CreateShareDTO): Future[String] = {
-    val shareID = randomUUID().toString
-    db.run(ShareTable += Share(shareID, share.chatID, from, share.supervisor))
-    Future { shareID }
-  }
-  //def showSupervised()
 
 }

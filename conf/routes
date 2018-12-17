@@ -9,7 +9,7 @@ GET     /users/:usersID/emails/:status api.controllers.EmailsController.showEmai
 #GET     /users/:usersID/emails/
 #GET     /users/:usersID/chats/:chatID/emails/:emailID
 
-POST     /users/:usersID/shares          api.controllers.ChatController.supervised(usersID: String)
+#GET     /users/:userID/shares
 #GET     /users/:userID/shares/:shareID
 
 #apagar##################
