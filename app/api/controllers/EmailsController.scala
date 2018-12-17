@@ -38,11 +38,7 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
     val emailResult = request.body.validate[CreateEmailDTO]
 
     emailResult.fold(
-      errors => {
-        Future {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
-        }
-      },
+      errors => { Future { BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors))) } },
       email => {
         emailActions.insertEmail(email)
         Future { Ok("Mail sent") }
@@ -50,20 +46,7 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
   }
 
   def showEmails(userName: String, status: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
-    val emailResult = request.body.validate[CreateEmailProfileDTO]
-    emailResult.fold(
-      errors => {
-        Future {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
-        }
-      },
-      email => {
-        emailActions.showEmails(userName, status).map(
-          t => {
-            val resultEmailID = JsObject(t.map(x => (x._1, JsString(x._2))))
-            Ok(resultEmailID)
-          })
-      })
+    //val emailResult = request.body.validate[CreateEmailProfileDTO]
 
     emailActions.showEmails(userName, status).map {
       email =>
