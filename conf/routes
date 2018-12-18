@@ -1,31 +1,24 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
+# ROUTES
+# THIS FILE DEFINES ALL APPLICATION ROUTES (HIGHER PRIORITY ROUTES FIRST)
+
+#INBOX
+GET     /chats                   api.controllers.ChatController.inbox
 
 
-#inbox
-#GET     /chats     api.controllers.ChatController.inbox
+GET     /emails/:status                   api.controllers.EmailsController.showEmails(status: String)
 
-#sent
-#GET     /emails/:status api.controllers.EmailsController.showEmails(status: String)
-
-#GET     /emails
 #GET     /chats/:chatID/emails/:emailID
 
-#POST    /shares          api.controllers.ChatController.supervised
-#GET     /shares
-#GET     /shares/:shareID
+#GIVE PERMISSION TO SOMEONE TO ACCESS THE CHAT
+POST    /shares                   api.controllers.ChatController.supervised
+#GET    /shares
+#GET    /shares/:shareID
 
-#send an email
-POST     /email     api.controllers.EmailsController.email
+#SEND AN EMAIL
+POST    /email                   api.controllers.EmailsController.email
 
-#Replying to an email
-#POST    /chats/:chatID
-
-#PATCH   /chats/:chatID
-
-
-#authentication:
+#AUTHENTICATION:
 POST    /signin                   api.controllers.UsersController.signin
-POST    /login                    api.controllers.UsersController.login
+POST    /login                   api.controllers.UsersController.login
 #POST    /logout
 

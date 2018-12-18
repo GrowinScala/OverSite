@@ -26,17 +26,17 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
    * Show inbox action
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
-  def inbox = tokenValidator(parse.json).async { request: Request[JsValue] =>
-    // TEMPORARILY VALUE
-    val userName: String = "pppluis@cmail.com"
-    chatActions.showInbox(userName).map {
-      inbox =>
-        val chatsResult = JsObject(inbox.map(x => (x._1, JsString(x._2))))
-        Ok(chatsResult)
+  def inbox = tokenValidator.async { request =>
+    request.userName.flatMap {
+      chatActions.showInbox(_).map {
+        inbox =>
+          val chatsResult = JsObject(inbox.map(x => (x._1, JsString(x._2))))
+          Ok(chatsResult)
+      }
     }
   }
 
-  def supervised = tokenValidator(parse.json).async { request: Request[JsValue] =>
+  def supervised = tokenValidator(parse.json).async { request =>
     val emailResult = request.body.validate[CreateShareDTO]
     // TEMPORARILY VALUE
     val userName: String = "pppluis@cmail.com"
@@ -45,7 +45,8 @@ class ChatController @Inject() (tokenValidator: TokenValidator, cc: ControllerCo
         BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
       },
       share => {
-        chatActions.insertPermission(userName, share)
+        request.userName.map(
+          chatActions.insertPermission(_, share))
         Future {
           Ok
         }
