@@ -24,17 +24,12 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
   val usersActions = new UserRepository("mysql")
   val chatActions = new ChatRepository("mysql")
 
-  def index = tokenValidator.async {
-
-    Future { Ok("") }
-  }
-
   /**
    *
    * @param userName
    * @return
    */
-  def email(userName: String) = tokenValidator(parse.json).async { request: Request[JsValue] =>
+  def email = tokenValidator(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateEmailDTO]
 
     emailResult.fold(
@@ -49,7 +44,9 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
       })
   }
 
-  def showEmails(userName: String, status: String) = tokenValidator.async { request =>
+  def showEmails(status: String) = tokenValidator.async { request =>
+    // TEMPORARILY VALUE
+    val userName: String = "pppluis@cmail.com"
     emailActions.showEmails(userName, status).map(
       emails => {
         val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))

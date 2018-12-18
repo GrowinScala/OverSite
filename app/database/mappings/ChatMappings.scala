@@ -85,30 +85,6 @@ object ChatMappings {
       ChatTable.filter(_.chatID === chatID)
   }
 
-  //Example
-  /*
- implicit class QueryExtensions(q: Query[JourneysTable, JourneysRow, Seq]) {
-     def byJourneyId(journeyId: JourneyId): Query[JourneysTable, JourneysRow, Seq] =
-      q.filter(_.journeyId === journeyId)
-
-
-  def byJourneyName(journeyName: String): Query[JourneysTable, JourneysRow, Seq] =
-    q.filter(_.journeyName === journeyName)
-
-  def byProfileGUId(profileGUId: ProfileGUId): Query[JourneysTable, JourneysRow, Seq] =
-    q.filter(_.profileGUId === profileGUId)
-
-  def archived(boolOpt: Option[Boolean]): Query[JourneysTable, JourneysRow, Seq] =
-    boolOpt.map(bool => q.filter(_.journeyArchived === Indicator(bool))).getOrElse(q)
-
-  def archived: Query[JourneysTable, JourneysRow, Seq] = q.filter(_.journeyArchived === Indicator.True)
-
-  def notArchived: Query[JourneysTable, JourneysRow, Seq] = q.filter(_.journeyArchived === Indicator.False)
-}
-
-lazy val all = TableQuery[JourneysTable]
- */
-
   /**
    * Queries of user table and login table
    */
