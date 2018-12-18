@@ -6,15 +6,12 @@ import api.dto.CreateEmailDTO
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
-import play.api.libs.json.{ JsError, Json }
 import slick.jdbc.MySQLProfile.api._
-import play.api.mvc.Results._
-import scala.concurrent.{ ExecutionContext, Future }
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Class that receives a db path
- * @param path
- * @param executionContext
  */
 class EmailRepository(path: String)(implicit val executionContext: ExecutionContext) {
   /**
@@ -24,28 +21,17 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
 
   /**
    * Inserts an email in the database
-   * @param email
-   * @return Generated email Id
+   * @return Generated email ID
    */
   def insertEmail(username: String, email: CreateEmailDTO) = {
     val randomEmailID = randomUUID().toString
     val chatActions = new ChatRepository("mysql")
-    //TODO consider replying emails(emails without a new chat id), probably with a filter query
-
-    /**
-     * val that covers all the tables related with EmailTable and inserts the information related to every email inserted
-     */
-
     val chatID = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
     val insertEmailTable = chatID.map(EmailTable += Email(randomEmailID, _, username, email.dateOf, email.header, email.body, email.sendNow))
     val insertAddressTable = ToAddressTable ++= email.to.getOrElse(Seq("")).map(ToAddress(randomUUID().toString, randomEmailID, _))
     val insertCCTable = CCTable ++= email.CC.getOrElse(Seq("")).map(CC(randomUUID().toString, randomEmailID, _))
     val insertBCCTable = BCCTable ++= email.BCC.getOrElse(Seq("")).map(BCC(randomUUID().toString, randomEmailID, _))
 
-    /**
-     * Run the action "transactionally" so all the process is aborted if an e-mail information is not capable to be
-     * inserted in any of the tables
-     */
     insertEmailTable.map(db.run(_))
     db.run(insertAddressTable)
     db.run(insertCCTable)
@@ -53,10 +39,15 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
     chatID
   }
 
-  //TODO BAD REQUEST MISSING
+
+  /**
+    * Queries that filter the emails "sent", "received", "draft" and "supervised"
+    * @param userEmail User logged email
+    * @param status cathegory of emails wanted
+    * @return List of emails
+    */
   def showEmails(userEmail: String, status: String) = {
     status match {
-      //fromAddress
       case "sent" => {
         val querySentEmailIds = EmailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === true)
@@ -95,7 +86,6 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
           .map(x => (x.chatID, x.header)).result
         db.run(queryChatID)
       }
-      //case _ => Future { BadRequest("****-TE") }
     }
   }
 }

@@ -4,8 +4,6 @@ import slick.jdbc.MySQLProfile.api._
 
 /**
  * Case class of chat
- * @param chatID
- * @param header
  */
 case class Chat(
   chatID: String,
@@ -13,8 +11,6 @@ case class Chat(
 
 /**
  * Case class of chatUser
- * @param chatID
- * @param header
  */
 case class ChatUser(
   chatUserID: String,
@@ -23,10 +19,6 @@ case class ChatUser(
 
 /**
  * Case class of share
- * @param shareID
- * @param chatID
- * @param fromUser
- * @param toID
  */
 case class Share(
   shareID: String,
@@ -36,7 +28,6 @@ case class Share(
 
 /**
  * Class that defines the chat table, establishing chatID as primary key in the database
- * @param tag
  */
 class ChatTable(tag: Tag) extends Table[Chat](tag, "chats") {
 
@@ -49,7 +40,6 @@ class ChatTable(tag: Tag) extends Table[Chat](tag, "chats") {
 /**
  * Class that defines the chatUser table, establishing chatUserID as primary key in the database,
  * chatID and username as foreign keys
- * @param tag
  */
 class ChatUserTable(tag: Tag) extends Table[ChatUser](tag, "chatusers") {
   def chatUserID = column[String]("chatuserID", O.PrimaryKey)
@@ -64,7 +54,6 @@ class ChatUserTable(tag: Tag) extends Table[ChatUser](tag, "chatusers") {
 /**
  * Class that defines the share table, establishing shareID as primary key in the database
  * and chatID as foreign key
- * @param tag
  */
 class ShareTable(tag: Tag) extends Table[Share](tag, "shares") {
   def shareID = column[String]("shareID", O.PrimaryKey)
@@ -76,14 +65,7 @@ class ShareTable(tag: Tag) extends Table[Share](tag, "shares") {
   def * = (shareID, chatID, fromUser, toID) <> (Share.tupled, Share.unapply)
 }
 
-/**
- * ???
- */
 object ChatMappings {
-  implicit class QueryExtensions(q: Query[ChatTable, Chat, Seq]) {
-    def byChatID(chatID: Option[String]): Query[ChatTable, Chat, Seq] =
-      ChatTable.filter(_.chatID === chatID)
-  }
 
   /**
    * Queries of user table and login table

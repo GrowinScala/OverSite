@@ -4,7 +4,7 @@ import java.util.UUID.randomUUID
 
 import api.dto.CreateUserDTO
 import database.mappings.UserMappings._
-import database.mappings.{ Login, User }
+import database.mappings.{Login, User}
 import encryption.EncryptString
 import slick.jdbc.MySQLProfile.api._
 
@@ -12,7 +12,6 @@ import scala.concurrent.Future
 
 /**
  * Class that receives a db path
- * @param path
  */
 class UserRepository(path: String) {
   /**
@@ -22,7 +21,6 @@ class UserRepository(path: String) {
 
   /**
    * Insert an user into database with is password encrypted
-   * @param user
    * @return The number of insertions into database
    */
   def insertUser(user: CreateUserDTO): Future[Int] = {
@@ -33,8 +31,6 @@ class UserRepository(path: String) {
 
   /**
    * Logins an user, once this provides a matching username and password
-   * @param user
-   * @return
    */
   def loginUser(user: CreateUserDTO) = {
     val encrypt = new EncryptString(user.password, "MD5")
@@ -44,8 +40,7 @@ class UserRepository(path: String) {
 
   /**
    * Inserts a login into database with the expire token session as the current server time plus 1 hour
-   * @param user
-   * @return generated token
+   * @return Generated token
    */
   def insertLogin(user: CreateUserDTO) = {
     val token = randomUUID().toString
@@ -56,8 +51,8 @@ class UserRepository(path: String) {
   }
 
   /**
-   *
-   * @return current server time plus 1 hour
+   * Validates the token for 1 hour
+   * @return Current server time plus 1 hour
    */
   def validate1Hour: Long = {
     val currentTime = System.currentTimeMillis()
@@ -67,9 +62,6 @@ class UserRepository(path: String) {
 
   /**
    * Validates the userName and token inserted by the user
-   * @param userName
-   * @param token
-   * @return
    */
   def validateToken(userName: String, token: String) = {
     val validateTableToken = LoginTable.filter(x => (x.username === userName) && (x.token === token) && x.validDate > System.currentTimeMillis()).result

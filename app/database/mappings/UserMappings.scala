@@ -26,7 +26,6 @@ case class User(
 
 /**
  * Class that defines the user table, making username a primary key in the database
- * @param tag slick tag
  */
 class UserTable(tag: Tag) extends Table[User](tag, "users") {
   def username = column[String]("username", O.PrimaryKey)

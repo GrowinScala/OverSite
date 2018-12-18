@@ -4,7 +4,7 @@
 #INBOX
 GET     /chats                   api.controllers.ChatController.inbox
 
-
+#SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT" AND "SUPERVISED"
 GET     /emails/:status                   api.controllers.EmailsController.showEmails(status: String)
 
 #GET     /chats/:chatID/emails/:emailID

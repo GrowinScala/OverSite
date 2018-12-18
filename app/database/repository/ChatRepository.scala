@@ -29,6 +29,11 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
     }
   }
 
+  /**
+    * Aims to find an chatID already exists in the database
+    * @param chatID Reference to an email conversation
+    * @return True or False depending if the chatID exists or not
+    */
   def existChatID(chatID: String): Future[Boolean] = {
     val tableSearch = ChatTable.filter(_.chatID === chatID).result
     db.run(tableSearch).map(_.length).map {
@@ -37,6 +42,11 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
     }
   }
 
+  /**
+    * Queries to find the inbox messages of an user
+    * @param userEmail user email
+    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
+    */
   def showInbox(userEmail: String): Future[Seq[(String, String)]] = {
     val queryEmailIds = EmailTable.filter(_.fromAddress === userEmail).map(_.emailID)
       .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
@@ -51,6 +61,12 @@ class ChatRepository(path: String)(implicit val executionContext: ExecutionConte
     db.run(queryResult2)
   }
 
+  /**
+    *  Authorize an user to have access to a conversation
+    * @param from User that concedes permission
+    * @param share User that grants the authorization
+    * @return Insert permission to an user
+    */
   def insertPermission(from: String, share: CreateShareDTO): Future[String] = {
     val shareID = randomUUID().toString
     db.run(ShareTable += Share(shareID, share.chatID, from, share.supervisor))

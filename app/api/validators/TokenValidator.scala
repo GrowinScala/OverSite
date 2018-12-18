@@ -5,13 +5,15 @@ import javax.inject.Inject
 import play.api.mvc
 import play.api.mvc.Results._
 import play.api.mvc._
-import slick.jdbc.MySQLProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.MySQLProfile.backend.DatabaseDef
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * Case class created to replace the first parameter of ActionBuilder
+  */
 case class AuthRequest[A](
   userName: Future[String],
   request: Request[A]) extends WrappedRequest[A](request) {
@@ -21,8 +23,10 @@ case class AuthRequest[A](
       super.newWrapper(newRequest))
 }
 
+/**
+  * Class responsible to validate the token
+  */
 class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilder[AuthRequest, AnyContent] {
-
   override protected def executionContext: ExecutionContext = global
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()
 
@@ -43,8 +47,8 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
 
   /**
    * Validates the userName and token inserted by the user
-   * @param token
-   * @return
+   * @param token token provided from the headers
+   * @return boolean value considering of the token is valid or not
    */
   def validateToken(token: String) = {
     val validateTableToken = LoginTable.filter(x => (x.token === token) && x.validDate > System.currentTimeMillis()).result
@@ -54,6 +58,11 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
     }
   }
 
+  /**
+    * Corresponds an token to an username
+    * @param token token provided from the headers
+    * @return Username associated to token
+    */
   def getUserByToken(token: String) = {
     val getUser = LoginTable.filter(x => x.token === token).map(_.username).result
     db.run(getUser).map(_.head)

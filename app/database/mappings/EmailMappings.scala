@@ -1,8 +1,7 @@
 package database.mappings
 
-import database.mappings.ChatMappings.ChatTable
-import slick.jdbc.MySQLProfile.api._
 import database.mappings.EmailMappings._
+import slick.jdbc.MySQLProfile.api._
 
 /**
  * Case class of email
