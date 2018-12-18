@@ -27,9 +27,8 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
    * @param email
    * @return Generated email Id
    */
-  def insertEmail(email: CreateEmailDTO) = {
+  def insertEmail(username: String, email: CreateEmailDTO) = {
     val randomEmailID = randomUUID().toString
-
     val chatActions = new ChatRepository("mysql")
     //TODO consider replying emails(emails without a new chat id), probably with a filter query
 
@@ -38,8 +37,7 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
      */
 
     val chatID = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
-    //(emailID, chatID, fromAddress, dateOf, header, body, sent)
-    val insertEmailTable = chatID.map(EmailTable += Email(randomEmailID, _, email.fromAddress, email.dateOf, email.header, email.body, email.sendNow))
+    val insertEmailTable = chatID.map(EmailTable += Email(randomEmailID, _, username, email.dateOf, email.header, email.body, email.sendNow))
     val insertAddressTable = ToAddressTable ++= email.to.getOrElse(Seq("")).map(ToAddress(randomUUID().toString, randomEmailID, _))
     val insertCCTable = CCTable ++= email.CC.getOrElse(Seq("")).map(CC(randomUUID().toString, randomEmailID, _))
     val insertBCCTable = BCCTable ++= email.BCC.getOrElse(Seq("")).map(BCC(randomUUID().toString, randomEmailID, _))

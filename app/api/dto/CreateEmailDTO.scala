@@ -4,7 +4,6 @@ import play.api.libs.json._
 
 case class CreateEmailDTO(
   chatID: Option[String],
-  fromAddress: String,
   dateOf: String,
   header: String,
   body: String,
