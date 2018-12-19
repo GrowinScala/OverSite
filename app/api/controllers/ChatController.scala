@@ -24,14 +24,14 @@ class ChatController @Inject() (
   db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
-  implicit val userActions = new UserRepository(db)
-  implicit val chatActions = new ChatRepository(db)
+  implicit val userActions: UserRepository = new UserRepository(db)
+  implicit val chatActions: ChatRepository = new ChatRepository(db)
 
   /**
    * Show inbox action
    * @return When a valid user is logged, the conversations are shown as an inbox
    */
-  def inbox = tokenValidator.async { request =>
+  def inbox: Action[AnyContent] = tokenValidator.async { request =>
     request.userName.flatMap {
       chatActions.showInbox(_).map {
         inbox =>
@@ -45,7 +45,7 @@ class ChatController @Inject() (
    * Give permission to oversight a personal conversation
    * @return Permission insertion to an userID, from another user to oversight an specific chat
    */
-  def supervised = tokenValidator(parse.json).async { request =>
+  def supervised: Action[JsValue] = tokenValidator(parse.json).async { request =>
     val emailResult = request.body.validate[CreateShareDTO]
     emailResult.fold(
       errors => Future {

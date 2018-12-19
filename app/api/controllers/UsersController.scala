@@ -27,7 +27,7 @@ class UsersController @Inject() (
    *
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
-  def signin = Action(parse.json).async { request: Request[JsValue] =>
+  def signin: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
     emailResult.fold(
       errors => {

@@ -34,7 +34,7 @@ class UserRepository @Inject() (db: Database) {
   /**
    * Logins an user, once this provides a matching username and password
    */
-  def loginUser(user: CreateUserDTO) = {
+  def loginUser(user: CreateUserDTO): Future[Seq[User]] = {
     val encrypt = new EncryptString(user.password, "MD5")
     val realUser = UserTable.filter(x => (x.username === user.username) && x.password === encrypt.result.toString).result
     db.run(realUser)
@@ -44,7 +44,7 @@ class UserRepository @Inject() (db: Database) {
    * Inserts a login into database with the expire token session as the current server time plus 1 hour
    * @return Generated token
    */
-  def insertLogin(user: CreateUserDTO) = {
+  def insertLogin(user: CreateUserDTO): String = {
     val token = randomUUID().toString
     val insertTableLogin = LoginTable += Login(user.username, token, validate1Hour)
 
@@ -65,7 +65,7 @@ class UserRepository @Inject() (db: Database) {
   /**
    * Validates the userName and token inserted by the user
    */
-  def validateToken(userName: String, token: String) = {
+  def validateToken(userName: String, token: String): Future[Seq[Login]] = {
     val validateTableToken = LoginTable.filter(x => (x.username === userName) && (x.token === token) && x.validDate > System.currentTimeMillis()).result
     db.run(validateTableToken)
   }

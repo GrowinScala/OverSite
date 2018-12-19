@@ -31,7 +31,7 @@ class EmailsController @Inject() (
    *  Aims to send an email from an user to an userID
    * @return inserts the email informations to the database
    */
-  def email = tokenValidator(parse.json).async { request =>
+  def email: Action[JsValue] = tokenValidator(parse.json).async { request =>
     val emailResult = request.body.validate[CreateEmailDTO]
 
     emailResult.fold(
@@ -52,7 +52,7 @@ class EmailsController @Inject() (
    * @param status End-point informations considering "draft", "received", "sent", "supervised" as allowed words
    * @return List of emails asked by the user
    */
-  def showEmails(status: String) = tokenValidator.async { request =>
+  def showEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
     val possibleStatus = List("draft", "received", "sent", "supervised")
     if (possibleStatus.contains(status)) {
       request.userName.flatMap(

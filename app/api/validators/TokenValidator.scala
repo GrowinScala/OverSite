@@ -30,7 +30,7 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
   override protected def executionContext: ExecutionContext = global
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()
 
-  override def invokeBlock[A](request: Request[A], block: AuthRequest[A] => Future[Result]) = {
+  override def invokeBlock[A](request: Request[A], block: AuthRequest[A] => Future[Result]): Future[Result] = {
 
     val authToken = request.headers.get("Token").getOrElse("")
 
@@ -50,7 +50,7 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
    * @param token token provided from the headers
    * @return boolean value considering of the token is valid or not
    */
-  def validateToken(token: String) = {
+  def validateToken(token: String): Future[Boolean] = {
     val validateTableToken = LoginTable.filter(x => (x.token === token) && x.validDate > System.currentTimeMillis()).result
     db.run(validateTableToken).map(_.length).map {
       case 1 => true
@@ -63,7 +63,7 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
    * @param token token provided from the headers
    * @return Username associated to token
    */
-  def getUserByToken(token: String) = {
+  def getUserByToken(token: String): Future[String] = {
     val getUser = LoginTable.filter(x => x.token === token).map(_.username).result
     db.run(getUser).map(_.head)
   }
