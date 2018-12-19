@@ -3,9 +3,12 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dto.CreateEmailDTO
+import com.google.inject.Inject
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
+import play.api.inject.Module
+import slick.basic.DatabaseConfig
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
@@ -13,19 +16,16 @@ import scala.concurrent.ExecutionContext
 /**
  * Class that receives a db path
  */
-class EmailRepository(path: String)(implicit val executionContext: ExecutionContext) {
-  /**
-   * Sets a database using target path configuration
-   */
-  val db = Database.forConfig(path)
-
+class EmailRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
   /**
    * Inserts an email in the database
    * @return Generated email ID
    */
   def insertEmail(username: String, email: CreateEmailDTO) = {
     val randomEmailID = randomUUID().toString
-    val chatActions = new ChatRepository("mysql")
+
+    implicit val chatActions = new ChatRepository(db)
+
     val chatID = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
     val insertEmailTable = chatID.map(EmailTable += Email(randomEmailID, _, username, email.dateOf, email.header, email.body, email.sendNow))
     val insertAddressTable = ToAddressTable ++= email.to.getOrElse(Seq("")).map(ToAddress(randomUUID().toString, randomEmailID, _))
@@ -39,13 +39,12 @@ class EmailRepository(path: String)(implicit val executionContext: ExecutionCont
     chatID
   }
 
-
   /**
-    * Queries that filter the emails "sent", "received", "draft" and "supervised"
-    * @param userEmail User logged email
-    * @param status cathegory of emails wanted
-    * @return List of emails
-    */
+   * Queries that filter the emails "sent", "received", "draft" and "supervised"
+   * @param userEmail User logged email
+   * @param status cathegory of emails wanted
+   * @return List of emails
+   */
   def showEmails(userEmail: String, status: String) = {
     status match {
       case "sent" => {

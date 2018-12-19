@@ -3,26 +3,34 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dto.CreateShareDTO
 import api.validators.TokenValidator
-import database.repository.{ChatRepository, UserRepository}
+import database.repository.{ ChatRepository, UserRepository }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
+import slick.basic.DatabaseConfig
+import slick.basic.DatabaseConfig
+import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * Class injected with end-points
-  */
-@Singleton
-class ChatController @Inject()(tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
+ * Class injected with end-points
+ */
+
+class ChatController @Inject() (
+  tokenValidator: TokenValidator,
+  cc: ControllerComponents,
+  actorSystem: ActorSystem,
+  db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
-  val userActions = new UserRepository("mysql")
-  val chatActions = new ChatRepository("mysql")
+
+  implicit val userActions = new UserRepository(db)
+  implicit val chatActions = new ChatRepository(db)
 
   /**
-    * Show inbox action
-    * @return When a valid user is logged, the conversations are shown as an inbox
-    */
+   * Show inbox action
+   * @return When a valid user is logged, the conversations are shown as an inbox
+   */
   def inbox = tokenValidator.async { request =>
     request.userName.flatMap {
       chatActions.showInbox(_).map {
@@ -34,9 +42,9 @@ class ChatController @Inject()(tokenValidator: TokenValidator, cc: ControllerCom
   }
 
   /**
-    * Give permission to oversight a personal conversation
-    * @return Permission insertion to an userID, from another user to oversight an specific chat
-    */
+   * Give permission to oversight a personal conversation
+   * @return Permission insertion to an userID, from another user to oversight an specific chat
+   */
   def supervised = tokenValidator(parse.json).async { request =>
     val emailResult = request.body.validate[CreateShareDTO]
     emailResult.fold(

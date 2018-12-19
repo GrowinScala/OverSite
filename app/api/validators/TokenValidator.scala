@@ -9,11 +9,11 @@ import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.MySQLProfile.backend.DatabaseDef
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * Case class created to replace the first parameter of ActionBuilder
-  */
+ * Case class created to replace the first parameter of ActionBuilder
+ */
 case class AuthRequest[A](
   userName: Future[String],
   request: Request[A]) extends WrappedRequest[A](request) {
@@ -24,8 +24,8 @@ case class AuthRequest[A](
 }
 
 /**
-  * Class responsible to validate the token
-  */
+ * Class responsible to validate the token
+ */
 class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilder[AuthRequest, AnyContent] {
   override protected def executionContext: ExecutionContext = global
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()
@@ -59,10 +59,10 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
   }
 
   /**
-    * Corresponds an token to an username
-    * @param token token provided from the headers
-    * @return Username associated to token
-    */
+   * Corresponds an token to an username
+   * @param token token provided from the headers
+   * @return Username associated to token
+   */
   def getUserByToken(token: String) = {
     val getUser = LoginTable.filter(x => x.token === token).map(_.username).result
     db.run(getUser).map(_.head)

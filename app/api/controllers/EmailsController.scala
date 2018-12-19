@@ -3,23 +3,29 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dto.CreateEmailDTO
 import api.validators.TokenValidator
-import database.repository.{ChatRepository, EmailRepository, UserRepository}
+import database.repository.{ ChatRepository, EmailRepository, UserRepository }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
+import slick.basic.DatabaseConfig
+import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class injected with end-points
  */
-@Singleton
-class EmailsController @Inject() (tokenValidator: TokenValidator, cc: ControllerComponents, actorSystem: ActorSystem)(implicit exec: ExecutionContext)
+
+class EmailsController @Inject() (
+  tokenValidator: TokenValidator,
+  cc: ControllerComponents,
+  actorSystem: ActorSystem,
+  db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
-  val emailActions = new EmailRepository("mysql")
-  val usersActions = new UserRepository("mysql")
-  val chatActions = new ChatRepository("mysql")
+  val emailActions = new EmailRepository(db)
+  val usersActions = new UserRepository(db)
+  val chatActions = new ChatRepository(db)
 
   /**
    *  Aims to send an email from an user to an userID
@@ -42,10 +48,10 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
   }
 
   /**
-    * Considers the case where the user wants to check some type of emails
-    * @param status End-point informations considering "draft", "received", "sent", "supervised" as allowed words
-    * @return List of emails asked by the user
-    */
+   * Considers the case where the user wants to check some type of emails
+   * @param status End-point informations considering "draft", "received", "sent", "supervised" as allowed words
+   * @return List of emails asked by the user
+   */
   def showEmails(status: String) = tokenValidator.async { request =>
     val possibleStatus = List("draft", "received", "sent", "supervised")
     if (possibleStatus.contains(status)) {
@@ -55,7 +61,7 @@ class EmailsController @Inject() (tokenValidator: TokenValidator, cc: Controller
             val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
             Ok(resultEmailID)
           }))
-    } else if (status == "satan") { Future(BadRequest("BURN YOUR LOCAL CHURCH"))}
+    } else if (status == "satan") { Future(BadRequest("BURN YOUR LOCAL CHURCH")) }
     else { Future(BadRequest("Invalid status")) }
   }
 }

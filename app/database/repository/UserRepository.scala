@@ -3,21 +3,23 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dto.CreateUserDTO
+import com.google.inject.AbstractModule
 import database.mappings.UserMappings._
-import database.mappings.{Login, User}
+import database.mappings.{ Login, User }
 import encryption.EncryptString
+import com.google.inject.Inject
+import play.api.inject.Module
+import play.inject.Module
+import slick.basic.DatabaseConfig
+import slick.jdbc.MySQLProfile
+import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Future
-
 /**
  * Class that receives a db path
  */
-class UserRepository(path: String) {
-  /**
-   * Sets a database using target path configuration
-   */
-  val db = Database.forConfig(path)
+class UserRepository @Inject() (db: Database) {
 
   /**
    * Insert an user into database with is password encrypted
