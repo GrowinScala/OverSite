@@ -74,7 +74,7 @@ class EmailRepository @Inject() (db: Database)(implicit val executionContext: Ex
           .sortBy(_.dateOf)
           .map(x => (x.emailID, x.header)).result
         db.run(querySentEmailIds)
-
+      /*
       case "supervised" =>
         val queryEmailIds = shareTable.filter(_.toID === userEmail).map(x => (x.chatID, x.fromUser))
         val queryFromUser = emailTable.filter(_.fromAddress in queryEmailIds.map(x => x._2)).map(_.emailID)
@@ -86,7 +86,7 @@ class EmailRepository @Inject() (db: Database)(implicit val executionContext: Ex
           .sortBy(_.dateOf)
           .map(x => (x.chatID, x.header)).result
         db.run(queryChatID)
-
+      */
     }
   }
 

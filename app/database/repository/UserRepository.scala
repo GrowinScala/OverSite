@@ -15,13 +15,13 @@ import slick.jdbc.MySQLProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Class that receives a db path
  */
 //TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
 //Also you don't need to use Injection here.
-class UserRepository @Inject() (db: Database) {
+class UserRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
 
   /**
    * Insert an user into database with is password encrypted
@@ -48,10 +48,20 @@ class UserRepository @Inject() (db: Database) {
    */
   def insertLogin(user: CreateUserDTO): String = {
     val token = randomUUID().toString
-    val insertTableLogin = LoginTable += LoginRow(user.username, token, validate1Hour)
+    val active = true
+
+    val insertTableLogin = LoginTable += LoginRow(user.username, token, validate1Hour, active)
 
     db.run(insertTableLogin)
     token
+  }
+
+  def insertLogout(token: String) = {
+    val notActive = false
+    val insertTableLogin = LoginTable.filter(_.token === token).map(_.active).update(notActive)
+
+    db.run(insertTableLogin)
+
   }
 
   /**

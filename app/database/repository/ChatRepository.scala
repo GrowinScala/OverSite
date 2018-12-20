@@ -2,13 +2,12 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO }
+import api.dto.{ CreateEmailDTO, CreateShareDTO }
 import com.google.inject.Inject
 import database.mappings.ChatMappings._
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
-import database.mappings.{ ChatRow, ShareRow }
+import database.mappings.EmailMappings.{ BCCTable, CCTable, EmailTable, ToAddressTable }
+import database.mappings.{ Chat, Share }
 import slick.jdbc.MySQLProfile.api._
-
 import scala.concurrent.{ ExecutionContext, Future }
 
 //TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
@@ -44,24 +43,78 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
   }
 
   /**
+   * Query that search for all the emails which have a certain userName involved
+   * @param userEmail the user identity
+   * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
+   */
+  def queryEmailIds(userEmail: String) = {
+    EmailTable.filter(_.fromAddress === userEmail).map(_.emailID)
+      .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
+      .union(CCTable.filter(_.username === userEmail).map(_.emailID))
+      .union(BCCTable.filter(_.username === userEmail).map(_.emailID))
+  }
+  /**
    * Queries to find the inbox messages of an user
    * @param userEmail user email
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
   def showInbox(userEmail: String): Future[Seq[(String, String)]] = {
-    val queryEmailIds = emailTable.filter(_.fromAddress === userEmail).map(_.emailID)
-      .union(toAddressTable.filter(_.username === userEmail).map(_.emailID))
-      .union(ccTable.filter(_.username === userEmail).map(_.emailID))
-      .union(bccTable.filter(_.username === userEmail).map(_.emailID))
-    val queryResult2 = emailTable
-      .filter(_.emailID in queryEmailIds)
+    val queryuserName = queryEmailIds(userEmail)
+    val queryResult = EmailTable
+      .filter(_.emailID in queryuserName)
       .filter(_.sent === true)
       .sortBy(_.dateOf)
       .map(x => (x.chatID, x.header))
       .result
-    db.run(queryResult2)
+    db.run(queryResult)
   }
 
+  /**
+   * Query that selects the emailIDs from the EmailTable that
+   * are returned by the auxiliary query "queryuserName", filters by chatID inputed,
+   * by the state "Sent", and sort by the date.
+   * @return EmailTable filtered
+   */
+  def querychatID(userEmail: String, chatID: String) = {
+    val queryuserName = queryEmailIds(userEmail)
+    EmailTable
+      .filter(_.emailID in queryuserName)
+      .filter(_.chatID === chatID)
+      .filter(_.sent === true)
+      .sortBy(_.dateOf)
+  }
+
+  /**
+   *
+   * @param userEmail
+   * @param chatID
+   * @return
+   */
+  def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]] = {
+    val queryResult = querychatID(userEmail, chatID)
+      .map(x => (x.emailID, x.header))
+      .result
+    db.run(queryResult)
+  }
+
+  /**
+   *
+   * @param userEmail
+   * @param chatID
+   * @param emailID
+   * @return
+   */
+  def getEmailID(userEmail: String, chatID: String, emailID: String) = {
+    val queryResult = querychatID(userEmail, chatID)
+      .filter(_.emailID === emailID)
+      //Since every email with sent==true is obligated to have an ToID,
+      // the following join has the same effect as joinleft
+      .join(ToAddressTable).on(_.emailID === _.emailID)
+      //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
+      .map(x => (x._1.fromAddress, x._2.username, x._1.header, x._1.body, x._1.dateOf))
+      .result
+    db.run(queryResult)
+  }
   /**
    *  Authorize an user to have access to a conversation
    * @param from User that concedes permission

@@ -2,6 +2,7 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.dtos.CreateUserDTO
+import api.validators.TokenValidator
 import database.repository.UserRepository
 import javax.inject._
 import play.api.libs.json.{ JsError, JsValue, Json }
@@ -17,6 +18,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 class UsersController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
+  tokenValidator: TokenValidator,
   db: Database
 )(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
@@ -67,5 +69,17 @@ class UsersController @Inject() (
           case x => Forbidden("Username and password doesn´t match" + x)
         }
       })
+  }
+
+  /**
+    *
+    * @return
+    */
+  def logout: Action[AnyContent] = tokenValidator.async { request =>
+    val authToken = request.headers.get("Token").getOrElse("")
+    userActions.insertLogout(authToken).map {
+      case 1 => Ok
+      case _ => NotModified
+    }
   }
 }

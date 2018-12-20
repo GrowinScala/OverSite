@@ -52,7 +52,7 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
    * @return boolean value considering of the token is valid or not
    */
   def validateToken(token: String): Future[Boolean] = {
-    val validateTableToken = LoginTable.filter(x => (x.token === token) && x.validDate > System.currentTimeMillis()).result
+    val validateTableToken = LoginTable.filter(p => (p.token === token) && (p.active === true) && (p.validDate > System.currentTimeMillis())).result
     db.run(validateTableToken).map(_.length).map {
       case 1 => true
       case _ => false
