@@ -9,6 +9,11 @@ import database.mappings.EmailMappings._
 import database.mappings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
+import slick.ast.Library.SqlFunction
+import slick.ast.{ BaseTypedType, TypedType }
+import slick.lifted
+import slick.lifted.{ Query, Rep }
+import slick.lifted.FunctionSymbolExtensionMethods._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -70,21 +75,47 @@ class EmailRepository @Inject() (db: Database)(implicit val executionContext: Ex
         val querySentEmailIds = EmailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === false)
           .sortBy(_.dateOf)
-          .map(x => (x.emailID, x.header)).result
+          .map(x => (x.emailID, x.header))
+          .result
         db.run(querySentEmailIds)
-      /*
-      case "supervised" =>
-        val queryEmailIds = ShareTable.filter(_.toID === userEmail).map(x => (x.chatID, x.fromUser))
-        val queryFromUser = EmailTable.filter(_.fromAddress in queryEmailIds.map(x => x._2)).map(_.emailID)
-          .union(ToAddressTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
-          .union(CCTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
-          .union(BCCTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
-        val queryChatID = EmailTable.filter(_.chatID in queryEmailIds.map(x => x._1))
-          .filter(_.emailID in queryFromUser)
+    }
+  }
+
+  def getEmail(userEmail: String, status: String, emailID: String) = {
+    status match {
+      case "sent" =>
+        val querySentEmailIds = EmailTable.filter(_.fromAddress === userEmail)
+          .filter(_.sent === true)
           .sortBy(_.dateOf)
-          .map(x => (x.chatID, x.header)).result
-        db.run(queryChatID)
-      */
+          .filter(_.emailID === emailID)
+          .join(ToAddressTable).on(_.emailID === _.emailID)
+          .map(x => (x._1.chatID, x._1.fromAddress, x._2.username, x._1.header, x._1.body, x._1.dateOf))
+          .result
+        db.run(querySentEmailIds)
+
+      case "received" =>
+        val queryReceivedEmailIds = ToAddressTable
+          .filter(_.username === userEmail).map(_.emailID)
+          .union(CCTable.filter(_.username === userEmail).map(_.emailID))
+          .union(BCCTable.filter(_.username === userEmail).map(_.emailID))
+        val queryReceivedEmailIdsAux = EmailTable.filter(_.emailID in queryReceivedEmailIds)
+          .filter(_.sent === true)
+          .filter(_.emailID === emailID)
+          .sortBy(_.dateOf)
+          .join(ToAddressTable).on(_.emailID === _.emailID)
+          .map(x => (x._1.chatID, x._1.fromAddress, x._2.username, x._1.header, x._1.body, x._1.dateOf))
+          .result
+        db.run(queryReceivedEmailIdsAux)
+
+      case "draft" =>
+        val querySentEmailIds = EmailTable.filter(_.fromAddress === userEmail)
+          .filter(_.sent === false)
+          .filter(_.emailID === emailID)
+          .sortBy(_.dateOf)
+          .joinLeft(ToAddressTable).on(_.emailID === _.emailID)
+          .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse("None"), x._1.header, x._1.body, x._1.dateOf))
+          .result
+        db.run(querySentEmailIds)
     }
   }
 

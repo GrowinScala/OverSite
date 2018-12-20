@@ -5,6 +5,7 @@ import api.dto.CreateEmailDTO
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, EmailRepository, UserRepository }
 import javax.inject._
+import play.api.libs.json
 import play.api.libs.json._
 import play.api.mvc._
 import slick.basic.DatabaseConfig
@@ -67,6 +68,30 @@ class EmailsController @Inject() (
           }))
     } else if (status == "satan") {
       Future(BadRequest("BURN YOUR LOCAL CHURCH"))
+    } else {
+      Future(BadRequest("Invalid status"))
+    }
+  }
+
+  def getEmail(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+    val possibleStatus = List("draft", "received", "sent")
+    if (possibleStatus.contains(status)) {
+      request.userName.flatMap(
+        emailActions.getEmail(_, status, emailID).map(
+          email => {
+            val resultEmailID = JsArray(
+              email.map { x =>
+                JsObject(Seq(
+                  ("Email ID:", JsString(x._1)),
+                  ("Chat ID:", JsString(emailID)),
+                  ("From address:", JsString(x._2)),
+                  ("To address:", JsString(x._3)),
+                  ("Header:", JsString(x._4)),
+                  ("Body", JsString(x._5)),
+                  ("Date:", JsString(x._6))))
+              })
+            Ok(resultEmailID)
+          }))
     } else {
       Future(BadRequest("Invalid status"))
     }

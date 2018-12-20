@@ -17,7 +17,7 @@ GET    /chats/:chatID/emails/:emailID  api.controllers.ChatController.getEmailID
 
 #SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT", #"TRASH"
 GET     /emails/:status              api.controllers.EmailsController.showEmails(status: String)
-#GET    /emails/:status/:emailID
+GET    /emails/:status/:emailID    api.controllers.EmailsController.getEmail(status: String, emailID: String)
 #PATCH ONLY AVAILABLE TO "DRAFTS"->"SENT", #"SOMETHING"<->#"TRASH"
 #PATCH  /emails/:status/:emailID
 
