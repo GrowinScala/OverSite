@@ -1,14 +1,14 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.dto.CreateUserDTO
+import api.dtos.CreateUserDTO
 import database.repository.UserRepository
 import javax.inject._
-import play.api.libs.json.{JsError, JsValue, Json}
+import play.api.libs.json.{ JsError, JsValue, Json }
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points
@@ -17,9 +17,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class UsersController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  db: Database)(implicit exec: ExecutionContext)
+  db: Database
+)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
+  //TODO: You should "rethink" using local instances and replace them by injections ;)
   val userActions = new UserRepository(db)
 
   /**
@@ -27,7 +29,7 @@ class UsersController @Inject() (
    *
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
-  def signin: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
+  def signIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
     emailResult.fold(
       errors => {

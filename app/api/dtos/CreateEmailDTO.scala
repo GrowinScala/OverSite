@@ -1,4 +1,4 @@
-package api.dto
+package api.dtos
 
 import play.api.libs.json._
 
@@ -10,8 +10,9 @@ case class CreateEmailDTO(
   to: Option[Seq[String]],
   BCC: Option[Seq[String]],
   CC: Option[Seq[String]],
-  sendNow: Boolean)
+  sendNow: Boolean
+)
 
 object CreateEmailDTO {
-  implicit val EmailDTO: OFormat[CreateEmailDTO] = Json.format[CreateEmailDTO]
+  implicit val emailDTO: OFormat[CreateEmailDTO] = Json.format[CreateEmailDTO]
 }

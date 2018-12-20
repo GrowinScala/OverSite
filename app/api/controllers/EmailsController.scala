@@ -1,13 +1,12 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.dto.CreateEmailDTO
+import api.dtos.CreateEmailDTO
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, EmailRepository, UserRepository }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
-import slick.basic.DatabaseConfig
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -20,9 +19,11 @@ class EmailsController @Inject() (
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  db: Database)(implicit exec: ExecutionContext)
+  db: Database
+)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
+  //TODO: You should "rethink" using local instances and replace them by injections ;)
   val emailActions = new EmailRepository(db)
   val usersActions = new UserRepository(db)
   val chatActions = new ChatRepository(db)

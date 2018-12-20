@@ -2,23 +2,23 @@
 # THIS FILE DEFINES ALL APPLICATION ROUTES (HIGHER PRIORITY ROUTES FIRST)
 
 #INBOX
-GET     /chats                   api.controllers.ChatController.inbox
+GET     /chats                      api.controllers.ChatController.inbox
 
 #SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT" AND "SUPERVISED"
-GET     /emails/:status                   api.controllers.EmailsController.showEmails(status: String)
+GET     /emails/:status             api.controllers.EmailsController.showEmails(status: String)
 
 #GET     /chats/:chatID/emails/:emailID
 
 #GIVE PERMISSION TO SOMEONE TO ACCESS THE CHAT
-POST    /shares                   api.controllers.ChatController.supervised
+POST    /shares                     api.controllers.ChatController.supervised
 #GET    /shares
 #GET    /shares/:shareID
 
 #SEND AN EMAIL
-POST    /email                   api.controllers.EmailsController.email
+POST    /email                      api.controllers.EmailsController.email
 
 #AUTHENTICATION:
-POST    /signin                   api.controllers.UsersController.signin
-POST    /login                   api.controllers.UsersController.login
+POST    /signin                     api.controllers.UsersController.signin
+POST    /login                      api.controllers.UsersController.login
 #POST    /logout
 

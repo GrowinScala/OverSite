@@ -2,15 +2,17 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dto.{ CreateEmailDTO, CreateShareDTO }
+import api.dtos.{ CreateEmailDTO, CreateShareDTO }
 import com.google.inject.Inject
 import database.mappings.ChatMappings._
-import database.mappings.EmailMappings.{ BCCTable, CCTable, EmailTable, ToAddressTable }
-import database.mappings.{ Chat, Share }
+import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
+import database.mappings.{ ChatRow, ShareRow }
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
+//TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
+//Also you don't need to use Injection here.
 class ChatRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
   /**
    * Insert a chat into database
@@ -23,7 +25,7 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
     existChatID(chatID).map {
       case true => chatID
       case false =>
-        db.run(ChatTable += Chat(randomChatID, email.header))
+        db.run(chatTable += ChatRow(randomChatID, email.header))
         randomChatID
     }
   }
@@ -34,7 +36,7 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
    * @return True or False depending if the chatID exists or not
    */
   def existChatID(chatID: String): Future[Boolean] = {
-    val tableSearch = ChatTable.filter(_.chatID === chatID).result
+    val tableSearch = chatTable.filter(_.chatID === chatID).result
     db.run(tableSearch).map(_.length).map {
       case 1 => true
       case _ => false
@@ -47,11 +49,11 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
   def showInbox(userEmail: String): Future[Seq[(String, String)]] = {
-    val queryEmailIds = EmailTable.filter(_.fromAddress === userEmail).map(_.emailID)
-      .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
-      .union(CCTable.filter(_.username === userEmail).map(_.emailID))
-      .union(BCCTable.filter(_.username === userEmail).map(_.emailID))
-    val queryResult2 = EmailTable
+    val queryEmailIds = emailTable.filter(_.fromAddress === userEmail).map(_.emailID)
+      .union(toAddressTable.filter(_.username === userEmail).map(_.emailID))
+      .union(ccTable.filter(_.username === userEmail).map(_.emailID))
+      .union(bccTable.filter(_.username === userEmail).map(_.emailID))
+    val queryResult2 = emailTable
       .filter(_.emailID in queryEmailIds)
       .filter(_.sent === true)
       .sortBy(_.dateOf)
@@ -68,7 +70,7 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
    */
   def insertPermission(from: String, share: CreateShareDTO): Future[String] = {
     val shareID = randomUUID().toString
-    db.run(ShareTable += Share(shareID, share.chatID, from, share.supervisor))
+    db.run(shareTable += ShareRow(shareID, share.chatID, from, share.supervisor))
     Future { shareID }
   }
 }

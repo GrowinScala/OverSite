@@ -3,66 +3,69 @@ import database.mappings.ChatMappings._
 import slick.jdbc.MySQLProfile.api._
 
 /**
- * Case class of chat
+ * Case class of Chat Table Row:
  */
-case class Chat(
+case class ChatRow(
   chatID: String,
-  header: String)
+  header: String
+)
 
 /**
- * Case class of chatUser
+ * Case class of Chat User Table Row:
  */
-case class ChatUser(
+case class ChatUserRow(
   chatUserID: String,
   chatID: String,
-  username: String)
+  username: String
+)
 
 /**
- * Case class of share
+ * Case class of Share Table Row:
  */
-case class Share(
+case class ShareRow(
   shareID: String,
   chatID: String,
   fromUser: String,
-  toID: String)
+  toID: String
+)
 
 /**
  * Class that defines the chat table, establishing chatID as primary key in the database
  */
-class ChatTable(tag: Tag) extends Table[Chat](tag, "chats") {
+class ChatTable(tag: Tag) extends Table[ChatRow](tag, "chats") {
 
   def chatID = column[String]("chatID", O.PrimaryKey)
   def header = column[String]("header")
 
-  def * = (chatID, header) <> (Chat.tupled, Chat.unapply)
+  def * = (chatID, header) <> (ChatRow.tupled, ChatRow.unapply)
 }
 
 /**
  * Class that defines the chatUser table, establishing chatUserID as primary key in the database,
  * chatID and username as foreign keys
  */
-class ChatUserTable(tag: Tag) extends Table[ChatUser](tag, "chatusers") {
+class ChatUserTable(tag: Tag) extends Table[ChatUserRow](tag, "chatusers") {
   def chatUserID = column[String]("chatuserID", O.PrimaryKey)
   def chatID = column[String]("chatID")
   def username = column[String]("username")
-  def fileIdFK1 = foreignKey("chatID", chatID, ChatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  def fileIdFK1 = foreignKey("chatID", chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def fileIdFK2 = foreignKey("username", username, UserMappings.UserTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
-  def * = (chatUserID, chatID, username) <> (ChatUser.tupled, ChatUser.unapply)
+  def * = (chatUserID, chatID, username) <> (ChatUserRow.tupled, ChatUserRow.unapply)
 }
 
 /**
  * Class that defines the share table, establishing shareID as primary key in the database
  * and chatID as foreign key
  */
-class ShareTable(tag: Tag) extends Table[Share](tag, "shares") {
+class ShareTable(tag: Tag) extends Table[ShareRow](tag, "shares") {
   def shareID = column[String]("shareID", O.PrimaryKey)
   def chatID = column[String]("chatID")
   def fromUser = column[String]("fromUser")
   def toID = column[String]("toID")
-  def fileIdFK = foreignKey("chatID", chatID, ChatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  def fileIdFK = foreignKey("chatID", chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
-  def * = (shareID, chatID, fromUser, toID) <> (Share.tupled, Share.unapply)
+  def * = (shareID, chatID, fromUser, toID) <> (ShareRow.tupled, ShareRow.unapply)
 }
 
 object ChatMappings {
@@ -70,7 +73,7 @@ object ChatMappings {
   /**
    * Queries of user table and login table
    */
-  lazy val ChatTable = TableQuery[ChatTable]
+  lazy val chatTable = TableQuery[ChatTable]
   lazy val chatUserTable = TableQuery[ChatUserTable]
-  lazy val ShareTable = TableQuery[ShareTable]
+  lazy val shareTable = TableQuery[ShareTable]
 }
