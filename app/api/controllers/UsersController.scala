@@ -4,11 +4,11 @@ import akka.actor.ActorSystem
 import api.dto.CreateUserDTO
 import database.repository.UserRepository
 import javax.inject._
-import play.api.libs.json.{JsError, JsValue, Json}
+import play.api.libs.json.{ JsError, JsValue, Json }
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that is injected with end-points

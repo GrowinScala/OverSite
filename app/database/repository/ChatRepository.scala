@@ -42,24 +42,43 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
   }
 
   /**
+   * Query that search for all the emails which have a certain userName involved
+   * @param userEmail the user identity
+   * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
+   */
+  def queryEmailIds(userEmail: String) = {
+    EmailTable.filter(_.fromAddress === userEmail).map(_.emailID)
+      .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
+      .union(CCTable.filter(_.username === userEmail).map(_.emailID))
+      .union(BCCTable.filter(_.username === userEmail).map(_.emailID))
+  }
+  /**
    * Queries to find the inbox messages of an user
    * @param userEmail user email
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
   def showInbox(userEmail: String): Future[Seq[(String, String)]] = {
-    val queryEmailIds = EmailTable.filter(_.fromAddress === userEmail).map(_.emailID)
-      .union(ToAddressTable.filter(_.username === userEmail).map(_.emailID))
-      .union(CCTable.filter(_.username === userEmail).map(_.emailID))
-      .union(BCCTable.filter(_.username === userEmail).map(_.emailID))
-    val queryResult2 = EmailTable
-      .filter(_.emailID in queryEmailIds)
+    val queryuserName = queryEmailIds(userEmail)
+    val queryResult = EmailTable
+      .filter(_.emailID in queryuserName)
       .filter(_.sent === true)
       .sortBy(_.dateOf)
       .map(x => (x.chatID, x.header))
       .result
-    db.run(queryResult2)
+    db.run(queryResult)
   }
 
+  def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]] = {
+    val queryuserName = queryEmailIds(userEmail)
+    val queryResult = EmailTable
+      .filter(_.emailID in queryuserName)
+      .filter(_.chatID === chatID)
+      .filter(_.sent === true)
+      .sortBy(_.dateOf)
+      .map(x => (x.emailID, x.header))
+      .result
+    db.run(queryResult)
+  }
   /**
    *  Authorize an user to have access to a conversation
    * @param from User that concedes permission

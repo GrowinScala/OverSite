@@ -42,6 +42,21 @@ class ChatController @Inject() (
   }
 
   /**
+   *
+   * @param chatID
+   * @return
+   */
+  def getEmails(chatID: String): Action[AnyContent] = tokenValidator.async { request =>
+    request.userName.flatMap {
+      chatActions.getEmails(_, chatID).map {
+        emails =>
+          val emailsResult = JsObject(emails.map(x => (x._1, JsString(x._2))))
+          Ok(emailsResult)
+      }
+    }
+  }
+
+  /**
    * Give permission to oversight a personal conversation
    * @return Permission insertion to an userID, from another user to oversight an specific chat
    */
