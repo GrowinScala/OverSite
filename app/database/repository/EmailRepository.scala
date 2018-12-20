@@ -10,17 +10,17 @@ import database.mappings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * Class that receives a db path
-  */
+ * Class that receives a db path
+ */
 class EmailRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
 
   /**
-    * Inserts an email in the database
-    * @return Generated email ID
-    */
+   * Inserts an email in the database
+   * @return Generated email ID
+   */
   def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
     val randomEmailID = randomUUID().toString
     val chatActions = new ChatRepository(db)
@@ -40,11 +40,11 @@ class EmailRepository @Inject() (db: Database)(implicit val executionContext: Ex
   }
 
   /**
-    * Queries that filter the emails "sent", "received", "draft" and "supervised"
-    * @param userEmail User logged email
-    * @param status cathegory of emails wanted
-    * @return List of emails
-    */
+   * Queries that filter the emails "sent", "received", "draft" and "supervised"
+   * @param userEmail User logged email
+   * @param status cathegory of emails wanted
+   * @return List of emails
+   */
   def showEmails(userEmail: String, status: String): Future[Seq[(String, String)]] = {
     status match {
       case "sent" =>

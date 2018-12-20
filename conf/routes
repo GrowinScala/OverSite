@@ -10,7 +10,7 @@ GET     /emails/:status                   api.controllers.EmailsController.showE
 #GET     /chats/:chatID/emails/:emailID
 
 #GIVE PERMISSION TO SOMEONE TO ACCESS THE CHAT
-POST    /shares                   api.controllers.ChatController.supervised
+POST    /shares                  api.controllers.ChatController.supervised
 #GET    /shares
 #GET    /shares/:shareID
 
@@ -18,7 +18,7 @@ POST    /shares                   api.controllers.ChatController.supervised
 POST    /email                   api.controllers.EmailsController.email
 
 #AUTHENTICATION:
-POST    /signin                   api.controllers.UsersController.signin
+POST    /signin                  api.controllers.UsersController.signin
 POST    /login                   api.controllers.UsersController.login
-#POST    /logout
+PATCH   /logout                  api.controllers.UsersController.logout
 
