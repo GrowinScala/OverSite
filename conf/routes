@@ -10,7 +10,7 @@ POST    /email                   api.controllers.EmailsController.email
 GET     /chats                   api.controllers.ChatController.inbox
 GET     /chats/:chatID/emails    api.controllers.ChatController.getEmails(chatID: String)
 #PATCH  /chats/:chatID/emails
-#GET    /chats/:chatID/emails/:emailID
+GET    /chats/:chatID/emails/:emailID  api.controllers.ChatController.getEmailID(chatID: String, emailID: String)
 #PATCH TO #"TRASH"
 #PATCH  /chats/:chatID/emails/:emailID
 

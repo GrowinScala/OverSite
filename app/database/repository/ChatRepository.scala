@@ -8,7 +8,6 @@ import database.mappings.ChatMappings._
 import database.mappings.EmailMappings.{ BCCTable, CCTable, EmailTable, ToAddressTable }
 import database.mappings.{ Chat, Share }
 import slick.jdbc.MySQLProfile.api._
-
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ChatRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
@@ -68,14 +67,49 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
     db.run(queryResult)
   }
 
-  def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]] = {
+  /**
+   * Query that selects the emailIDs from the EmailTable that
+   * are returned by the auxiliary query "queryuserName", filters by chatID inputed,
+   * by the state "Sent", and sort by the date.
+   * @return EmailTable filtered
+   */
+  def querychatID(userEmail: String, chatID: String) = {
     val queryuserName = queryEmailIds(userEmail)
-    val queryResult = EmailTable
+    EmailTable
       .filter(_.emailID in queryuserName)
       .filter(_.chatID === chatID)
       .filter(_.sent === true)
       .sortBy(_.dateOf)
+  }
+
+  /**
+   *
+   * @param userEmail
+   * @param chatID
+   * @return
+   */
+  def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]] = {
+    val queryResult = querychatID(userEmail, chatID)
       .map(x => (x.emailID, x.header))
+      .result
+    db.run(queryResult)
+  }
+
+  /**
+   *
+   * @param userEmail
+   * @param chatID
+   * @param emailID
+   * @return
+   */
+  def getEmailID(userEmail: String, chatID: String, emailID: String) = {
+    val queryResult = querychatID(userEmail, chatID)
+      .filter(_.emailID === emailID)
+      //Since every email with sent==true is obligated to have an ToID,
+      // the following join has the same effect as joinleft
+      .join(ToAddressTable).on(_.emailID === _.emailID)
+      //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
+      .map(x => (x._1.fromAddress, x._2.username, x._1.header, x._1.body, x._1.dateOf))
       .result
     db.run(queryResult)
   }
