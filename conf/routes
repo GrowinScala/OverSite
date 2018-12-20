@@ -34,4 +34,5 @@ POST    /shares                   api.controllers.ChatController.supervised
 #AUTHENTICATION:
 POST    /signin                   api.controllers.UsersController.signin
 POST    /login                   api.controllers.UsersController.login
-#PATCH  /logout
+PATCH   /logout                  api.controllers.UsersController.logout
+

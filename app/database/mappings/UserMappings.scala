@@ -5,7 +5,8 @@ import slick.jdbc.MySQLProfile.api._
 case class Login(
   username: String,
   token: String,
-  validDate: Long)
+  validDate: Long,
+  active: Boolean)
 
 /**
  * Class that defines the login table, making username a foreign key in the database
@@ -16,8 +17,9 @@ class LoginTable(tag: Tag) extends Table[Login](tag, "logins") {
   def username = column[String]("username")
   def token = column[String]("token")
   def validDate = column[Long]("validDate")
+  def active = column[Boolean]("active")
   def fileIdFK = foreignKey("username", username, UserTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-  def * = (username, token, validDate) <> (Login.tupled, Login.unapply)
+  def * = (username, token, validDate, active) <> (Login.tupled, Login.unapply)
 }
 
 case class User(
