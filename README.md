@@ -34,9 +34,9 @@ Go to <http://localhost:9000> to see the running web application.
 SpamDetector is an Open-Source project developed at Growin in our offices in Lisbon.
  <br/> If you have any questions, you can contact:
  
- * Valter Fernandes  &nbsp; &nbsp;- vfernandes@growin.pt
- * Pedro Correia Luís   &nbsp; &nbsp; &nbsp; - pluis@growin.pt
- * Rui Valente    &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; - rvalente@growin.pt
+ * Valter Fernandes    - vfernandes@growin.pt
+ * Pedro Correia Luís  - pluis@growin.pt
+ * Rui Valente         - rvalente@growin.pt
 
 Or visit our website: [www.growin.com](https://www.growin.com/)
 
