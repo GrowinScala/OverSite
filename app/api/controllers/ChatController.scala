@@ -71,8 +71,7 @@ class ChatController @Inject() (
                 ("Header:", JsString(x._3)),
                 ("Body", JsString(x._4)),
                 ("Date:", JsString(x._5))))
-          }
-          )
+          })
           Ok(emailsResult)
       }
     }
