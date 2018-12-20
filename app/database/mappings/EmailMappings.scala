@@ -13,8 +13,7 @@ case class EmailRow(
   dateOf: String,
   header: String,
   body: String,
-  sent: Boolean
-)
+  sent: Boolean)
 
 /**
  * Case class of ToAddress Table Row
@@ -22,8 +21,7 @@ case class EmailRow(
 case class ToAddressRow(
   toID: String,
   emailID: String,
-  username: String
-)
+  username: String)
 
 /**
  * Case class of CC Table Row
@@ -31,8 +29,7 @@ case class ToAddressRow(
 case class CCRow(
   CCID: String,
   emailID: String,
-  username: String
-)
+  username: String)
 
 /**
  * Case class of BCC Table Row
@@ -40,8 +37,7 @@ case class CCRow(
 case class BCCRow(
   BCCID: String,
   emailID: String,
-  username: String
-)
+  username: String)
 
 /**
  * Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key

@@ -19,8 +19,7 @@ class EmailsController @Inject() (
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  db: Database
-)(implicit exec: ExecutionContext)
+  db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   //TODO: You should "rethink" using local instances and replace them by injections ;)

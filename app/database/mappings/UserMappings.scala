@@ -4,22 +4,20 @@ import slick.jdbc.MySQLProfile.api._
 
 //TODO: Consider renaming "validDate" both in the Row object and the DB to "expiryDate" instead.
 /**
-  * Case class of Login Table Row
-  */
+ * Case class of Login Table Row
+ */
 case class LoginRow(
   username: String,
   token: String,
   validDate: Long,
-  active: Boolean
-)
+  active: Boolean)
 
 /**
-  * Case class of User Table Row
-  */
+ * Case class of User Table Row
+ */
 case class UserRow(
   username: String,
-  password: String
-)
+  password: String)
 
 /**
  * Class that defines the login table, making username a foreign key in the database
@@ -33,7 +31,7 @@ class LoginTable(tag: Tag) extends Table[LoginRow](tag, "logins") {
   def active = column[Boolean]("active")
   def fileIdFK = foreignKey("username", username, UserTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
-  def * = (username, token, validDate, active) <> (LoginRow.tupled, Login.unapply)
+  def * = (username, token, validDate, active) <> (LoginRow.tupled, LoginRow.unapply)
 }
 
 /**

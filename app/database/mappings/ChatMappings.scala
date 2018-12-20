@@ -7,8 +7,7 @@ import slick.jdbc.MySQLProfile.api._
  */
 case class ChatRow(
   chatID: String,
-  header: String
-)
+  header: String)
 
 /**
  * Case class of Chat User Table Row:
@@ -16,8 +15,7 @@ case class ChatRow(
 case class ChatUserRow(
   chatUserID: String,
   chatID: String,
-  username: String
-)
+  username: String)
 
 /**
  * Case class of Share Table Row:
@@ -26,8 +24,7 @@ case class ShareRow(
   shareID: String,
   chatID: String,
   fromUser: String,
-  toID: String
-)
+  toID: String)
 
 /**
  * Class that defines the chat table, establishing chatID as primary key in the database

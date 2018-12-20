@@ -19,8 +19,7 @@ class ChatController @Inject() (
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  db: Database
-)(implicit exec: ExecutionContext)
+  db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   //TODO: You should "rethink" using local instances and replace them by injections ;)
@@ -71,8 +70,7 @@ class ChatController @Inject() (
                 ("Header:", JsString(x._3)),
                 ("Body", JsString(x._4)),
                 ("Date:", JsString(x._5))))
-          }
-          )
+          })
           Ok(emailsResult)
       }
     }

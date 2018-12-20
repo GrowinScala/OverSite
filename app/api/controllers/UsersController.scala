@@ -19,8 +19,7 @@ class UsersController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   tokenValidator: TokenValidator,
-  db: Database
-)(implicit exec: ExecutionContext)
+  db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   //TODO: You should "rethink" using local instances and replace them by injections ;)
@@ -72,9 +71,9 @@ class UsersController @Inject() (
   }
 
   /**
-    *
-    * @return
-    */
+   *
+   * @return
+   */
   def logout: Action[AnyContent] = tokenValidator.async { request =>
     val authToken = request.headers.get("Token").getOrElse("")
     userActions.insertLogout(authToken).map {
