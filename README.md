@@ -31,12 +31,12 @@ Go to <http://localhost:9000> to see the running web application.
 
 ### Who do I talk to? ###
 
-SpamDetector is an Open-Source project developed at Growin in our offices in Lisbon.
+OverSite is an Open-Source project developed at Growin in our offices in Lisbon.
  <br/> If you have any questions, you can contact:
  
- * Valter Fernandes    - vfernandes@growin.pt
  * Pedro Correia Luís  - pluis@growin.pt
  * Rui Valente         - rvalente@growin.pt
+* Valter Fernandes    - vfernandes@growin.pt
 
 Or visit our website: [www.growin.com](https://www.growin.com/)
 
