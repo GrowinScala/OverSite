@@ -11,7 +11,7 @@ Current version: 0.1
 ## What do i need to run?
 
 * The project
-* A RDBMS(open source relational database management system), we recommend mysql, since it is the one we used , and the only one who is ready to use without changes. (The table creations are in a package called sql)
+* A RDBMS (open source relational database management system), we recommend mysql, since it was the one we used. Besides that, it is the only RDBM which is ready to use without any changes. (The table creations are in a package called sql)
 * Postman to make calls to the api
 
 ## Running
@@ -21,7 +21,7 @@ Current version: 0.1
 
 * Then **`cd`** into it
 
-* And `sbt run`
+* To execute, `sbt run`
 
 Go to <http://localhost:9000> to see the running web application.
   
