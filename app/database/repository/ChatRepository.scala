@@ -139,4 +139,9 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
     db.run(queryChatID)
 
   }
+
+  def deletePermission(from: String, to: String, chatID: String) = {
+    val deletePermissionTable = ShareTable.filter(p => (p.fromUser === from) && (p.toID === to) && (p.chatID === chatID)).delete
+    db.run(deletePermissionTable)
+  }
 }

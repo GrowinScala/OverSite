@@ -9,8 +9,10 @@ POST    /email                   api.controllers.EmailsController.email
 #INBOX
 GET     /chats                   api.controllers.ChatController.inbox
 GET     /chats/:chatID/emails    api.controllers.ChatController.getEmails(chatID: String)
+
 #PATCH  /chats/:chatID/emails
 GET    /chats/:chatID/emails/:emailID  api.controllers.ChatController.getEmailID(chatID: String, emailID: String)
+
 #PATCH TO #"TRASH"
 #PATCH  /chats/:chatID/emails/:emailID
 
@@ -18,6 +20,7 @@ GET    /chats/:chatID/emails/:emailID  api.controllers.ChatController.getEmailID
 #SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT", #"TRASH"
 GET     /emails/:status              api.controllers.EmailsController.showEmails(status: String)
 #GET    /emails/:status/:emailID
+
 #PATCH ONLY AVAILABLE TO "DRAFTS"->"SENT", #"SOMETHING"<->#"TRASH"
 #PATCH  /emails/:status/:emailID
 
@@ -25,8 +28,9 @@ GET     /emails/:status              api.controllers.EmailsController.showEmails
 #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 POST    /shares                   api.controllers.ChatController.supervised
 GET     /shares                   api.controllers.ChatController.shares
+
 #PATCH TO CHANGE THE ACCESS TO CHATS
-#PATCH  /shares
+DELETE  /shares                   api.controllers.ChatController.takePermissions
 #GET    /shares/:shareID/emails
 #GET    /shares/:shareID/emails/:emailID
 
