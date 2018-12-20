@@ -124,4 +124,19 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
     db.run(ShareTable += Share(shareID, share.chatID, from, share.supervisor))
     Future { shareID }
   }
+
+  def getSharesChats(userEmail: String) = {
+
+    val queryEmailIds = ShareTable.filter(_.toID === userEmail).map(x => (x.chatID, x.fromUser))
+    val queryFromUser = EmailTable.filter(_.fromAddress in queryEmailIds.map(x => x._2)).map(_.emailID)
+      .union(ToAddressTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
+      .union(CCTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
+      .union(BCCTable.filter(_.username in queryEmailIds.map(x => x._2)).map(_.emailID))
+    val queryChatID = EmailTable.filter(_.chatID in queryEmailIds.map(x => x._1))
+      .filter(_.emailID in queryFromUser)
+      .sortBy(_.dateOf)
+      .map(x => (x.chatID, x.header)).result
+    db.run(queryChatID)
+
+  }
 }

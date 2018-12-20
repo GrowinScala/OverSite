@@ -3,7 +3,7 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dto.CreateShareDTO
 import api.validators.TokenValidator
-import database.repository.{ ChatRepository, UserRepository }
+import database.repository.{ChatRepository, UserRepository}
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
@@ -11,7 +11,7 @@ import slick.basic.DatabaseConfig
 import slick.basic.DatabaseConfig
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Class injected with end-points
@@ -19,9 +19,10 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 class ChatController @Inject() (
   tokenValidator: TokenValidator,
-  cc: ControllerComponents,
-  actorSystem: ActorSystem,
-  db: Database)(implicit exec: ExecutionContext)
+  cc:             ControllerComponents,
+  actorSystem:    ActorSystem,
+  db:             Database
+)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   implicit val userActions: UserRepository = new UserRepository(db)
@@ -70,7 +71,9 @@ class ChatController @Inject() (
                 ("To address:", JsString(x._2)),
                 ("Header:", JsString(x._3)),
                 ("Body", JsString(x._4)),
-                ("Date:", JsString(x._5))))
+                ("Date:", JsString(x._5))
+              )
+            )
           })
           Ok(emailsResult)
       }
@@ -89,10 +92,26 @@ class ChatController @Inject() (
       },
       share => {
         request.userName.map(
-          chatActions.insertPermission(_, share))
+          chatActions.insertPermission(_, share)
+        )
         Future {
           Ok
         }
-      })
+      }
+    )
   }
+
+  def shares: Action[AnyContent] = tokenValidator.async { request =>
+
+    request.userName.flatMap(
+      chatActions.getSharesChats(_).map(
+        emails => {
+          val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
+          Ok(resultEmailID)
+        }
+      )
+    )
+
+  }
+
 }

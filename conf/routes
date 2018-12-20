@@ -24,7 +24,7 @@ GET     /emails/:status              api.controllers.EmailsController.showEmails
 
 #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 POST    /shares                   api.controllers.ChatController.supervised
-#GET    /shares
+GET     /shares                   api.controllers.ChatController.shares
 #PATCH TO CHANGE THE ACCESS TO CHATS
 #PATCH  /shares
 #GET    /shares/:shareID/emails
@@ -32,7 +32,7 @@ POST    /shares                   api.controllers.ChatController.supervised
 
 
 #AUTHENTICATION:
-POST    /signin                   api.controllers.UsersController.signin
+POST    /signin                  api.controllers.UsersController.signin
 POST    /login                   api.controllers.UsersController.login
 PATCH   /logout                  api.controllers.UsersController.logout
 
