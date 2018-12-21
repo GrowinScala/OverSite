@@ -3,25 +3,17 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.CreateUserDTO
-import com.google.inject.AbstractModule
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
 import encryption.EncryptString
-import com.google.inject.Inject
-import play.api.inject.Module
-import play.inject.Module
-import slick.basic.DatabaseConfig
-import slick.jdbc.MySQLProfile
-import slick.jdbc.MySQLProfile.api._
+import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Class that receives a db path
  */
-//TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
-//Also you don't need to use Injection here.
-class UserRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
+class UserRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) {
 
   /**
    * Insert an user into database with is password encrypted
@@ -56,7 +48,7 @@ class UserRepository @Inject() (db: Database)(implicit val executionContext: Exe
     token
   }
 
-  def insertLogout(token: String) = {
+  def insertLogout(token: String) : Future[Int] = {
     val notActive = false
     val insertTableLogin = LoginTable.filter(_.token === token).map(_.active).update(notActive)
 
@@ -74,11 +66,7 @@ class UserRepository @Inject() (db: Database)(implicit val executionContext: Exe
     valid1Hour
   }
 
-  /**
-   * Validates the userName and token inserted by the user
-   */
-  def validateToken(userName: String, token: String): Future[Seq[LoginRow]] = {
-    val validateTableToken = LoginTable.filter(x => (x.username === userName) && (x.token === token) && x.validDate > System.currentTimeMillis()).result
-    db.run(validateTableToken)
+  def checkUsername(user: CreateUserDTO) :Boolean = {
+    user.username.replaceAll("\\w+\\@\\w+\\.(pt|com)$", "").isEmpty
   }
 }

@@ -19,12 +19,10 @@ class ChatController @Inject() (
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  db: Database)(implicit exec: ExecutionContext)
+  implicit val db: Database,
+  chatActions: ChatRepository,
+  usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
-
-  //TODO: You should "rethink" using local instances and replace them by injections ;)
-  implicit val userActions: UserRepository = new UserRepository(db)
-  implicit val chatActions: ChatRepository = new ChatRepository(db)
 
   /**
    * Show inbox action

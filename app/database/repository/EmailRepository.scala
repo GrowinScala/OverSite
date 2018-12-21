@@ -15,9 +15,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Class that receives a db path
  */
-//TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
-//Also you don't need to use Injection here.
-class EmailRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
+class EmailRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database, chatActions: ChatRepository) {
 
   /**
    * Inserts an email in the database
@@ -25,7 +23,6 @@ class EmailRepository @Inject() (db: Database)(implicit val executionContext: Ex
    */
   def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
     val randomEmailID = randomUUID().toString
-    val chatActions = new ChatRepository(db)
     val chatID = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
 
     val insertEmailTable = chatID.map(emailTable += EmailRow(randomEmailID, _, username, email.dateOf, email.header, email.body,
