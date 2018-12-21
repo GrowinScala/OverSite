@@ -1,8 +1,8 @@
 import java.util.UUID.randomUUID
 
-import api.dto.CreateEmailDTO
-import database.mappings.Chat
-import database.mappings.ChatMappings.ChatTable
+import api.dtos.CreateEmailDTO
+import database.mappings.ChatRow
+import database.mappings.ChatMappings.chatTable
 import slick.ast.Select
 import slick.jdbc.MySQLProfile.api._
 

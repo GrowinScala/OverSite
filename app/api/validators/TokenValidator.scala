@@ -43,6 +43,7 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
     }
   }
 
+  //TODO: Inject it instead of hardcoding it here.
   val db: DatabaseDef = Database.forConfig("mysql")
 
   /**
