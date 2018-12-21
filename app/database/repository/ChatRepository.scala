@@ -11,7 +11,6 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-//TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
 class ChatRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) {
   /**
    * Insert a chat into database

@@ -13,7 +13,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Class that receives a db path
  */
-//TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
 class UserRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) {
 
   /**
@@ -49,7 +48,7 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
     token
   }
 
-  def insertLogout(token: String) = {
+  def insertLogout(token: String) : Future[Int] = {
     val notActive = false
     val insertTableLogin = LoginTable.filter(_.token === token).map(_.active).update(notActive)
 
@@ -67,7 +66,7 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
     valid1Hour
   }
 
-  def checkUsername(user: CreateUserDTO) = {
+  def checkUsername(user: CreateUserDTO) :Boolean = {
     user.username.replaceAll("\\w+\\@\\w+\\.(pt|com)$", "").isEmpty
   }
 }
