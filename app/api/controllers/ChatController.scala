@@ -94,4 +94,32 @@ class ChatController @Inject() (
         }
       })
   }
+
+  def shares: Action[AnyContent] = tokenValidator.async { request =>
+
+    request.userName.flatMap(
+      chatActions.getSharesChats(_).map(
+        emails => {
+          val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
+          Ok(resultEmailID)
+        }))
+
+  }
+
+  def takePermissions: Action[JsValue] = tokenValidator(parse.json).async { request =>
+    val shareResult = request.body.validate[CreateShareDTO]
+    shareResult.fold(
+      errors => Future {
+        BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+      },
+      share => {
+        request.userName.map(
+          chatActions.deletePermission(_, share.supervisor, share.chatID))
+        Future {
+          Ok
+        }
+      })
+
+  }
+
 }
