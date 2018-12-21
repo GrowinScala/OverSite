@@ -1,4 +1,4 @@
-package api.dto
+package api.dtos
 import play.api.libs.json._
 
 case class CreateShareDTO(
@@ -6,5 +6,5 @@ case class CreateShareDTO(
   supervisor: String)
 
 object CreateShareDTO {
-  implicit val ShareDTO: OFormat[CreateShareDTO] = Json.format[CreateShareDTO]
+  implicit val shareDTO: OFormat[CreateShareDTO] = Json.format[CreateShareDTO]
 }
