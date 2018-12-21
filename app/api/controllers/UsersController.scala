@@ -52,7 +52,7 @@ class UsersController @Inject() (
    * @return When a valid login is inserted, it is added in the database
    *         and the generated token is sent to user, otherwise an error message is sent
    */
-  def login: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
+  def logIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
     // Getting the token from the request API call
     emailResult.fold(
@@ -71,10 +71,10 @@ class UsersController @Inject() (
   }
 
   /**
-   *
-   * @return
+   * Logout action
+   * @return When a logout is called, the "active" parameter is turned down
    */
-  def logout: Action[AnyContent] = tokenValidator.async { request =>
+  def logOut: Action[AnyContent] = tokenValidator.async { request =>
     val authToken = request.headers.get("Token").getOrElse("")
     userActions.insertLogout(authToken).map {
       case 1 => Ok

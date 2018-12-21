@@ -42,78 +42,63 @@ class EmailRepository @Inject() (db: Database)(implicit val executionContext: Ex
   }
 
   /**
-   * Queries that filter the emails "sent", "received", "draft" and "supervised"
-   * @param userEmail User logged email
-   * @param status cathegory of emails wanted
-   * @return List of emails
+   * Auxiliary function that supports getEmails and getEmail
+   * @param userEmail Identification of user by email
+   * @param status Possible status: "sent", "received" and "draft"
+   * @return Return different queries taking into account the status
    */
-  def showEmails(userEmail: String, status: String): Future[Seq[(String, String)]] = {
+  def auxGetEmails(userEmail: String, status: String) = {
     status match {
       case "sent" =>
-        val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
+        emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === true)
           .sortBy(_.dateOf)
-          .map(x => (x.emailID, x.header)).result
-        db.run(querySentEmailIds)
 
       case "received" =>
         val queryReceivedEmailIds = toAddressTable
           .filter(_.username === userEmail).map(_.emailID)
           .union(ccTable.filter(_.username === userEmail).map(_.emailID))
           .union(bccTable.filter(_.username === userEmail).map(_.emailID))
-        val queryReceivedEmailIdsAux = emailTable.filter(_.emailID in queryReceivedEmailIds)
+
+        emailTable.filter(_.emailID in queryReceivedEmailIds)
           .filter(_.sent === true)
           .sortBy(_.dateOf)
-          .map(x => (x.emailID, x.header))
-          .result
-        db.run(queryReceivedEmailIdsAux)
 
       case "draft" =>
-        val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
+        emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === false)
           .sortBy(_.dateOf)
-          .map(x => (x.emailID, x.header))
-          .result
-        db.run(querySentEmailIds)
     }
   }
+  /**
+   * Function that filter the emails "sent", "received", "draft" and "supervised"
+   * @param userEmail Identification of user by email
+   * @param status Possible status: "sent", "received" and "draft"
+   * @return List of emailIDs and corresponding header
+   */
+  def getEmails(userEmail: String, status: String): Future[Seq[(String, String)]] = {
+    val queryResult = auxGetEmails(userEmail, status)
+      .map(x => (x.emailID, x.header))
+      .result
+    db.run(queryResult)
+  }
 
+  /**
+   * Function that filter the emails, according to their status and emailID
+   * (joinLeft and getOrElse is used to embrace the 3 possible status, however
+   * join and no getOrElse would be more appropriate for "sent" and "received")
+   * @param userEmail Identification of user by email
+   * @param status Possible status: "sent", "received" and "draft"
+   * @param emailID Identification the a specific email
+   * @return All the details of the email selected
+   */
   def getEmail(userEmail: String, status: String, emailID: String) = {
-    status match {
-      case "sent" =>
-        val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
-          .filter(_.sent === true)
-          .sortBy(_.dateOf)
-          .filter(_.emailID === emailID)
-          .join(toAddressTable).on(_.emailID === _.emailID)
-          .map(x => (x._1.chatID, x._1.fromAddress, x._2.username, x._1.header, x._1.body, x._1.dateOf))
-          .result
-        db.run(querySentEmailIds)
-
-      case "received" =>
-        val queryReceivedEmailIds = toAddressTable
-          .filter(_.username === userEmail).map(_.emailID)
-          .union(ccTable.filter(_.username === userEmail).map(_.emailID))
-          .union(bccTable.filter(_.username === userEmail).map(_.emailID))
-        val queryReceivedEmailIdsAux = emailTable.filter(_.emailID in queryReceivedEmailIds)
-          .filter(_.sent === true)
-          .filter(_.emailID === emailID)
-          .sortBy(_.dateOf)
-          .join(toAddressTable).on(_.emailID === _.emailID)
-          .map(x => (x._1.chatID, x._1.fromAddress, x._2.username, x._1.header, x._1.body, x._1.dateOf))
-          .result
-        db.run(queryReceivedEmailIdsAux)
-
-      case "draft" =>
-        val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
-          .filter(_.sent === false)
-          .filter(_.emailID === emailID)
-          .sortBy(_.dateOf)
-          .joinLeft(toAddressTable).on(_.emailID === _.emailID)
-          .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse("None"), x._1.header, x._1.body, x._1.dateOf))
-          .result
-        db.run(querySentEmailIds)
-    }
+    val queryResult = auxGetEmails(userEmail, status)
+      .filter(_.emailID === emailID)
+      .joinLeft(toAddressTable).on(_.emailID === _.emailID)
+      .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse("None"), x._1.header, x._1.body, x._1.dateOf))
+      .result
+    db.run(queryResult)
   }
 
   def hasSenderAddress(to: Option[Seq[String]]): Boolean = {

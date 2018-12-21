@@ -27,12 +27,12 @@ class ChatController @Inject() (
   implicit val chatActions: ChatRepository = new ChatRepository(db)
 
   /**
-   * Show inbox action
+   * Get inbox action
    * @return When a valid user is logged, the conversations are shown as an inbox
    */
   def inbox: Action[AnyContent] = tokenValidator.async { request =>
     request.userName.flatMap {
-      chatActions.showInbox(_).map {
+      chatActions.getInbox(_).map {
         inbox =>
           val chatsResult = JsObject(inbox.map(x => (x._1, JsString(x._2))))
           Ok(chatsResult)
@@ -41,7 +41,6 @@ class ChatController @Inject() (
   }
 
   /**
-   *
    * @param chatID
    * @return
    */
@@ -49,22 +48,27 @@ class ChatController @Inject() (
     request.userName.flatMap {
       chatActions.getEmails(_, chatID).map {
         emails =>
-          val emailsResult = JsObject(emails.map(x => (x._1, JsString(x._2))))
+          val emailsResult = JsArray(
+            emails.map { x =>
+              JsObject(Seq(
+                ("Email ID:", JsString(x._1)),
+                ("Header:", JsString(x._2))))
+            })
           Ok(emailsResult)
       }
     }
   }
 
-  def getEmailID(chatID: String, emailID: String) = tokenValidator.async { request =>
+  def getEmail(chatID: String, emailID: String) = tokenValidator.async { request =>
     request.userName.flatMap {
-      chatActions.getEmailID(_, chatID, emailID).map {
+      chatActions.getEmail(_, chatID, emailID).map {
         emails =>
           val emailsResult = JsArray(emails.map { x =>
             JsObject(
               //emailID, chatID, fromAddress, toAddress , header, body, dateOf
               Seq(
-                ("Email ID:", JsString(chatID)),
-                ("Chat ID:", JsString(emailID)),
+                ("Email ID:", JsString(emailID)),
+                ("Chat ID:", JsString(chatID)),
                 ("From address:", JsString(x._1)),
                 ("To address:", JsString(x._2)),
                 ("Header:", JsString(x._3)),
@@ -95,15 +99,56 @@ class ChatController @Inject() (
       })
   }
 
-  def shares: Action[AnyContent] = tokenValidator.async { request =>
+  def getShares: Action[AnyContent] = tokenValidator.async { request =>
 
     request.userName.flatMap(
-      chatActions.getSharesChats(_).map(
+      chatActions.getShares(_).map(
         emails => {
           val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
           Ok(resultEmailID)
         }))
+  }
 
+  /**
+   *
+   * @param shareID
+   * @return
+   */
+  def getSharedEmails(shareID: String): Action[AnyContent] = tokenValidator.async { request =>
+
+    request.userName.flatMap(
+      chatActions.getSharedEmails(_, shareID).map(
+        emails => {
+          val resultEmailID = JsArray(
+            emails.map { x =>
+              JsObject(Seq(
+                ("Email ID:", JsString(x._1)),
+                ("Header:", JsString(x._2))))
+            })
+          Ok(resultEmailID)
+        }))
+
+  }
+
+  def getSharedEmail(shareID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+
+    request.userName.flatMap(
+      chatActions.getSharedEmail(_, shareID, emailID).map(
+        email => {
+          val resultEmailID = JsArray(
+            email.map { x =>
+              JsObject(Seq(
+                ("Share ID:", JsString(shareID)),
+                ("Email ID:", JsString(emailID)),
+                ("Chat ID:", JsString(x._1)),
+                ("From address:", JsString(x._2)),
+                ("To address:", JsString(x._3)),
+                ("Header:", JsString(x._4)),
+                ("Body:", JsString(x._5)),
+                ("Date:", JsString(x._6))))
+            })
+          Ok(resultEmailID)
+        }))
   }
 
   def takePermissions: Action[JsValue] = tokenValidator(parse.json).async { request =>

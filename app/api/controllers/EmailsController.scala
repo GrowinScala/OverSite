@@ -57,13 +57,18 @@ class EmailsController @Inject() (
    * @param status End-point informations considering "draft", "received", "sent", "supervised" as allowed words
    * @return List of emails asked by the user
    */
-  def showEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
+  def getEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
     val possibleStatus = List("draft", "received", "sent")
     if (possibleStatus.contains(status)) {
       request.userName.flatMap(
-        emailActions.showEmails(_, status).map(
+        emailActions.getEmails(_, status).map(
           emails => {
-            val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
+            val resultEmailID = JsArray(
+              emails.map { x =>
+                JsObject(Seq(
+                  ("Email ID:", JsString(x._1)),
+                  ("Header:", JsString(x._2))))
+              })
             Ok(resultEmailID)
           }))
     } else if (status == "satan") {
@@ -82,12 +87,12 @@ class EmailsController @Inject() (
             val resultEmailID = JsArray(
               email.map { x =>
                 JsObject(Seq(
-                  ("Email ID:", JsString(x._1)),
-                  ("Chat ID:", JsString(emailID)),
+                  ("Email ID:", JsString(emailID)),
+                  ("Chat ID:", JsString(x._1)),
                   ("From address:", JsString(x._2)),
                   ("To address:", JsString(x._3)),
                   ("Header:", JsString(x._4)),
-                  ("Body", JsString(x._5)),
+                  ("Body:", JsString(x._5)),
                   ("Date:", JsString(x._6))))
               })
             Ok(resultEmailID)
