@@ -11,6 +11,7 @@ import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 import regex.RegexPatterns.emailAddressPattern
 import api.validators.EmailAddressValidator._
+import definedStrings.ApiStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.matching.Regex
@@ -39,7 +40,7 @@ class UsersController @Inject() (
     userResult.fold(
       errors => {
         Future {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+          BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
         }
       },
       user => {
@@ -48,7 +49,7 @@ class UsersController @Inject() (
           Future {
             Created
           }
-        } else Future { BadRequest("Please insert a valid e-mail address") }
+        } else Future { BadRequest(InvalidEmailAddressStatus) }
       })
   }
 
@@ -65,14 +66,14 @@ class UsersController @Inject() (
     emailResult.fold(
       errors => {
         Future {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+          BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
         }
       },
       user => {
         val loggedUser = userActions.loginUser(user)
         loggedUser.map(_.length).map {
-          case 1 => Ok("Your token is: " + userActions.insertLogin(user) + "\n The token is valid for 1 hour")
-          case x => Forbidden("Username and password doesn´t match" + x)
+          case 1 => Ok(userActions.insertLogin(user) + Token1HourValid)
+          case _ => Forbidden(PasswordMissMatchStatus)
         }
       })
   }
@@ -82,7 +83,7 @@ class UsersController @Inject() (
    * @return
    */
   def logout: Action[AnyContent] = tokenValidator.async { request =>
-    val authToken = request.headers.get("Token").getOrElse("")
+    val authToken = request.headers.get(TokenHeader).getOrElse(EmptyString)
     userActions.insertLogout(authToken).map {
       case 1 => Ok
       case _ => NotModified

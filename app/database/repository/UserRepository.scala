@@ -8,6 +8,7 @@ import database.mappings.{ LoginRow, UserRow }
 import encryption.EncryptString
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.AlgorithmStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 /**
@@ -20,8 +21,8 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
    * @return The number of insertions into database
    */
   def insertUser(user: CreateUserDTO): Future[Int] = {
-    val encrypt = new EncryptString(user.password, "MD5")
-    val insertTableEmail = UserTable += UserRow(user.username, encrypt.result.toString)
+    val encrypt = new EncryptString(user.password, MD5Algorithm)
+    val insertTableEmail = userTable += UserRow(user.username, encrypt.result.toString)
     db.run(insertTableEmail)
   }
 
@@ -29,8 +30,8 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
    * Logins an user, once this provides a matching username and password
    */
   def loginUser(user: CreateUserDTO): Future[Seq[UserRow]] = {
-    val encrypt = new EncryptString(user.password, "MD5")
-    val realUser = UserTable.filter(x => (x.username === user.username) && x.password === encrypt.result.toString).result
+    val encrypt = new EncryptString(user.password, MD5Algorithm)
+    val realUser = userTable.filter(x => (x.username === user.username) && x.password === encrypt.result.toString).result
     db.run(realUser)
   }
 
@@ -42,15 +43,15 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
     val token = randomUUID().toString
     val active = true
 
-    val insertTableLogin = LoginTable += LoginRow(user.username, token, validate1Hour, active)
+    val insertTableLogin = loginTable += LoginRow(user.username, token, validate1Hour, active)
 
     db.run(insertTableLogin)
     token
   }
 
-  def insertLogout(token: String) : Future[Int] = {
+  def insertLogout(token: String): Future[Int] = {
     val notActive = false
-    val insertTableLogin = LoginTable.filter(_.token === token).map(_.active).update(notActive)
+    val insertTableLogin = loginTable.filter(_.token === token).map(_.active).update(notActive)
 
     db.run(insertTableLogin)
 
@@ -60,13 +61,9 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
    * Validates the token for 1 hour
    * @return Current server time plus 1 hour
    */
-  def validate1Hour: Long = {
+  private def validate1Hour: Long = {
     val currentTime = System.currentTimeMillis()
     val valid1Hour = currentTime + 3600000
     valid1Hour
-  }
-
-  def checkUsername(user: CreateUserDTO) :Boolean = {
-    user.username.replaceAll("\\w+\\@\\w+\\.(pt|com)$", "").isEmpty
   }
 }

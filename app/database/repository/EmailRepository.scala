@@ -9,6 +9,7 @@ import database.mappings.EmailMappings._
 import database.mappings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.ApiStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -46,14 +47,14 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
    */
   def showEmails(userEmail: String, status: String): Future[Seq[(String, String)]] = {
     status match {
-      case "sent" =>
+      case EndPointSent =>
         val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === true)
           .sortBy(_.dateOf)
           .map(x => (x.emailID, x.header)).result
         db.run(querySentEmailIds)
 
-      case "received" =>
+      case EndPointReceived =>
         val queryReceivedEmailIds = toAddressTable
           .filter(_.username === userEmail).map(_.emailID)
           .union(ccTable.filter(_.username === userEmail).map(_.emailID))
@@ -65,7 +66,7 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
           .result
         db.run(queryReceivedEmailIdsAux)
 
-      case "draft" =>
+      case EndPointDraft =>
         val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === false)
           .sortBy(_.dateOf)
@@ -77,7 +78,7 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
 
   def getEmail(userEmail: String, status: String, emailID: String) = {
     status match {
-      case "sent" =>
+      case EndPointSent =>
         val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === true)
           .sortBy(_.dateOf)
@@ -87,7 +88,7 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
           .result
         db.run(querySentEmailIds)
 
-      case "received" =>
+      case EndPointReceived =>
         val queryReceivedEmailIds = toAddressTable
           .filter(_.username === userEmail).map(_.emailID)
           .union(ccTable.filter(_.username === userEmail).map(_.emailID))
@@ -101,19 +102,19 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
           .result
         db.run(queryReceivedEmailIdsAux)
 
-      case "draft" =>
+      case EndPointDraft =>
         val querySentEmailIds = emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === false)
           .filter(_.emailID === emailID)
           .sortBy(_.dateOf)
           .joinLeft(toAddressTable).on(_.emailID === _.emailID)
-          .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse("None"), x._1.header, x._1.body, x._1.dateOf))
+          .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse(EmptyString), x._1.header, x._1.body, x._1.dateOf))
           .result
         db.run(querySentEmailIds)
     }
   }
 
-  def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
+  private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
     to.getOrElse(Seq()).nonEmpty
   }
 }
