@@ -8,6 +8,7 @@ import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.ApiStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -19,12 +20,10 @@ class ChatController @Inject() (
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  db: Database)(implicit exec: ExecutionContext)
+  implicit val db: Database,
+  chatActions: ChatRepository,
+  usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
-
-  //TODO: You should "rethink" using local instances and replace them by injections ;)
-  implicit val userActions: UserRepository = new UserRepository(db)
-  implicit val chatActions: ChatRepository = new ChatRepository(db)
 
   /**
    * Get inbox action
@@ -41,6 +40,7 @@ class ChatController @Inject() (
   }
 
   /**
+   *
    * @param chatID
    * @return
    */
@@ -67,13 +67,13 @@ class ChatController @Inject() (
             JsObject(
               //emailID, chatID, fromAddress, toAddress , header, body, dateOf
               Seq(
-                ("Email ID:", JsString(emailID)),
-                ("Chat ID:", JsString(chatID)),
-                ("From address:", JsString(x._1)),
-                ("To address:", JsString(x._2)),
-                ("Header:", JsString(x._3)),
-                ("Body", JsString(x._4)),
-                ("Date:", JsString(x._5))))
+                (EmailIDJSONField, JsString(emailID)),
+                (ChatIDJSONField, JsString(chatID)),
+                (FromAddressJSONField, JsString(x._1)),
+                (ToAddressJSONField, JsString(x._2)),
+                (HeaderJSONField, JsString(x._3)),
+                (BodyJSONField, JsString(x._4)),
+                (DateJSONField, JsString(x._5))))
           })
           Ok(emailsResult)
       }
@@ -88,7 +88,7 @@ class ChatController @Inject() (
     val emailResult = request.body.validate[CreateShareDTO]
     emailResult.fold(
       errors => Future {
-        BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+        BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
       },
       share => {
         request.userName.map(
@@ -139,13 +139,13 @@ class ChatController @Inject() (
             email.map { x =>
               JsObject(Seq(
                 ("Share ID:", JsString(shareID)),
-                ("Email ID:", JsString(emailID)),
-                ("Chat ID:", JsString(x._1)),
-                ("From address:", JsString(x._2)),
-                ("To address:", JsString(x._3)),
-                ("Header:", JsString(x._4)),
-                ("Body:", JsString(x._5)),
-                ("Date:", JsString(x._6))))
+                (EmailIDJSONField, JsString(emailID)),
+                (ChatIDJSONField, JsString(x._1)),
+                (FromAddressJSONField, JsString(x._2)),
+                (ToAddressJSONField, JsString(x._3)),
+                (HeaderJSONField, JsString(x._4)),
+                (BodyJSONField, JsString(x._5)),
+                (DateJSONField, JsString(x._6))))
             })
           Ok(resultEmailID)
         }))
@@ -155,7 +155,7 @@ class ChatController @Inject() (
     val shareResult = request.body.validate[CreateShareDTO]
     shareResult.fold(
       errors => Future {
-        BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+        BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
       },
       share => {
         request.userName.map(

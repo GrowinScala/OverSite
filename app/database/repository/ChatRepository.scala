@@ -3,16 +3,15 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.{ CreateEmailDTO, CreateShareDTO }
-import com.google.inject.Inject
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.{ ChatRow, ShareRow }
+import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
+
 import scala.concurrent.{ ExecutionContext, Future }
 
-//TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
-//Also you don't need to use Injection here.
-class ChatRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
+class ChatRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) {
   /**
    * Insert a chat into database
    * @param email email passed on json body
@@ -128,10 +127,10 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
   }
 
   /**
-    * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
-    * @param userEmail Identification of user by email
-    * @return List of Chat IDs and respective headers
-    */
+   * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
+   * @param userEmail Identification of user by email
+   * @return List of Chat IDs and respective headers
+   */
   def getShares(userEmail: String) = {
 
     val queryEmailId = shareTable.filter(_.toID === userEmail).map(x => (x.chatID, x.fromUser))
@@ -149,11 +148,11 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
   }
 
   /**
-    * Query to get the list of allowed emails that are linked to the chatID that correspond to shareID
-    * @param userEmail Identification of user by email
-    * @param shareID Identification of the permission
-    * @return List of Email IDs and respective headers
-    */
+   * Query to get the list of allowed emails that are linked to the chatID that correspond to shareID
+   * @param userEmail Identification of user by email
+   * @param shareID Identification of the permission
+   * @return List of Email IDs and respective headers
+   */
   def getSharedEmails(userEmail: String, shareID: String) = {
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
@@ -171,13 +170,13 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
   }
 
   /**
-    * Query to get the email, when shareID and emailID are provided
-    *
-    * @param userEmail Identification of user by email
-    * @param shareID Identification of the permission
-    * @param emailID Identification of the email
-    * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
-    */
+   * Query to get the email, when shareID and emailID are provided
+   *
+   * @param userEmail Identification of user by email
+   * @param shareID Identification of the permission
+   * @param emailID Identification of the email
+   * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
+   */
   def getSharedEmail(userEmail: String, shareID: String, emailID: String) = {
 
     val queryShareId = shareTable.filter(_.shareID === shareID)
@@ -197,12 +196,12 @@ class ChatRepository @Inject() (db: Database)(implicit val executionContext: Exe
   }
 
   /**
-    * Remove permission from an user to another user, related to a specific chatID
-    * @param from Identification of user that gave permission
-    * @param to Identification of user that received the permission
-    * @param chatID Identification of the chat proposed
-    * @return Delete of row that mark the permission in cause
-    */
+   * Remove permission from an user to another user, related to a specific chatID
+   * @param from Identification of user that gave permission
+   * @param to Identification of user that received the permission
+   * @param chatID Identification of the chat proposed
+   * @return Delete of row that mark the permission in cause
+   */
   def deletePermission(from: String, to: String, chatID: String) = {
     val deletePermissionTable = shareTable.filter(p => (p.fromUser === from) && (p.toID === to) && (p.chatID === chatID)).delete
     db.run(deletePermissionTable)

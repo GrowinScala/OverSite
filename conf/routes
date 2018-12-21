@@ -30,8 +30,8 @@ GET    /emails/:status/:emailID             api.controllers.EmailsController.get
 
 POST   /shares                              api.controllers.ChatController.supervised
 GET    /shares                              api.controllers.ChatController.getShares
-GET   /shares/:shareID/emails               api.controllers.ChatController.getSharedEmails(shareID: String)
-GET   /shares/:shareID/emails/:emailID      api.controllers.ChatController.getSharedEmail(shareID: String, emailID: String)
+GET    /shares/:shareID/emails              api.controllers.ChatController.getSharedEmails(shareID: String)
+GET    /shares/:shareID/emails/:emailID     api.controllers.ChatController.getSharedEmail(shareID: String, emailID: String)
 
 
     #PATCH TO CHANGE THE ACCESS TO CHATS
