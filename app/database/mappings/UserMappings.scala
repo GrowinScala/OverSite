@@ -1,6 +1,7 @@
 package database.mappings
-import database.mappings.UserMappings.UserTable
+import database.mappings.UserMappings.userTable
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.DatabaseStrings._
 
 //TODO: Consider renaming "validDate" both in the Row object and the DB to "expiryDate" instead.
 /**
@@ -23,13 +24,13 @@ case class UserRow(
  * Class that defines the login table, making username a foreign key in the database
  * @param tag slick tag
  */
-class LoginTable(tag: Tag) extends Table[LoginRow](tag, "logins") {
+class LoginTable(tag: Tag) extends Table[LoginRow](tag, LoginsTable) {
   //TODO Insert userID to improve the search
-  def username = column[String]("username")
-  def token = column[String]("token")
-  def validDate = column[Long]("validDate")
-  def active = column[Boolean]("active")
-  def fileIdFK = foreignKey("username", username, UserTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  def username = column[String](UsernameRow)
+  def token = column[String](TokenRow)
+  def validDate = column[Long](ValidDateRow)
+  def active = column[Boolean](ActiveRow)
+  def fileIdFK = foreignKey(UsernameRow, username, userTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
   def * = (username, token, validDate, active) <> (LoginRow.tupled, LoginRow.unapply)
 }
@@ -37,9 +38,9 @@ class LoginTable(tag: Tag) extends Table[LoginRow](tag, "logins") {
 /**
  * Class that defines the user table, making username a primary key in the database
  */
-class UserTable(tag: Tag) extends Table[UserRow](tag, "users") {
-  def username = column[String]("username", O.PrimaryKey)
-  def password = column[String]("password")
+class UserTable(tag: Tag) extends Table[UserRow](tag, UsersTable) {
+  def username = column[String](UsernameRow, O.PrimaryKey)
+  def password = column[String](PasswordRow)
 
   def * = (username, password) <> (UserRow.tupled, UserRow.unapply)
 }
@@ -48,6 +49,6 @@ class UserTable(tag: Tag) extends Table[UserRow](tag, "users") {
  * Queries of user table and login table
  */
 object UserMappings {
-  lazy val UserTable = TableQuery[UserTable]
-  lazy val LoginTable = TableQuery[LoginTable]
+  lazy val userTable = TableQuery[UserTable]
+  lazy val loginTable = TableQuery[LoginTable]
 }

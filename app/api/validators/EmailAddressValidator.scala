@@ -6,7 +6,7 @@ import scala.util.matching.Regex
 
 object EmailAddressValidator {
 
-  def isEmailAddress(regexPattern: Regex, possibleEmailAddress: String):Boolean = {
+  def isEmailAddress(regexPattern: Regex, possibleEmailAddress: String): Boolean = {
     regexPattern.findAllIn(possibleEmailAddress).nonEmpty
   }
 

@@ -9,6 +9,7 @@ import play.api.libs.json
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.ApiStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -36,14 +37,14 @@ class EmailsController @Inject() (
     emailResult.fold(
       errors => {
         Future {
-          BadRequest(Json.obj("status" -> "Error:", "message" -> JsError.toJson(errors)))
+          BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
         }
       },
       email => {
         request.userName.map(
           emailActions.insertEmail(_, email))
         Future {
-          Ok("Mail sent")
+          Ok(MailSentStatus)
         }
       })
   }
@@ -55,42 +56,40 @@ class EmailsController @Inject() (
    * @return List of emails asked by the user
    */
   def showEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
-    val possibleStatus = List("draft", "received", "sent")
-    if (possibleStatus.contains(status)) {
+    if (PossibleEndPointStatus.contains(status)) {
       request.userName.flatMap(
         emailActions.showEmails(_, status).map(
           emails => {
             val resultEmailID = JsObject(emails.map(x => (x._1, JsString(x._2))))
             Ok(resultEmailID)
           }))
-    } else if (status == "satan") {
-      Future(BadRequest("BURN YOUR LOCAL CHURCH"))
+    } else if (status == SatanString) {
+      Future(BadRequest(SatanStatus))
     } else {
-      Future(BadRequest("Invalid status"))
+      Future(BadRequest(InvalidEndPointStatus))
     }
   }
 
   def getEmail(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
-    val possibleStatus = List("draft", "received", "sent")
-    if (possibleStatus.contains(status)) {
+    if (PossibleEndPointStatus.contains(status)) {
       request.userName.flatMap(
         emailActions.getEmail(_, status, emailID).map(
           email => {
             val resultEmailID = JsArray(
               email.map { x =>
                 JsObject(Seq(
-                  ("Email ID:", JsString(x._1)),
-                  ("Chat ID:", JsString(emailID)),
-                  ("From address:", JsString(x._2)),
-                  ("To address:", JsString(x._3)),
-                  ("Header:", JsString(x._4)),
-                  ("Body", JsString(x._5)),
-                  ("Date:", JsString(x._6))))
+                  (EmailIDJSONField, JsString(x._1)),
+                  (ChatIDJSONField, JsString(emailID)),
+                  (FromAddressJSONField, JsString(x._2)),
+                  (ToAddressJSONField, JsString(x._3)),
+                  (HeaderJSONField, JsString(x._4)),
+                  (BodyJSONField, JsString(x._5)),
+                  (DateJSONField, JsString(x._6))))
               })
             Ok(resultEmailID)
           }))
     } else {
-      Future(BadRequest("Invalid status"))
+      Future(BadRequest(InvalidEndPointStatus))
     }
   }
 

@@ -2,6 +2,7 @@ package database.mappings
 
 import database.mappings.EmailMappings._
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.DatabaseStrings._
 
 /**
  * Case class of Email Table Row
@@ -43,16 +44,15 @@ case class BCCRow(
  * Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key
  * @param tag
  */
-class EmailTable(tag: Tag) extends Table[EmailRow](tag, "emails") {
-  def fileIdFK = foreignKey("chatID", chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-  def chatID = column[String]("chatID")
-  def emailID = column[String]("emailID", O.PrimaryKey)
-  def fromAddress = column[String]("fromAddress")
-  def dateOf = column[String]("dateOf")
-  def header = column[String]("header")
-  def body = column[String]("body")
-  def sent = column[Boolean]("sent")
-
+class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
+  def fileIdFK = foreignKey(ChatIDRow, chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  def chatID = column[String](ChatIDRow)
+  def emailID = column[String](EmailIDRow, O.PrimaryKey)
+  def fromAddress = column[String](FromAddressRow)
+  def dateOf = column[String](DateOfRow)
+  def header = column[String](HeaderRow)
+  def body = column[String](BodyRow)
+  def sent = column[Boolean](SentRow)
   def * = (emailID, chatID, fromAddress, dateOf, header, body, sent) <> (EmailRow.tupled, EmailRow.unapply)
 }
 
@@ -60,11 +60,11 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, "emails") {
  * Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key
  * @param tag
  */
-class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, "toaddresses") {
-  def fileIdFK = foreignKey("emailID", emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-  def emailID = column[String]("emailID")
-  def toID = column[String]("toID", O.PrimaryKey)
-  def username = column[String]("username")
+class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable) {
+  def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  def emailID = column[String](EmailIDRow)
+  def toID = column[String](ToIDRow, O.PrimaryKey)
+  def username = column[String](UsernameRow)
 
   def * = (toID, emailID, username) <> (ToAddressRow.tupled, ToAddressRow.unapply)
 }
@@ -73,11 +73,11 @@ class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, "toaddresses") {
  * Class that defines the cc table,establishing ccID as primary key in the database and emailID as foreign key
  * @param tag
  */
-class CCTable(tag: Tag) extends Table[CCRow](tag, "ccs") {
-  def fileIdFK = foreignKey("emailID", emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-  def emailID = column[String]("emailID")
-  def CCID = column[String]("CCID", O.PrimaryKey)
-  def username = column[String]("username")
+class CCTable(tag: Tag) extends Table[CCRow](tag, CCsTable) {
+  def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  def emailID = column[String](EmailIDRow)
+  def CCID = column[String](CCIDRow, O.PrimaryKey)
+  def username = column[String](UsernameRow)
 
   def * = (CCID, emailID, username) <> (CCRow.tupled, CCRow.unapply)
 }
@@ -86,11 +86,11 @@ class CCTable(tag: Tag) extends Table[CCRow](tag, "ccs") {
  * Class that defines the bcc table,establishing bccID as primary key in the database and emailID as foreign key
  * @param tag
  */
-class BCCTable(tag: Tag) extends Table[BCCRow](tag, "bccs") {
-  def fileIdFK = foreignKey("emailID", emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-  def BCCID = column[String]("BCCID", O.PrimaryKey)
-  def emailID = column[String]("emailID")
-  def username = column[String]("username")
+class BCCTable(tag: Tag) extends Table[BCCRow](tag, BCCsTable) {
+  def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  def BCCID = column[String](BCCIDRow, O.PrimaryKey)
+  def emailID = column[String](EmailIDRow)
+  def username = column[String](UsernameRow)
 
   def * = (BCCID, emailID, username) <> (BCCRow.tupled, BCCRow.unapply)
 }
