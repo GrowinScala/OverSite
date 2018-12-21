@@ -20,13 +20,10 @@ class EmailsController @Inject() (
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  db: Database)(implicit exec: ExecutionContext)
+  implicit val db: Database,
+  emailActions: EmailRepository,
+  usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
-
-  //TODO: You should "rethink" using local instances and replace them by injections ;)
-  val emailActions = new EmailRepository(db)
-  val usersActions = new UserRepository(db)
-  val chatActions = new ChatRepository(db)
 
   /**
    * Aims to send an email from an user to an userID

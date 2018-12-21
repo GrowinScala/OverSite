@@ -1,8 +1,12 @@
 package api.dtos
 
 import play.api.libs.json._
+import slick.ast.Type
+
+import scala.util.matching.Regex
 
 case class CreateEmailDTO(
+
   chatID: Option[String],
   dateOf: String,
   header: String,
@@ -13,5 +17,8 @@ case class CreateEmailDTO(
   sendNow: Boolean)
 
 object CreateEmailDTO {
+  type emailAddress = Regex
   implicit val emailDTO: OFormat[CreateEmailDTO] = Json.format[CreateEmailDTO]
 }
+
+//"\\w+\\@\\w+\\.(pt|com)$"

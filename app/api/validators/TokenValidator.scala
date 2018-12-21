@@ -26,7 +26,7 @@ case class AuthRequest[A](
 /**
  * Class responsible to validate the token
  */
-class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilder[AuthRequest, AnyContent] {
+class TokenValidator @Inject() (implicit mat: Materializer, db: Database) extends ActionBuilder[AuthRequest, AnyContent] {
   override protected def executionContext: ExecutionContext = global
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()
 
@@ -42,9 +42,6 @@ class TokenValidator @Inject() (implicit mat: Materializer) extends ActionBuilde
       case false => Future { Forbidden("Please verify your login details \n Try to login again") }
     }
   }
-
-  //TODO: Inject it instead of hardcoding it here.
-  val db: DatabaseDef = Database.forConfig("mysql")
 
   /**
    * Validates the userName and token inserted by the user

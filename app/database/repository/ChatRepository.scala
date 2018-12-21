@@ -3,16 +3,16 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.{ CreateEmailDTO, CreateShareDTO }
-import com.google.inject.Inject
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.{ ChatRow, ShareRow }
+import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
+
 import scala.concurrent.{ ExecutionContext, Future }
 
 //TODO: Reimplement using Trait + Implementation Class instead. Will make Injection and BL/DL separation easier which you currently are tangling a bit.
-//Also you don't need to use Injection here.
-class ChatRepository @Inject() (db: Database)(implicit val executionContext: ExecutionContext) {
+class ChatRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) {
   /**
    * Insert a chat into database
    * @param email email passed on json body
