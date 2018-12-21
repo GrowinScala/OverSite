@@ -1,14 +1,12 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.dto.CreateShareDTO
+import api.dtos.CreateShareDTO
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, UserRepository }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
-import slick.basic.DatabaseConfig
-import slick.basic.DatabaseConfig
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -24,6 +22,7 @@ class ChatController @Inject() (
   db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
+  //TODO: You should "rethink" using local instances and replace them by injections ;)
   implicit val userActions: UserRepository = new UserRepository(db)
   implicit val chatActions: ChatRepository = new ChatRepository(db)
 

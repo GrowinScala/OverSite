@@ -1,7 +1,7 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.dto.CreateUserDTO
+import api.dtos.CreateUserDTO
 import api.validators.TokenValidator
 import database.repository.UserRepository
 import javax.inject._
@@ -22,6 +22,7 @@ class UsersController @Inject() (
   db: Database)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
+  //TODO: You should "rethink" using local instances and replace them by injections ;)
   val userActions = new UserRepository(db)
 
   /**
@@ -29,7 +30,7 @@ class UsersController @Inject() (
    *
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
-  def signin: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
+  def signIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
     val emailResult = request.body.validate[CreateUserDTO]
     emailResult.fold(
       errors => {
@@ -63,13 +64,16 @@ class UsersController @Inject() (
       user => {
         val loggedUser = userActions.loginUser(user)
         loggedUser.map(_.length).map {
-
           case 1 => Ok("Your token is: " + userActions.insertLogin(user) + "\n The token is valid for 1 hour")
           case x => Forbidden("Username and password doesn´t match" + x)
         }
       })
   }
 
+  /**
+   *
+   * @return
+   */
   def logout: Action[AnyContent] = tokenValidator.async { request =>
     val authToken = request.headers.get("Token").getOrElse("")
     userActions.insertLogout(authToken).map {

@@ -3,12 +3,13 @@
 
 
 #SEND AN EMAIL
-POST    /email                   api.controllers.EmailsController.email
+POST    /email                         api.controllers.EmailsController.email
 
 
 #INBOX
-GET     /chats                   api.controllers.ChatController.inbox
-GET     /chats/:chatID/emails    api.controllers.ChatController.getEmails(chatID: String)
+
+GET     /chats                         api.controllers.ChatController.inbox
+GET     /chats/:chatID/emails          api.controllers.ChatController.getEmails(chatID: String)
 
 #PATCH  /chats/:chatID/emails
 GET    /chats/:chatID/emails/:emailID  api.controllers.ChatController.getEmailID(chatID: String, emailID: String)
@@ -18,7 +19,7 @@ GET    /chats/:chatID/emails/:emailID  api.controllers.ChatController.getEmailID
 
 
 #SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT", #"TRASH"
-GET     /emails/:status              api.controllers.EmailsController.showEmails(status: String)
+GET     /emails/:status                api.controllers.EmailsController.showEmails(status: String)
 #GET    /emails/:status/:emailID
 
 #PATCH ONLY AVAILABLE TO "DRAFTS"->"SENT", #"SOMETHING"<->#"TRASH"
@@ -26,8 +27,8 @@ GET     /emails/:status              api.controllers.EmailsController.showEmails
 
 
 #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
-POST    /shares                   api.controllers.ChatController.supervised
-GET     /shares                   api.controllers.ChatController.shares
+POST    /shares                        api.controllers.ChatController.supervised
+#GET    /shares                        api.controllers.ChatController.shares
 
 #PATCH TO CHANGE THE ACCESS TO CHATS
 DELETE  /shares                   api.controllers.ChatController.takePermissions
@@ -36,7 +37,8 @@ DELETE  /shares                   api.controllers.ChatController.takePermissions
 
 
 #AUTHENTICATION:
-POST    /signin                  api.controllers.UsersController.signin
-POST    /login                   api.controllers.UsersController.login
-PATCH   /logout                  api.controllers.UsersController.logout
+POST    /signin                        api.controllers.UsersController.signIn
+POST    /login                         api.controllers.UsersController.login
+PATCH   /logout                        api.controllers.UsersController.logout
+
 

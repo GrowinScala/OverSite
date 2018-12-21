@@ -8,7 +8,6 @@ import java.security.MessageDigest
  * @param toEncrypt
  */
 class EncryptString(toEncrypt: String, targetAlgorithm: String) {
-
   /**
    * Gets an instance of target algorithm
    */
