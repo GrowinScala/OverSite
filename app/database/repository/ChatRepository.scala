@@ -8,10 +8,11 @@ import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddres
 import database.mappings.{ ChatRow, ShareRow }
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.DatabaseStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ChatRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) {
+class ChatRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database) {
   /**
    * Insert a chat into database
    * @param email email passed on json body
@@ -110,7 +111,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
       // the following join has the same effect as joinleft
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
-      .map(x => (x._1.fromAddress, x._2.map(_.username).getOrElse("None"), x._1.header, x._1.body, x._1.dateOf))
+      .map(x => (x._1.fromAddress, x._2.map(_.username).getOrElse(NoneString), x._1.header, x._1.body, x._1.dateOf))
       .result
     db.run(queryResult)
   }
@@ -190,7 +191,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
       .filter(_.emailID in queryFromUser)
       .filter(_.emailID === emailID)
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
-      .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse("None"), x._1.header, x._1.body, x._1.dateOf))
+      .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse(NoneString), x._1.header, x._1.body, x._1.dateOf))
       .result
     db.run(queryChatId)
   }

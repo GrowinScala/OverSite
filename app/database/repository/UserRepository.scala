@@ -14,7 +14,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 /**
  * Class that receives a db path
  */
-class UserRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) {
+class UserRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database) {
 
   /**
    * Insert an user into database with is password encrypted

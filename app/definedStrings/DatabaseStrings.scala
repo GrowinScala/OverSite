@@ -41,4 +41,7 @@ object DatabaseStrings {
    * For database config names
    */
   val OversiteDB = "oversiteDB"
+
+  /** For regular strings */
+  val NoneString = "none"
 }

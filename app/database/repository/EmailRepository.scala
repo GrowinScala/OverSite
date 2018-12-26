@@ -10,13 +10,14 @@ import database.mappings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.ApiStrings._
+import play.api.mvc.Results._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Class that receives a db path
  */
-class EmailRepository @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database, chatActions: ChatRepository) {
+class EmailRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepository) {
 
   /**
    * Inserts an email in the database
@@ -101,5 +102,19 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
 
   private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
     to.getOrElse(Seq()).nonEmpty
+  }
+
+  def takeDraftMakeSent(userName: String, emailID: String) = {
+
+    val hasToAddress = toAddressTable.filter(_.emailID === emailID).result
+
+    val toSent = emailTable.filter(p => (p.emailID === emailID) && (p.fromAddress === userName))
+      .map(_.sent)
+      .update(true)
+
+    db.run(hasToAddress).map(_.length).flatMap {
+      case 1 => db.run(toSent)
+      case _ => Future { 0 }
+    }
   }
 }

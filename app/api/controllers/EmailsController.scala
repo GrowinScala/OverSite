@@ -94,8 +94,18 @@ class EmailsController @Inject() (
             Ok(resultEmailID)
           }))
     } else {
-      Future(BadRequest(InvalidEndPointStatus))
+      Future { BadRequest(InvalidEndPointStatus) }
     }
   }
 
+  def toSent(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+
+    if (status.equals(EndPointDraft))
+      request.userName.flatMap(
+        emailActions.takeDraftMakeSent(_, emailID).map {
+          case 0 => BadRequest
+          case _ => Ok
+        })
+    else Future { BadRequest(InvalidEndPointStatus) }
+  }
 }

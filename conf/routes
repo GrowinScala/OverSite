@@ -23,18 +23,23 @@ GET    /emails/:status/:emailID             api.controllers.EmailsController.get
 
     #PATCH ONLY AVAILABLE TO "DRAFTS"->"SENT", #"SOMETHING"<->#"TRASH"
 
-#PATCH /emails/:status/:emailID
+PATCH /emails/:status/:emailID              api.controllers.EmailsController.toSent(status: String, emailID: String)
 
 
     #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 
 POST   /shares                              api.controllers.ChatController.supervised
+
+  #TAKE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
+
+DELETE /shares                              api.controllers.ChatController.takePermissions
+
 GET    /shares                              api.controllers.ChatController.getShares
 GET    /shares/:shareID/emails              api.controllers.ChatController.getSharedEmails(shareID: String)
 GET    /shares/:shareID/emails/:emailID     api.controllers.ChatController.getSharedEmail(shareID: String, emailID: String)
 
 
-    #PATCH TO CHANGE THE ACCESS TO CHATS
+    #TAKE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 
 DELETE /shares                              api.controllers.ChatController.takePermissions
 
