@@ -40,10 +40,7 @@ case class BCCRow(
   emailID: String,
   username: String)
 
-/**
- * Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key
- * @param tag
- */
+/** Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key */
 class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def fileIdFK = foreignKey(ChatIDRow, chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def chatID = column[String](ChatIDRow)
@@ -56,10 +53,7 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def * = (emailID, chatID, fromAddress, dateOf, header, body, sent) <> (EmailRow.tupled, EmailRow.unapply)
 }
 
-/**
- * Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key
- * @param tag
- */
+/** Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key */
 class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable) {
   def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def emailID = column[String](EmailIDRow)
@@ -69,10 +63,7 @@ class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable
   def * = (toID, emailID, username) <> (ToAddressRow.tupled, ToAddressRow.unapply)
 }
 
-/**
- * Class that defines the cc table,establishing ccID as primary key in the database and emailID as foreign key
- * @param tag
- */
+/** Class that defines the cc table,establishing ccID as primary key in the database and emailID as foreign key*/
 class CCTable(tag: Tag) extends Table[CCRow](tag, CCsTable) {
   def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def emailID = column[String](EmailIDRow)
@@ -82,10 +73,7 @@ class CCTable(tag: Tag) extends Table[CCRow](tag, CCsTable) {
   def * = (CCID, emailID, username) <> (CCRow.tupled, CCRow.unapply)
 }
 
-/**
- * Class that defines the bcc table,establishing bccID as primary key in the database and emailID as foreign key
- * @param tag
- */
+/** Class that defines the bcc table,establishing bccID as primary key in the database and emailID as foreign key*/
 class BCCTable(tag: Tag) extends Table[BCCRow](tag, BCCsTable) {
   def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def BCCID = column[String](BCCIDRow, O.PrimaryKey)
@@ -96,9 +84,7 @@ class BCCTable(tag: Tag) extends Table[BCCRow](tag, BCCsTable) {
 }
 
 object EmailMappings {
-  /**
-   * Queries of Email table and it's nested entities:
-   */
+  /** Queries of Email table and it's nested entities: */
   lazy val emailTable = TableQuery[EmailTable]
   lazy val toAddressTable = TableQuery[ToAddressTable]
   lazy val ccTable = TableQuery[CCTable]

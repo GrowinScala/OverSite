@@ -3,19 +3,14 @@ import database.mappings.UserMappings.userTable
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
 
-//TODO: Consider renaming "validDate" both in the Row object and the DB to "expiryDate" instead.
-/**
- * Case class of Login Table Row
- */
+/**  Case class of Login Table Row */
 case class LoginRow(
   username: String,
   token: String,
   validDate: Long,
   active: Boolean)
 
-/**
- * Case class of User Table Row
- */
+/** Case class of User Table Row */
 case class UserRow(
   username: String,
   password: String)
@@ -35,9 +30,7 @@ class LoginTable(tag: Tag) extends Table[LoginRow](tag, LoginsTable) {
   def * = (username, token, validDate, active) <> (LoginRow.tupled, LoginRow.unapply)
 }
 
-/**
- * Class that defines the user table, making username a primary key in the database
- */
+/**  Class that defines the user table, making username a primary key in the database */
 class UserTable(tag: Tag) extends Table[UserRow](tag, UsersTable) {
   def username = column[String](UsernameRow, O.PrimaryKey)
   def password = column[String](PasswordRow)
@@ -45,9 +38,7 @@ class UserTable(tag: Tag) extends Table[UserRow](tag, UsersTable) {
   def * = (username, password) <> (UserRow.tupled, UserRow.unapply)
 }
 
-/**
- * Queries of user table and login table
- */
+/** Queries of user table and login table */
 object UserMappings {
   lazy val userTable = TableQuery[UserTable]
   lazy val loginTable = TableQuery[LoginTable]

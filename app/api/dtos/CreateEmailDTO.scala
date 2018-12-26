@@ -20,5 +20,3 @@ object CreateEmailDTO {
   type emailAddress = Regex
   implicit val emailDTO: OFormat[CreateEmailDTO] = Json.format[CreateEmailDTO]
 }
-
-//"\\w+\\@\\w+\\.(pt|com)$"

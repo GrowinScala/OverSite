@@ -4,19 +4,15 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.CreateEmailDTO
-import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
+import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
-import definedStrings.ApiStrings._
-import play.api.mvc.Results._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
-/**
- * Class that receives a db path
- */
+/**  Class that receives a db path */
 class EmailRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepository) {
 
   /**
@@ -28,7 +24,11 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
     val chatID = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
 
     val insertEmailTable = chatID.map(emailTable += EmailRow(randomEmailID, _, username, email.dateOf, email.header, email.body,
-      if (hasSenderAddress(email.to)) { email.sendNow } else { false }))
+      if (hasSenderAddress(email.to))
+        email.sendNow
+      else
+        false ))
+
     val insertAddressTable = toAddressTable ++= email.to.getOrElse(Seq()).map(ToAddressRow(randomUUID().toString, randomEmailID, _))
     val insertCCTable = ccTable ++= email.CC.getOrElse(Seq()).map(CCRow(randomUUID().toString, randomEmailID, _))
     val insertBCCTable = bccTable ++= email.BCC.getOrElse(Seq()).map(BCCRow(randomUUID().toString, randomEmailID, _))

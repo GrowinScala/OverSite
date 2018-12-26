@@ -12,9 +12,7 @@ import definedStrings.ApiStrings._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ ExecutionContext, Future }
 
-/**
- * Case class created to replace the first parameter of ActionBuilder
- */
+/** Case class created to replace the first parameter of ActionBuilder */
 case class AuthRequest[A](
   userName: Future[String],
   request: Request[A]) extends WrappedRequest[A](request) {
@@ -24,9 +22,7 @@ case class AuthRequest[A](
       super.newWrapper(newRequest))
 }
 
-/**
- * Class responsible to validate the token
- */
+/** Class responsible to validate the token */
 class TokenValidator @Inject() (implicit mat: Materializer, db: Database) extends ActionBuilder[AuthRequest, AnyContent] {
   override protected def executionContext: ExecutionContext = global
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()

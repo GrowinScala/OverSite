@@ -3,19 +3,16 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dtos.CreateEmailDTO
 import api.validators.TokenValidator
-import database.repository.{ ChatRepository, EmailRepository, UserRepository }
+import database.repository.{EmailRepository, UserRepository}
+import definedStrings.ApiStrings._
 import javax.inject._
-import play.api.libs.json
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
-import definedStrings.ApiStrings._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
-/**
- * Class injected with end-points
- */
+/** Class injected with end-points */
 
 class EmailsController @Inject() (
   tokenValidator: TokenValidator,
@@ -28,7 +25,6 @@ class EmailsController @Inject() (
 
   /**
    * Aims to send an email from an user to an userID
-   *
    * @return inserts the email informations to the database
    */
   def email: Action[JsValue] = tokenValidator(parse.json).async { request =>
@@ -51,7 +47,6 @@ class EmailsController @Inject() (
 
   /**
    * Considers the case where the user wants to check some type of emails
-   *
    * @param status End-point informations considering "draft", "received", "sent", "supervised" as allowed words
    * @return List of emails asked by the user
    */
@@ -75,6 +70,12 @@ class EmailsController @Inject() (
     }
   }
 
+  /**
+    * Selects an email after filtering through status and emailID
+    * @param status Identification of the email status
+    * @param emailID Identification of the email
+    * @return Action that shows the emailID required
+    */
   def getEmail(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
     if (PossibleEndPointStatus.contains(status)) {
       request.userName.flatMap(

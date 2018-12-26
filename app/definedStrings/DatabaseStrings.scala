@@ -2,9 +2,7 @@ package definedStrings
 
 object DatabaseStrings {
 
-  /**
-   * For table names
-   */
+  /** For table names */
   val ChatsTable = "chats"
   val SharesTable = "shares"
   val ChatUsersTable = "chatusers"
@@ -15,9 +13,7 @@ object DatabaseStrings {
   val LoginsTable = "logins"
   val UsersTable = "users"
 
-  /**
-   * For row names
-   */
+  /** For row names */
   val ChatIDRow = "chatID"
   val HeaderRow = "header"
   val UsernameRow = "username"
@@ -37,9 +33,7 @@ object DatabaseStrings {
   val ActiveRow = "active"
   val PasswordRow = "password"
 
-  /**
-   * For database config names
-   */
+  /** For database config names */
   val OversiteDB = "oversiteDB"
 
   /** For regular strings */

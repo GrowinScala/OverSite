@@ -2,18 +2,14 @@ package definedStrings
 
 object ApiStrings {
 
-  /**
-   * For end point status
-   */
+  /**  For end point status */
 
   val EndPointDraft = "draft"
   val EndPointReceived = "received"
   val EndPointSent = "sent"
   val PossibleEndPointStatus = List(EndPointDraft, EndPointReceived, EndPointSent)
 
-  /**
-   * For HTTP error code status
-   */
+  /**  For HTTP error code status */
   val InvalidEmailAddressStatus = "Please insert a valid e-mail address"
   val PasswordMissMatchStatus = "Username and password doesn´t match"
   val MailSentStatus = "Mail sent"
@@ -21,9 +17,7 @@ object ApiStrings {
   val VerifyLoginStatus = "Please verify your login details \n Try to login again"
   val SatanStatus = "BURN YOUR LOCAL CHURCH"
 
-  /**
-   * For JSON field names
-   */
+  /** For JSON field names */
   val StatusJSONField = "Status:"
   val EmailIDJSONField = "Email ID:"
   val ChatIDJSONField = "Chat ID:"
@@ -36,19 +30,13 @@ object ApiStrings {
   val TokenJSONField = "Token:"
   val TokenValidTimeJsonField = "Token valid time:"
 
-  /**
-   * For JSON Header names
-   */
+  /** For JSON Header names */
   val TokenHeader = "Token"
 
-  /**
-   * For token duration
-   */
+  /** For token duration */
   val Token1HourValid = " The token is valid for 1 hour"
 
-  /**
-   * For regular strings
-   */
+  /** For regular strings */
   val ErrorString = "Error:"
   val MessageString = "message"
   val SatanString = "satan"

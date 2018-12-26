@@ -11,9 +11,7 @@ import slick.jdbc.MySQLProfile.api._
 import definedStrings.AlgorithmStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
-/**
- * Class that receives a db path
- */
+/**  Class that receives a db path */
 class UserRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database) {
 
   /**
@@ -26,9 +24,7 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
     db.run(insertTableEmail)
   }
 
-  /**
-   * Logins an user, once this provides a matching username and password
-   */
+  /** Logins an user, once this provides a matching username and password */
   def loginUser(user: CreateUserDTO): Future[Seq[UserRow]] = {
     val encrypt = new EncryptString(user.password, MD5Algorithm)
     val realUser = userTable.filter(x => (x.username === user.username) && x.password === encrypt.result.toString).result

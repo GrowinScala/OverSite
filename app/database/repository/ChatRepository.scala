@@ -69,12 +69,9 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
     db.run(queryResult)
   }
 
-  /**
-   * Query that selects the emailIDs from the EmailTable that
+  /** Query that selects the emailIDs from the EmailTable that
    * are returned by the auxiliary query "queryuserName", filters by chatID inputed,
-   * by the state "Sent", and sort by the date.
-   * @return query result
-   */
+   * by the state "Sent", and sort by the date. */
   private def queryChat(userEmail: String, chatID: String) = {
     val queryuserName = queryEmail(userEmail)
     emailTable
@@ -84,12 +81,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
       .sortBy(_.dateOf)
   }
 
-  /**
-   *
-   * @param userEmail
-   * @param chatID
-   * @return
-   */
+  /** Function that selects emails through userName and chatID*/
   def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]] = {
     val queryResult = queryChat(userEmail, chatID)
       .map(x => (x.emailID, x.header))
@@ -97,13 +89,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
     db.run(queryResult)
   }
 
-  /**
-   *
-   * @param userEmail
-   * @param chatID
-   * @param emailID
-   * @return
-   */
+  /** Selects an email after filtering through chatID emailID*/
   def getEmail(userEmail: String, chatID: String, emailID: String) = {
     val queryResult = queryChat(userEmail, chatID)
       .filter(_.emailID === emailID)
@@ -127,6 +113,13 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
     Future { shareID }
   }
 
+  /** Auxiliary function*/
+  private def queryUser(query: Query[(Rep[String], Rep[String]), (String, String), Seq]) = {
+    emailTable.filter(_.fromAddress in query.map(x => x._2)).map(_.emailID)
+      .union(toAddressTable.filter(_.username in query.map(x => x._2)).map(_.emailID))
+      .union(ccTable.filter(_.username in query.map(x => x._2)).map(_.emailID))
+      .union(bccTable.filter(_.username in query.map(x => x._2)).map(_.emailID))
+  }
   /**
    * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
    * @param userEmail Identification of user by email
@@ -134,11 +127,11 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    */
   def getShares(userEmail: String) = {
 
-    val queryEmailId = shareTable.filter(_.toID === userEmail).map(x => (x.chatID, x.fromUser))
-    val queryFromUser = emailTable.filter(_.fromAddress in queryEmailId.map(x => x._2)).map(_.emailID)
-      .union(toAddressTable.filter(_.username in queryEmailId.map(x => x._2)).map(_.emailID))
-      .union(ccTable.filter(_.username in queryEmailId.map(x => x._2)).map(_.emailID))
-      .union(bccTable.filter(_.username in queryEmailId.map(x => x._2)).map(_.emailID))
+    val queryEmailId = shareTable.filter(_.toID === userEmail)
+      .map(x => (x.chatID, x.fromUser))
+
+    val queryFromUser = queryUser(queryEmailId)
+
     val queryChatId = emailTable.filter(_.chatID in queryEmailId.map(x => x._1))
       .filter(_.emailID in queryFromUser)
       .sortBy(_.dateOf)
@@ -148,20 +141,14 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
 
   }
 
-  /**
-   * Query to get the list of allowed emails that are linked to the chatID that correspond to shareID
-   * @param userEmail Identification of user by email
-   * @param shareID Identification of the permission
-   * @return List of Email IDs and respective headers
-   */
+  /** Query to get the list of allowed emails that are linked to the chatID that correspond to shareID */
   def getSharedEmails(userEmail: String, shareID: String) = {
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
       .map(x => (x.chatID, x.fromUser))
-    val queryFromUser = emailTable.filter(_.fromAddress in queryShareId.map(x => x._2)).map(_.emailID)
-      .union(toAddressTable.filter(_.username in queryShareId.map(x => x._2)).map(_.emailID))
-      .union(ccTable.filter(_.username in queryShareId.map(x => x._2)).map(_.emailID))
-      .union(bccTable.filter(_.username in queryShareId.map(x => x._2)).map(_.emailID))
+
+    val queryFromUser = queryUser(queryShareId)
+
     val queryChatId = emailTable.filter(_.chatID in queryShareId.map(x => x._1))
       .filter(_.emailID in queryFromUser)
       .sortBy(_.dateOf)
@@ -172,10 +159,6 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
 
   /**
    * Query to get the email, when shareID and emailID are provided
-   *
-   * @param userEmail Identification of user by email
-   * @param shareID Identification of the permission
-   * @param emailID Identification of the email
    * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
    */
   def getSharedEmail(userEmail: String, shareID: String, emailID: String) = {
@@ -183,10 +166,9 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
       .map(x => (x.chatID, x.fromUser))
-    val queryFromUser = emailTable.filter(_.fromAddress in queryShareId.map(x => x._2)).map(_.emailID)
-      .union(toAddressTable.filter(_.username in queryShareId.map(x => x._2)).map(_.emailID))
-      .union(ccTable.filter(_.username in queryShareId.map(x => x._2)).map(_.emailID))
-      .union(bccTable.filter(_.username in queryShareId.map(x => x._2)).map(_.emailID))
+
+    val queryFromUser = queryUser(queryShareId)
+
     val queryChatId = emailTable.filter(_.chatID in queryShareId.map(x => x._1))
       .filter(_.emailID in queryFromUser)
       .filter(_.emailID === emailID)
@@ -198,9 +180,6 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
 
   /**
    * Remove permission from an user to another user, related to a specific chatID
-   * @param from Identification of user that gave permission
-   * @param to Identification of user that received the permission
-   * @param chatID Identification of the chat proposed
    * @return Delete of row that mark the permission in cause
    */
   def deletePermission(from: String, to: String, chatID: String) = {

@@ -2,23 +2,19 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.dtos.CreateUserDTO
-import api.validators.{ EmailAddressValidator, TokenValidator }
+import api.validators.EmailAddressValidator._
+import api.validators.TokenValidator
 import database.repository.UserRepository
+import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
-import play.api.mvc.Results.BadRequest
 import play.api.mvc._
-import slick.jdbc.MySQLProfile.api._
 import regex.RegexPatterns.emailAddressPattern
-import api.validators.EmailAddressValidator._
-import definedStrings.ApiStrings._
+import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.matching.Regex
+import scala.concurrent.{ExecutionContext, Future}
 
-/**
- * Class that is injected with end-points
- */
+/** Class that is injected with end-points */
 
 class UsersController @Inject() (
   cc: ControllerComponents,
@@ -31,7 +27,6 @@ class UsersController @Inject() (
 
   /**
    * Sign in action
-   *
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent
    */
   def signIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
@@ -55,7 +50,6 @@ class UsersController @Inject() (
 
   /**
    * Login action
-   *
    * @return When a valid login is inserted, it is added in the database
    *         and the generated token is sent to user, otherwise an error message is sent
    */
