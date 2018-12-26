@@ -51,8 +51,8 @@ class ChatController @Inject() (
           val emailsResult = JsArray(
             emails.map { x =>
               JsObject(Seq(
-                ("Email ID:", JsString(x._1)),
-                ("Header:", JsString(x._2))))
+                (EmailIDJSONField, JsString(x._1)),
+                (HeaderJSONField, JsString(x._2))))
             })
           Ok(emailsResult)
       }
@@ -122,8 +122,8 @@ class ChatController @Inject() (
           val resultEmailID = JsArray(
             emails.map { x =>
               JsObject(Seq(
-                ("Email ID:", JsString(x._1)),
-                ("Header:", JsString(x._2))))
+                (EmailIDJSONField, JsString(x._1)),
+                (HeaderJSONField, JsString(x._2))))
             })
           Ok(resultEmailID)
         }))
@@ -138,7 +138,7 @@ class ChatController @Inject() (
           val resultEmailID = JsArray(
             email.map { x =>
               JsObject(Seq(
-                ("Share ID:", JsString(shareID)),
+                (ShareIDJSONField, JsString(shareID)),
                 (EmailIDJSONField, JsString(emailID)),
                 (ChatIDJSONField, JsString(x._1)),
                 (FromAddressJSONField, JsString(x._2)),

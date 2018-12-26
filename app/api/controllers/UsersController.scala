@@ -5,7 +5,7 @@ import api.dtos.CreateUserDTO
 import api.validators.{ EmailAddressValidator, TokenValidator }
 import database.repository.UserRepository
 import javax.inject._
-import play.api.libs.json.{ JsError, JsValue, Json }
+import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
@@ -72,7 +72,9 @@ class UsersController @Inject() (
       user => {
         val loggedUser = userActions.loginUser(user)
         loggedUser.map(_.length).map {
-          case 1 => Ok(userActions.insertLogin(user) + Token1HourValid)
+          case 1 => Ok(JsObject(Seq(
+            (TokenJSONField, JsString(userActions.insertLogin(user))),
+            (TokenValidTimeJsonField, JsString(Token1HourValid)))))
           case _ => Forbidden(PasswordMissMatchStatus)
         }
       })

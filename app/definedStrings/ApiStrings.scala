@@ -24,7 +24,7 @@ object ApiStrings {
   /**
    * For JSON field names
    */
-  val StatusJSONField = "status:"
+  val StatusJSONField = "Status:"
   val EmailIDJSONField = "Email ID:"
   val ChatIDJSONField = "Chat ID:"
   val FromAddressJSONField = "From address:"
@@ -32,6 +32,10 @@ object ApiStrings {
   val HeaderJSONField = "Header:"
   val BodyJSONField = "Body"
   val DateJSONField = "Date:"
+  val ShareIDJSONField = "Share ID:"
+  val TokenJSONField = "Token:"
+  val TokenValidTimeJsonField = "Token valid time:"
+
   /**
    * For JSON Header names
    */

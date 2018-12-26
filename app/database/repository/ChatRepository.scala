@@ -46,7 +46,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * @param userEmail the user identity
    * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
    */
-  def queryEmail(userEmail: String) = {
+  private def queryEmail(userEmail: String) = {
     emailTable.filter(_.fromAddress === userEmail).map(_.emailID)
       .union(toAddressTable.filter(_.username === userEmail).map(_.emailID))
       .union(ccTable.filter(_.username === userEmail).map(_.emailID))
@@ -74,7 +74,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * by the state "Sent", and sort by the date.
    * @return query result
    */
-  def querychat(userEmail: String, chatID: String) = {
+  private def queryChat(userEmail: String, chatID: String) = {
     val queryuserName = queryEmail(userEmail)
     emailTable
       .filter(_.emailID in queryuserName)
@@ -90,7 +90,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * @return
    */
   def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]] = {
-    val queryResult = querychat(userEmail, chatID)
+    val queryResult = queryChat(userEmail, chatID)
       .map(x => (x.emailID, x.header))
       .result
     db.run(queryResult)
@@ -104,7 +104,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * @return
    */
   def getEmail(userEmail: String, chatID: String, emailID: String) = {
-    val queryResult = querychat(userEmail, chatID)
+    val queryResult = queryChat(userEmail, chatID)
       .filter(_.emailID === emailID)
       //Since every email with sent==true is obligated to have an ToID,
       // the following join has the same effect as joinleft
