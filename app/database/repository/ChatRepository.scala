@@ -34,7 +34,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * @param chatID Reference to an email conversation
    * @return True or False depending if the chatID exists or not
    */
-  def existChatID(chatID: String): Future[Boolean] = {
+  private def existChatID(chatID: String): Future[Boolean] = {
     val tableSearch = chatTable.filter(_.chatID === chatID).result
     db.run(tableSearch).map(_.length).map {
       case 1 => true
@@ -59,9 +59,9 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
   def getInbox(userEmail: String): Future[Seq[(String, String)]] = {
-    val queryuserName = queryEmail(userEmail)
+    val queryUserName = queryEmail(userEmail)
     val queryResult = emailTable
-      .filter(_.emailID in queryuserName)
+      .filter(_.emailID in queryUserName)
       .filter(_.sent === true)
       .sortBy(_.dateOf)
       .map(x => (x.chatID, x.header))
@@ -69,13 +69,15 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
     db.run(queryResult)
   }
 
-  /** Query that selects the emailIDs from the EmailTable that
-   * are returned by the auxiliary query "queryuserName", filters by chatID inputed,
-   * by the state "Sent", and sort by the date. */
+  /**
+   * Query that selects the emailIDs from the EmailTable that
+   * are returned by the auxiliary query "queryUserName", filters by chatID inputed,
+   * by the state "Sent", and sort by the date.
+   */
   private def queryChat(userEmail: String, chatID: String) = {
-    val queryuserName = queryEmail(userEmail)
+    val queryUserName = queryEmail(userEmail)
     emailTable
-      .filter(_.emailID in queryuserName)
+      .filter(_.emailID in queryUserName)
       .filter(_.chatID === chatID)
       .filter(_.sent === true)
       .sortBy(_.dateOf)

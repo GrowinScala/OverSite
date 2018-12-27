@@ -12,7 +12,7 @@ import play.api.mvc._
 import regex.RegexPatterns.emailAddressPattern
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class that is injected with end-points */
 

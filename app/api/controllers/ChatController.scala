@@ -63,11 +63,11 @@ class ChatController @Inject() (
   }
 
   /**
-    * Selects an email after filtering through chatID and emailID
-    * @param chatID Identification of the chat
-    * @param emailID Identification of the email
-    * @return Action that shows the emailID required
-    */
+   * Selects an email after filtering through chatID and emailID
+   * @param chatID Identification of the chat
+   * @param emailID Identification of the email
+   * @return Action that shows the emailID required
+   */
   def getEmail(chatID: String, emailID: String) = tokenValidator.async { request =>
     request.userName.flatMap {
       chatActions.getEmail(_, chatID, emailID).map {
@@ -109,9 +109,9 @@ class ChatController @Inject() (
   }
 
   /**
-    * Get the header and emailID
-    * @return List of email IDs and respective headers of the shared chats from the user
-    */
+   * Get the header and emailID
+   * @return List of email IDs and respective headers of the shared chats from the user
+   */
   def getShares: Action[AnyContent] = tokenValidator.async { request =>
 
     request.userName.flatMap(
@@ -149,11 +149,11 @@ class ChatController @Inject() (
   }
 
   /**
-    * Get the email that corresponds to the shareID and emailID inserted
-    * @param shareID Identification of the share
-    * @param emailID Identification of the email
-    * @return All details of the email required
-    */
+   * Get the email that corresponds to the shareID and emailID inserted
+   * @param shareID Identification of the share
+   * @param emailID Identification of the email
+   * @return All details of the email required
+   */
   def getSharedEmail(shareID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
 
     request.userName.flatMap(
@@ -176,9 +176,9 @@ class ChatController @Inject() (
   }
 
   /**
-    * Delete permission from database
-    * @return delete the permission from share Table
-    */
+   * Delete permission from database
+   * @return delete the permission from share Table
+   */
   def takePermissions: Action[JsValue] = tokenValidator(parse.json).async { request =>
     val shareResult = request.body.validate[CreateShareDTO]
     shareResult.fold(

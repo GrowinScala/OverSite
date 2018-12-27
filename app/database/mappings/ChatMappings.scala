@@ -30,8 +30,10 @@ class ChatTable(tag: Tag) extends Table[ChatRow](tag, ChatsTable) {
   def * = (chatID, header) <> (ChatRow.tupled, ChatRow.unapply)
 }
 
-/** Class that defines the chatUser table, establishing chatUserID as primary key in the database,
- * chatID and username as foreign keys */
+/**
+ * Class that defines the chatUser table, establishing chatUserID as primary key in the database,
+ * chatID and username as foreign keys
+ */
 class ChatUserTable(tag: Tag) extends Table[ChatUserRow](tag, ChatUsersTable) {
   def chatUserID = column[String](ChatUserIDRow, O.PrimaryKey)
   def chatID = column[String](ChatIDRow)
@@ -42,8 +44,10 @@ class ChatUserTable(tag: Tag) extends Table[ChatUserRow](tag, ChatUsersTable) {
   def * = (chatUserID, chatID, username) <> (ChatUserRow.tupled, ChatUserRow.unapply)
 }
 
-/** Class that defines the share table, establishing shareID as primary key in the database
-  * and chatID as foreign key */
+/**
+ * Class that defines the share table, establishing shareID as primary key in the database
+ * and chatID as foreign key
+ */
 class ShareTable(tag: Tag) extends Table[ShareRow](tag, SharesTable) {
   def shareID = column[String](ShareIDRow, O.PrimaryKey)
   def chatID = column[String](ChatIDRow)

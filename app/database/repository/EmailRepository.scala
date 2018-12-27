@@ -10,7 +10,7 @@ import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**  Class that receives a db path */
 class EmailRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepository) {
@@ -27,7 +27,7 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
       if (hasSenderAddress(email.to))
         email.sendNow
       else
-        false ))
+        false))
 
     val insertAddressTable = toAddressTable ++= email.to.getOrElse(Seq()).map(ToAddressRow(randomUUID().toString, randomEmailID, _))
     val insertCCTable = ccTable ++= email.CC.getOrElse(Seq()).map(CCRow(randomUUID().toString, randomEmailID, _))

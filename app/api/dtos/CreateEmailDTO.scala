@@ -17,6 +17,5 @@ case class CreateEmailDTO(
   sendNow: Boolean)
 
 object CreateEmailDTO {
-  type emailAddress = Regex
   implicit val emailDTO: OFormat[CreateEmailDTO] = Json.format[CreateEmailDTO]
 }

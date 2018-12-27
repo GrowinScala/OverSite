@@ -3,14 +3,14 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dtos.CreateEmailDTO
 import api.validators.TokenValidator
-import database.repository.{EmailRepository, UserRepository}
+import database.repository.{ EmailRepository, UserRepository }
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class injected with end-points */
 
@@ -71,11 +71,11 @@ class EmailsController @Inject() (
   }
 
   /**
-    * Selects an email after filtering through status and emailID
-    * @param status Identification of the email status
-    * @param emailID Identification of the email
-    * @return Action that shows the emailID required
-    */
+   * Selects an email after filtering through status and emailID
+   * @param status Identification of the email status
+   * @param emailID Identification of the email
+   * @return Action that shows the emailID required
+   */
   def getEmail(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
     if (PossibleEndPointStatus.contains(status)) {
       request.userName.flatMap(
