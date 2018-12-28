@@ -11,7 +11,8 @@ scalaVersion := "2.12.6"
 crossScalaVersions := Seq("2.11.12", "2.12.7")
 
 libraryDependencies += guice
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" 
+libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2"
+libraryDependencies += "com.h2database" % "h2" % "1.4.196" % Test
 
 libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.2.0",

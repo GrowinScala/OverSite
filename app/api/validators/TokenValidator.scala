@@ -6,7 +6,7 @@ import play.api.mvc
 import play.api.mvc.Results._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
-import slick.jdbc.MySQLProfile.backend.DatabaseDef
+
 import definedStrings.ApiStrings._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,13 +30,13 @@ class TokenValidator @Inject() (implicit mat: Materializer, db: Database) extend
   override def invokeBlock[A](request: Request[A], block: AuthRequest[A] => Future[Result]): Future[Result] = {
 
     val authToken = request.headers.get(TokenHeader).getOrElse(EmptyString)
-
     validateToken(authToken).flatMap {
       case true =>
         val userName = getUserByToken(authToken)
         block(AuthRequest(userName, request))
 
-      case false => Future { Forbidden(VerifyLoginStatus) }
+      case false =>
+        Future { Forbidden(VerifyLoginStatus) }
     }
   }
 
