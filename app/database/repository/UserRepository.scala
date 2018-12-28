@@ -27,7 +27,8 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
   /** Logins an user, once this provides a matching username and password */
   def loginUser(user: CreateUserDTO): Future[Seq[UserRow]] = {
     val encrypt = new EncryptString(user.password, MD5Algorithm)
-    val realUser = userTable.filter(x => (x.username === user.username) && x.password === encrypt.result.toString).result
+    val realUser = userTable.filter(_.username === user.username)
+      .filter(_.password === encrypt.result.toString).result
     db.run(realUser)
   }
 

@@ -10,5 +10,4 @@ class Module extends AbstractModule {
         "DATABASE_TO_UPPER=FALSE",
       driver = "org.h2.Driver"))
   }
-
 }
