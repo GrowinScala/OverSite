@@ -17,7 +17,7 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
 
   /**
    * Inserts an email in the database
-   * @return Generated email ID
+   * @return Generated chat ID
    */
   def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
     val randomEmailID = randomUUID().toString
@@ -46,7 +46,7 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
    * @param status Possible status: "sent", "received" and "draft"
    * @return Return different queries taking into account the status
    */
-  def auxGetEmails(userEmail: String, status: String) = {
+  private def auxGetEmails(userEmail: String, status: String) = {
     status match {
       case EndPointSent =>
         emailTable.filter(_.fromAddress === userEmail)
