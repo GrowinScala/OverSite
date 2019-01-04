@@ -42,7 +42,6 @@ case class BCCRow(
 
 /** Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key */
 class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
-  def fileIdFK = foreignKey(ChatIDRow, chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def chatID = column[String](ChatIDRow)
   def emailID = column[String](EmailIDRow, O.PrimaryKey)
   def fromAddress = column[String](FromAddressRow)
@@ -50,12 +49,15 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def header = column[String](HeaderRow)
   def body = column[String](BodyRow)
   def sent = column[Boolean](SentRow)
+
+  //def fileIdFK = foreignKey(ChatIDRow, chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+
   def * = (emailID, chatID, fromAddress, dateOf, header, body, sent) <> (EmailRow.tupled, EmailRow.unapply)
 }
 
 /** Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key */
 class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable) {
-  def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  //def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def emailID = column[String](EmailIDRow)
   def toID = column[String](ToIDRow, O.PrimaryKey)
   def username = column[String](UsernameRow)
@@ -65,7 +67,7 @@ class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable
 
 /** Class that defines the cc table,establishing ccID as primary key in the database and emailID as foreign key*/
 class CCTable(tag: Tag) extends Table[CCRow](tag, CCsTable) {
-  def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  //def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def emailID = column[String](EmailIDRow)
   def CCID = column[String](CCIDRow, O.PrimaryKey)
   def username = column[String](UsernameRow)
@@ -75,7 +77,7 @@ class CCTable(tag: Tag) extends Table[CCRow](tag, CCsTable) {
 
 /** Class that defines the bcc table,establishing bccID as primary key in the database and emailID as foreign key*/
 class BCCTable(tag: Tag) extends Table[BCCRow](tag, BCCsTable) {
-  def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  //def fileIdFK = foreignKey(EmailIDRow, emailID, emailTable)(_.emailID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def BCCID = column[String](BCCIDRow, O.PrimaryKey)
   def emailID = column[String](EmailIDRow)
   def username = column[String](UsernameRow)

@@ -4,13 +4,14 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.CreateEmailDTO
-import database.mappings.EmailMappings._
+import database.mappings.EmailMappings.{ emailTable, _ }
 import database.mappings._
 import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.Success
 
 /**  Class that receives a db path */
 class EmailRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepository) {
@@ -19,25 +20,23 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
    * Inserts an email in the database
    * @return Generated chat ID
    */
-  def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
+  def insertEmail(username: String, email: CreateEmailDTO) = {
     val randomEmailID = randomUUID().toString
-    val chatID = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
+    val isDraft = if (hasSenderAddress(email.to)) email.sendNow
+    else false
 
-    val insertEmailTable = chatID.map(emailTable += EmailRow(randomEmailID, _, username, email.dateOf, email.header, email.body,
-      if (hasSenderAddress(email.to))
-        email.sendNow
-      else
-        false))
+    val chatId = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
+    chatId.flatMap(id => {
+      println(id)
+      val insertEmail = for {
+        _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isDraft)
+        _ <- toAddressTable ++= email.to.getOrElse(Seq()).map(ToAddressRow(randomUUID().toString, randomEmailID, _))
+        _ <- ccTable ++= email.CC.getOrElse(Seq()).map(CCRow(randomUUID().toString, randomEmailID, _))
+        _ <- bccTable ++= email.BCC.getOrElse(Seq()).map(BCCRow(randomUUID().toString, randomEmailID, _))
+      } yield id
 
-    val insertAddressTable = toAddressTable ++= email.to.getOrElse(Seq()).map(ToAddressRow(randomUUID().toString, randomEmailID, _))
-    val insertCCTable = ccTable ++= email.CC.getOrElse(Seq()).map(CCRow(randomUUID().toString, randomEmailID, _))
-    val insertBCCTable = bccTable ++= email.BCC.getOrElse(Seq()).map(BCCRow(randomUUID().toString, randomEmailID, _))
-
-    insertEmailTable.map(db.run(_))
-    db.run(insertAddressTable)
-    db.run(insertCCTable)
-    db.run(insertBCCTable)
-    chatID
+      db.run(insertEmail.transactionally)
+    })
   }
 
   /**

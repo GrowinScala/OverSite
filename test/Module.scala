@@ -5,9 +5,7 @@ import slick.jdbc.MySQLProfile.api._
 class Module extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[Database]).toInstance(Database.forURL(
-      "jdbc:h2:mem:play;MODE=MYSQL;" +
-        "DB_CLOSE_DELAY=-1;" +
-        "DATABASE_TO_UPPER=FALSE",
+      "jdbc:h2:mem:testdb;MODE=MYSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=FALSE;",
       driver = "org.h2.Driver"))
   }
 }

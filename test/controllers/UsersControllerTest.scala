@@ -10,11 +10,14 @@ import play.api.libs.json.Json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import actions.UserActions
+import database.mappings.ChatMappings.chatTable
+import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
 import slick.jdbc.H2Profile.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext }
 import scala.util.Try
 
 class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
@@ -26,14 +29,20 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
 
   val userActionsTest = new UserActions()
 
-  override def beforeAll() = {
-    userActionsTest.createFilesTable
+  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+
+  override def beforeAll(): Unit = {
+    Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)
   }
 
-  override def afterAll() = {
-    userActionsTest.dropFilesTable
+  override def afterAll(): Unit = {
+    Await.result(db.run(DBIO.seq(tables.map(_.schema.drop): _*)), Duration.Inf)
   }
 
+  override def afterEach(): Unit = {
+    Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
+  }
+  //TODO change this to seq actions
   override def beforeEach() = {
     //encrypted "12345" password
     db.run(userTable += UserRow("pedro@hotmail.com", "13012420314234138112108765216110414524878123"))
@@ -41,15 +50,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
 
   }
 
-  override def afterEach() = {
-
-    db.run(userTable.delete)
-    db.run(loginTable.delete)
-
-  }
-
   /** Sign in end-point */
-  "UsersController Page#signIn" should {
+  "UsersController #signIn" should {
     "send a BadRequest if JSON body has an invalid format" in {
       val fakeRequest = FakeRequest(POST, s"/signin")
         .withHeaders(HOST -> "localhost:9000")
@@ -63,7 +65,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
       status(result.get) mustBe BAD_REQUEST
     }
   }
-  "UsersController Page#signIn" should {
+  "UsersController #signIn" should {
     "send a BadRequest if JSON body has an invalid format 2" in {
       val fakeRequest = FakeRequest(POST, s"/signin")
         .withHeaders(HOST -> "localhost:9000")

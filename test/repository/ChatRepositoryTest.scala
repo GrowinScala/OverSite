@@ -1,16 +1,22 @@
 package repository
 
+import java.util.UUID.randomUUID
+
 import actions.{ ChatActions, EmailActions }
 import api.dtos.{ CreateEmailDTO, CreateUserDTO }
-import database.repository.ChatRepository
+import database.mappings.ChatMappings.chatTable
+import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
+import database.mappings.UserMappings.{ loginTable, userTable }
+import database.repository.{ ChatRepository, EmailRepository }
 import org.scalatest._
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
-import scala.concurrent.ExecutionContext
-class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext }
+class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
@@ -30,24 +36,19 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     Option(Seq("joao@growin.pt")),
     true)
 
-  override def beforeAll() = {
-    chatActionsTest.createFilesTable
+  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+
+  override def beforeAll(): Unit = {
+    Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)
   }
 
-  override def afterAll() = {
-    chatActionsTest.dropFilesTable
+  override def afterAll(): Unit = {
+    Await.result(db.run(DBIO.seq(tables.map(_.schema.drop): _*)), Duration.Inf)
   }
 
   override def afterEach(): Unit = {
-    chatActionsTest.deleteRowsTable
+    Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
-
-  /** Verify if a chat is inserted in database */
-  "ChatRepository #insertChat" should {
-    "check if the intended chat is inserted in the chat table in database" in {
-      val result = chatActionsTest.insertChatTest(userCreation.username, emailCreation)
-      assert(result === true)
-    }
-  }
+  /* Verify if a chat is inserted in database */
 
 }

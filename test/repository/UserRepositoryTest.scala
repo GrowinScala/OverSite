@@ -2,15 +2,19 @@ package repository
 
 import actions.UserActions
 import api.dtos.CreateUserDTO
+import database.mappings.ChatMappings.chatTable
+import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
+import database.mappings.UserMappings.{ loginTable, userTable }
 import org.scalatest._
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext }
 
-class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
@@ -22,16 +26,18 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   val userCreationWrongPassword = new CreateUserDTO("rvalente@growin.com", "00000")
   val userCreationWrongUser = new CreateUserDTO("pluis@growin.com", "12345")
 
-  override def beforeAll() = {
-    userActionsTest.createFilesTable
+  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+
+  override def beforeAll(): Unit = {
+    Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)
   }
 
-  override def afterAll() = {
-    userActionsTest.dropFilesTable
+  override def afterAll(): Unit = {
+    Await.result(db.run(DBIO.seq(tables.map(_.schema.drop): _*)), Duration.Inf)
   }
 
   override def afterEach(): Unit = {
-    userActionsTest.deleteRowsTable
+    Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
 
   /** Verify if an user has signed in into database */

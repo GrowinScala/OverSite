@@ -6,13 +6,26 @@ import database.mappings.ChatMappings.chatTable
 import slick.ast.Select
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.ExecutionContext
-import scala.util.matching.Regex
-import regex.RegexPatterns._
-"fasd@cacsd.pt".replaceAll("\\w+\\@\\w+\\.(pt|com)$","").isEmpty
-emailAddressPattern.findAllIn("fasd@cacsd.pt").nonEmpty
+import scala.concurrent.{ExecutionContext, Future}
+implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration.Duration
 
-def isEmailAddress(regexPattern:Regex, possibleEmailAddress:String)={
-  regexPattern.findAllIn(possibleEmailAddress).nonEmpty
+
+   def waitToComplete[T](x: Future[T]) = {
+    Await.result(x, Duration.Inf)
+  }
+
+
+def help={
+  val a =  Future{1+1}
+  val b = Future{true || false}.toString
+  val c = Future{List(1,9,5,3,2).map(_+1)}
+
+
+  Future{a + b + c}
+
+
+
 }
-List("adeus@hotmail.co","hihi@hotmail.com","lolol@hotmail.com","ola@hotmail.com").forall(isEmailAddress(emailAddressPattern,_))
+Await.result(help, Duration.Inf)

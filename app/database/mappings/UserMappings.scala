@@ -25,7 +25,7 @@ class LoginTable(tag: Tag) extends Table[LoginRow](tag, LoginsTable) {
   def token = column[String](TokenRow)
   def validDate = column[Long](ValidDateRow)
   def active = column[Boolean](ActiveRow)
-  def fileIdFK = foreignKey(UsernameRow, username, userTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  //def fileIdFK = foreignKey(UsernameRow, username, userTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
   def * = (username, token, validDate, active) <> (LoginRow.tupled, LoginRow.unapply)
 }
