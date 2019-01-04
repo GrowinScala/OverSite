@@ -39,7 +39,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   override def afterEach(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
-
+  /*
   /** Verify if an user has signed in into database */
   "UsersRepository #loginTable" should {
     "check if the correct user is inserted in login table in database" in {
@@ -102,6 +102,6 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
       assert(result === false)
     }
   }
-
+*/
 }
 
