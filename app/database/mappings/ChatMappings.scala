@@ -38,8 +38,8 @@ class ChatUserTable(tag: Tag) extends Table[ChatUserRow](tag, ChatUsersTable) {
   def chatUserID = column[String](ChatUserIDRow, O.PrimaryKey)
   def chatID = column[String](ChatIDRow)
   def username = column[String](UsernameRow)
-  def fileIdFK1 = foreignKey(ChatIDRow, chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-  def fileIdFK2 = foreignKey(UsernameRow, username, UserMappings.userTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  //def fileIdFK1 = foreignKey(ChatIDRow, chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  //def fileIdFK2 = foreignKey(UsernameRow, username, UserMappings.userTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
   def * = (chatUserID, chatID, username) <> (ChatUserRow.tupled, ChatUserRow.unapply)
 }
@@ -53,7 +53,7 @@ class ShareTable(tag: Tag) extends Table[ShareRow](tag, SharesTable) {
   def chatID = column[String](ChatIDRow)
   def fromUser = column[String](FromUserRow)
   def toID = column[String](ToIDRow)
-  def fileIdFK = foreignKey(ChatIDRow, chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+  //def fileIdFK = foreignKey(ChatIDRow, chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
   def * = (shareID, chatID, fromUser, toID) <> (ShareRow.tupled, ShareRow.unapply)
 }

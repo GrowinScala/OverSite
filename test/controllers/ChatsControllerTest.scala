@@ -1,12 +1,11 @@
 package controllers
-import actions.{ ChatActions, SupportActions }
-import database.mappings.ChatMappings.chatTable
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
+import actions.ChatActions
+import database.mappings.ChatMappings._
+import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
-import database.mappings.{ LoginRow, UserRow }
+import database.mappings.{LoginRow, UserRow}
 import database.repository.ChatRepository
-import org.scalatest.tools.Durations
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
@@ -14,13 +13,11 @@ import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json.parse
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{ route, status, _ }
+import play.api.test.Helpers.{route, status, _}
 import slick.jdbc.H2Profile.api._
 
-import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext}
 
 class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
@@ -31,7 +28,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   lazy implicit val rep = new ChatRepository()
   val chatActionsTest = new ChatActions()
 
-  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
   override def beforeEach(): Unit = {
     //encrypted "12345" password
@@ -210,6 +207,166 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
       status(result.get) mustBe OK
     }
   }
-
   /** ----------------------------------------------- */
+
+  /** GET /shares end-point */
+
+  "ChatsController #getShares" should {
+    "send an Ok if JSON header has a valid token" in {
+      val fakeRequest = FakeRequest(GET, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+
+  "ChatsController #getShares" should {
+    "send a Forbidden if JSON header has an invalid token" in {
+      val fakeRequest = FakeRequest(GET, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "???")
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe FORBIDDEN
+    }
+  }
+  /** ----------------------------------------------- */
+
+  /** GET /shares/:shareID/emails end-point */
+
+  "ChatsController #getSharedEmails" should {
+    "send an Ok if JSON header has a valid token" in {
+      val fakeRequest = FakeRequest(GET, s"/shares/:shareID/emails")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+
+  "ChatsController #getSharedEmails" should {
+    "send a Forbidden if JSON header has an invalid token" in {
+      val fakeRequest = FakeRequest(GET, s"/shares/:shareID/emails")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "???")
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe FORBIDDEN
+    }
+  }
+  /** ----------------------------------------------- */
+
+  /** GET /shares/:shareID/emails/:emailID end-point */
+
+  "ChatsController #getSharedEmail" should {
+    "send an Ok if JSON header has a valid token" in {
+      val fakeRequest = FakeRequest(GET, s"/shares/:shareID/emails/:emailID")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+
+  "ChatsController #getSharedEmail" should {
+    "send a Forbidden if JSON header has an invalid token" in {
+      val fakeRequest = FakeRequest(GET, s"/shares/:shareID/emails/:emailID")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "???")
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe FORBIDDEN
+    }
+  }
+  /** ----------------------------------------------- */
+
+  /** DELETE /shares end-point */
+
+  "ChatsController #takePermissions" should {
+    "send a BadRequest if JSON body has an invalid format: case chatID" in {
+      val fakeRequest = FakeRequest(DELETE, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+        .withJsonBody(parse("""
+          {
+            "NOTchatID": "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
+            "supervisor": "pedro@hotmail.com"
+          }
+        """))
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe BAD_REQUEST
+    }
+  }
+
+  "ChatsController #takePermissions" should {
+    "send a BadRequest if JSON body has an invalid format: case supervisor" in {
+      val fakeRequest = FakeRequest(DELETE, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+        .withJsonBody(parse("""
+          {
+            "chatID": "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
+            "NOTsupervisor": "pedro@hotmail.com"
+          }
+        """))
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe BAD_REQUEST
+    }
+  }
+
+  "ChatsController #takePermissions" should {
+    "send a BadRequest if JSON body has an invalid format: case missing supervisor parameter" in {
+      val fakeRequest = FakeRequest(DELETE, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+        .withJsonBody(parse("""
+          {
+            "chatID": "6e9601ff-f787-4d19-926c-1ba62fd03a9a"
+          }
+        """))
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe BAD_REQUEST
+    }
+  }
+
+  "ChatsController #takePermissions" should {
+    "send a BadRequest if JSON body has an invalid format: case missing chatID parameter" in {
+      val fakeRequest = FakeRequest(DELETE, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+        .withJsonBody(parse("""
+          {
+            "supervisor": "pedro@hotmail.com"
+          }
+        """))
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe BAD_REQUEST
+    }
+  }
+
+  "ChatsController #takePermissions" should {
+    "send a Forbidden if JSON header has an invalid token" in {
+      val fakeRequest = FakeRequest(DELETE, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "???")
+        .withJsonBody(parse("""
+          {
+            "chatID": "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
+            "supervisor": "pedro@hotmail.com"
+          }
+        """))
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe FORBIDDEN
+    }
+  }
+
+  "ChatsController #takePermissions" should {
+    "send an Ok if JSON header has a valid token and a valid JSON body" in {
+      val fakeRequest = FakeRequest(DELETE, s"/shares")
+        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+        .withJsonBody(parse("""
+          {
+            "chatID": "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
+            "supervisor": "pedro@hotmail.com"
+          }
+        """))
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+  /** ----------------------------------------------- */
+
 }
