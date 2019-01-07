@@ -81,46 +81,52 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     }
   }
 
-  /*
   /** Test the login of an user with a wrong username*/
   "UsersRepository #loginUser" should {
     "login with an unavailable username in database" in {
-      val result = userActionsTest.insertLoginTest(userCreation, userCreationWrongUser)
-      assert(result === false)
+      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      Await.result(userActions.insertLogin(userCreation), Duration.Inf)
+      val resultLoginUser = Await.result(userActions.loginUser(userCreationWrongUser), Duration.Inf)
+      /** Verify if user is inserted in login table correctly */
+      assert(resultLoginUser.isEmpty)
     }
   }
 
   /** Test the login of an user with a wrong password */
   "UsersRepository #loginUser" should {
     "login with an unavailable password in database" in {
-      val result = userActionsTest.insertLoginTest(userCreation, userCreationWrongPassword)
-      assert(result === false)
+      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      Await.result(userActions.insertLogin(userCreation), Duration.Inf)
+      val resultLoginUser = Await.result(userActions.loginUser(userCreationWrongPassword), Duration.Inf)
+      /** Verify if user is inserted in login table correctly */
+      assert(resultLoginUser.isEmpty)
     }
   }
 
   /** Test the logout of an user into database */
   "UsersRepository #logoutUser" should {
     "logout with an available user in database" in {
-      val result = userActionsTest.insertLogoutTest(userCreation, None, None)
-      assert(result === true)
+      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      val token = Await.result(userActions.insertLogin(userCreation), Duration.Inf)
+      Await.result(userActions.insertLogout(token), Duration.Inf)
+      val resultLogOut = Await.result(db.run(loginTable.result), Duration.Inf)
+
+      /** Verify if the logout is processed correctly*/
+      resultLogOut.map(row => assert(row.active === false))
     }
   }
 
   /** Test the logout of an user into database with a wrong token*/
   "UsersRepository #logoutUser" should {
     "logout with an available user in database with wrong token" in {
-      val result = userActionsTest.insertLogoutTest(userCreation, Option("00000"), None)
-      assert(result === false)
-    }
-  }
+      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      Await.result(userActions.insertLogout("0000"), Duration.Inf)
+      val resultLogOut = Await.result(db.run(loginTable.result), Duration.Inf)
 
-  /** Test the logout of an user into database with wrong boolean for active*/
-  "UsersRepository #logoutUser" should {
-    "logout with an available user in database with wrong boolean for active" in {
-      val result = userActionsTest.insertLogoutTest(userCreation, None, Option(true))
-      assert(result === false)
+      /** Verify if the logout is processed correctly*/
+      resultLogOut.map(row => assert(row.active === true))
+
     }
   }
-*/
 }
 

@@ -35,7 +35,7 @@ object ControllerStrings {
   val ChatsEndpointRoute = s"/chats"
   val SharesEndpointRoute = s"/shares"
   val SignInEndpointRoute = s"/signin"
-  val LogInEndpointRoute =  s"/login"
+  val LogInEndpointRoute = s"/login"
   val LogOutEndpointRoute = s"/logout"
 
   /** For Controller */
@@ -62,9 +62,9 @@ object ControllerStrings {
   val InvalidStatusBadRequest = "send a BadRequest if end-point has an invalid status"
   val HasNoToAddressBadRequest = "send a BadRequest if target email has no to address"
   val InvalidEmailAddress = "send a BadRequest if username is not a valid email address"
-  val ValidJSONBodyCreated =  "send a Created if JSON body has a valid format "
+  val ValidJSONBodyCreated = "send a Created if JSON body has a valid format "
   val MissMatchPasswordForbidden = "send a Forbidden if username and password doesn't match"
-  val AlreadyLoggedOutForbidden =  "send a Forbidden if JSON header has a valid token but the user is already log out"
+  val AlreadyLoggedOutForbidden = "send a Forbidden if JSON header has a valid token but the user is already log out"
 
   val AndJsonBody = " and a valid JSON body"
   val AndStatus = " and status: "

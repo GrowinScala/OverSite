@@ -2,11 +2,11 @@ package controllers
 
 import actions.UserActions
 import database.mappings.ChatMappings.chatTable
-import database.mappings.EmailMappings.{bccTable, ccTable, emailTable, toAddressTable}
+import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings._
-import database.mappings.{LoginRow, UserRow}
+import database.mappings.{ LoginRow, UserRow }
 import definedStrings.testStrings.ControllerStrings._
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
@@ -18,7 +18,7 @@ import play.api.test.Helpers._
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 
 class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
