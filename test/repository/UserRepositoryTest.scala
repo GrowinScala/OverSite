@@ -5,7 +5,7 @@ import api.dtos.CreateUserDTO
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
-import database.repository.UserRepository
+import database.repository.UserRepositoryImpl
 import encryption.EncryptString
 import org.scalatest._
 import play.api.Mode
@@ -24,7 +24,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
 
-  val userActions = new UserRepository()
+  val userActions = new UserRepositoryImpl()
 
   //val userActionsTest = new UserActions()
   val userCreation = new CreateUserDTO("rvalente@growin.com", "12345")

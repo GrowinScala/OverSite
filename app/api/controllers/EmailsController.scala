@@ -3,7 +3,7 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dtos.CreateEmailDTO
 import api.validators.TokenValidator
-import database.repository.{ EmailRepository, UserRepository }
+import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
@@ -19,8 +19,8 @@ class EmailsController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   implicit val db: Database,
-  emailActions: EmailRepository,
-  usersActions: UserRepository)(implicit exec: ExecutionContext)
+  emailActions: EmailRepositoryImpl,
+  usersActions: UserRepositoryImpl)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   /**

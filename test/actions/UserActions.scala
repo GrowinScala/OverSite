@@ -3,7 +3,7 @@ package actions
 import api.dtos.CreateUserDTO
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
-import database.repository.UserRepository
+import database.repository.UserRepositoryImpl
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import encryption.EncryptString
 import javax.inject.Inject
@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
 
 class UserActions @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database) extends SupportActions {
 
-  val userActions = new UserRepository()
+  val userActions = new UserRepositoryImpl()
 
   def createFilesTable = {
     db.run(loginTable.schema.create)

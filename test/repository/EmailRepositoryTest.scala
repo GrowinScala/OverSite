@@ -7,7 +7,7 @@ import api.dtos.{ CreateEmailDTO, CreateUserDTO }
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
-import database.repository.{ ChatRepository, EmailRepository }
+import database.repository.{ ChatRepository, ChatRepositoryImpl, EmailRepositoryImpl }
 import org.scalatest._
 import org.scalatest.tools.Durations
 import play.api.Mode
@@ -25,8 +25,8 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
 
-  lazy implicit val rep = new ChatRepository()
-  val emailActions = new EmailRepository()
+  lazy implicit val rep = new ChatRepositoryImpl()
+  val emailActions = new EmailRepositoryImpl()
 
   val userCreation = new CreateUserDTO("rvalente@growin.com", "12345")
   val emailCreation = new CreateEmailDTO(

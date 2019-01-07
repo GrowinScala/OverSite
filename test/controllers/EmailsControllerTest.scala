@@ -4,7 +4,7 @@ import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.mappings._
-import database.repository.ChatRepository
+import database.repository.{ ChatRepository, ChatRepositoryImpl }
 import definedStrings.testStrings.ControllerStrings._
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
@@ -26,7 +26,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
-  lazy implicit val rep = new ChatRepository()
+  lazy implicit val rep = new ChatRepositoryImpl()
   val chatActionsTest = new ChatActions()
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)

@@ -3,16 +3,17 @@ package actions
 import api.dtos.CreateEmailDTO
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
-import database.repository.{ ChatRepository, EmailRepository }
+import database.repository.{ ChatRepository, ChatRepositoryImpl, EmailRepositoryImpl }
 import javax.inject.Inject
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
-class EmailActions @Inject() (implicit val executionContext: ExecutionContext, implicit val db: Database, chatActions: ChatRepository) extends SupportActions {
-
-  val emailActions = new EmailRepository()
+class EmailActions @Inject() (implicit
+  val executionContext: ExecutionContext,
+  implicit val db: Database, chatActions: ChatRepositoryImpl,
+  emailActions: EmailRepositoryImpl) extends SupportActions {
 
   def createFilesTable = {
     db.run(emailTable.schema.create)
