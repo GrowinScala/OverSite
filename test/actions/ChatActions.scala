@@ -4,8 +4,6 @@ import java.util.UUID.randomUUID
 
 import api.dtos.CreateEmailDTO
 import database.mappings.ChatMappings._
-import database.mappings.EmailMappings._
-import database.mappings.UserMappings.{ loginTable, userTable }
 import database.repository.{ ChatRepository, EmailRepository }
 import javax.inject.Inject
 import slick.jdbc.H2Profile.api._

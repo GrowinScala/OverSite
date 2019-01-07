@@ -4,7 +4,7 @@ import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
-import database.repository.ChatRepository
+import database.repository.{ ChatRepository }
 import org.scalatest.tools.Durations
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec

@@ -11,6 +11,19 @@ import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
+/*
+trait ChatRepository {
+  def insertChat(email: CreateEmailDTO, chatID: String): Future[String]
+  def getInbox(userEmail: String): Future[Seq[(String, String)]]
+  def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]]
+  def getEmail(userEmail: String, chatID: String, emailID: String): Future[Seq[(String, String, String, String, String)]]
+  def insertPermission(from: String, share: CreateShareDTO): Future[String]
+  def getShares(userEmail: String): Future[Seq[(String, String)]]
+  def getSharedEmails(userEmail: String, shareID: String): Future[Seq[(String, String)]]
+  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[(String, String, String, String, String, String)]]
+  def deletePermission(from: String, to: String, chatID: String): Future[Int]
+}
+*/
 
 class ChatRepository @Inject() (implicit val executionContext: ExecutionContext, db: Database) {
   /**
@@ -92,7 +105,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
   }
 
   /** Selects an email after filtering through chatID emailID*/
-  def getEmail(userEmail: String, chatID: String, emailID: String) = {
+  def getEmail(userEmail: String, chatID: String, emailID: String): Future[Seq[(String, String, String, String, String)]] = {
     val queryResult = queryChat(userEmail, chatID)
       .filter(_.emailID === emailID)
       //Since every email with sent==true is obligated to have an ToID,
@@ -127,7 +140,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * @param userEmail Identification of user by email
    * @return List of Chat IDs and respective headers
    */
-  def getShares(userEmail: String) = {
+  def getShares(userEmail: String): Future[Seq[(String, String)]] = {
 
     val queryEmailId = shareTable.filter(_.toID === userEmail)
       .map(x => (x.chatID, x.fromUser))
@@ -144,7 +157,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
   }
 
   /** Query to get the list of allowed emails that are linked to the chatID that correspond to shareID */
-  def getSharedEmails(userEmail: String, shareID: String) = {
+  def getSharedEmails(userEmail: String, shareID: String): Future[Seq[(String, String)]] = {
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
       .map(x => (x.chatID, x.fromUser))
@@ -163,7 +176,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * Query to get the email, when shareID and emailID are provided
    * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
    */
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String) = {
+  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[(String, String, String, String, String, String)]] = {
 
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
@@ -184,7 +197,7 @@ class ChatRepository @Inject() (implicit val executionContext: ExecutionContext,
    * Remove permission from an user to another user, related to a specific chatID
    * @return Delete of row that mark the permission in cause
    */
-  def deletePermission(from: String, to: String, chatID: String) = {
+  def deletePermission(from: String, to: String, chatID: String): Future[Int] = {
     val deletePermissionTable = shareTable.filter(p => (p.fromUser === from) && (p.toID === to) && (p.chatID === chatID)).delete
     db.run(deletePermissionTable)
   }

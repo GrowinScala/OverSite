@@ -89,7 +89,7 @@ class EmailRepository @Inject() (implicit val executionContext: ExecutionContext
    * @param emailID Identification the a specific email
    * @return All the details of the email selected
    */
-  def getEmail(userEmail: String, status: String, emailID: String) = {
+  def getEmail(userEmail: String, status: String, emailID: String): Future[Seq[(String, String, String, String, String, String)]] = {
     val queryResult = auxGetEmails(userEmail, status)
       .filter(_.emailID === emailID)
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)

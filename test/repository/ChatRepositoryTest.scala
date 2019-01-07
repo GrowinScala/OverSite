@@ -1,13 +1,10 @@
 package repository
 
-import java.util.UUID.randomUUID
-
-import actions.{ ChatActions, EmailActions }
 import api.dtos.{ CreateEmailDTO, CreateUserDTO }
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
-import database.repository.{ ChatRepository, EmailRepository }
+import database.repository.ChatRepository
 import org.scalatest._
 import play.api.Mode
 import play.api.inject.Injector
@@ -23,7 +20,6 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
   lazy implicit val rep = new ChatRepository()
-  val chatActionsTest = new ChatActions()
 
   val userCreation = new CreateUserDTO("rvalente@growin.com", "12345")
   val emailCreation = new CreateEmailDTO(
@@ -49,6 +45,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   override def afterEach(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
+
   /* Verify if a chat is inserted in database */
 
 }

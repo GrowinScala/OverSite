@@ -5,11 +5,14 @@ import api.dtos.CreateUserDTO
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
+import database.repository.UserRepository
+import encryption.EncryptString
 import org.scalatest._
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
+import definedStrings.AlgorithmStrings.MD5Algorithm
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
@@ -21,7 +24,9 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
 
-  val userActionsTest = new UserActions()
+  val userActions = new UserRepository()
+
+  //val userActionsTest = new UserActions()
   val userCreation = new CreateUserDTO("rvalente@growin.com", "12345")
   val userCreationWrongPassword = new CreateUserDTO("rvalente@growin.com", "00000")
   val userCreationWrongUser = new CreateUserDTO("pluis@growin.com", "12345")
@@ -39,30 +44,44 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   override def afterEach(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
-  /*
+
   /** Verify if an user has signed in into database */
   "UsersRepository #loginTable" should {
     "check if the correct user is inserted in login table in database" in {
-      val result = userActionsTest.insertUserTest(userCreation)
-      assert(result === true)
+      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
+      val resultUserTable = Await.result(db.run(userTable.result), Duration.Inf)
+      resultUserTable.map(user =>
+        assert((user.username, user.password) === (userCreation.username, encrypt.result.toString)))
     }
   }
-  /** Test the insertion of an user into database */
+
+  /** Test the insertion of an user into login database */
   "UsersRepository #insertUser" should {
     "insert a correct user in database" in {
-      val result = userActionsTest.loginUserTest(userCreation)
-      assert(result === true)
+      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
+      val resultLoginUser = Await.result(userActions.loginUser(userCreation), Duration.Inf)
+
+      /** Verify if user is inserted in login table correctly */
+      resultLoginUser.map(user =>
+        assert((user.username, user.password) === (userCreation.username, encrypt.result.toString)))
     }
   }
 
   /** Test the login of a available user */
   "UsersRepository #loginUser" should {
     "login with a available user in database" in {
-      val result = userActionsTest.insertLoginTest(userCreation, userCreation)
-      assert(result === true)
+      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      Await.result(userActions.insertLogin(userCreation), Duration.Inf)
+      val resultLoginTable = Await.result(db.run(loginTable.result), Duration.Inf)
+
+      /** Verify if user is inserted in login table correctly */
+      assert(resultLoginTable.head.username === userCreation.username)
     }
   }
 
+  /*
   /** Test the login of an user with a wrong username*/
   "UsersRepository #loginUser" should {
     "login with an unavailable username in database" in {

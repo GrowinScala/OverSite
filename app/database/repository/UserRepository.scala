@@ -38,14 +38,14 @@ class UserRepository @Inject() (implicit val executionContext: ExecutionContext,
    * Inserts a login into database with the expire token session as the current server time plus 1 hour
    * @return Generated token
    */
-  def insertLogin(user: CreateUserDTO): String = {
+  def insertLogin(user: CreateUserDTO) = {
     val token = randomUUID().toString
     val active = true
 
-    val insertTableLogin = loginTable += LoginRow(user.username, token, validate1Hour, active)
+    for {
+      _ <- db.run(loginTable += LoginRow(user.username, token, validate1Hour, active))
+    } yield token
 
-    db.run(insertTableLogin)
-    token
   }
 
   def insertLogout(token: String): Future[Int] = {

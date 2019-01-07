@@ -29,7 +29,7 @@ class UserActions @Inject() (implicit val executionContext: ExecutionContext, im
     db.run(loginTable.delete)
     db.run(userTable.delete)
   }
-
+  /*
   def insertUserTest(user: CreateUserDTO) = {
     waitToComplete(userActions.insertUser(user))
 
@@ -58,12 +58,10 @@ class UserActions @Inject() (implicit val executionContext: ExecutionContext, im
     val token = userActions.insertLogin(user)
     waitToComplete(userActions.insertLogout(token))
     val logoutFilter = loginTable.filter(_.username === user.username)
-      .filter(_.token === optionToken.getOrElse(token))
       .filter(_.validDate > System.currentTimeMillis())
       .filter(_.active === optionActive.getOrElse(false)).result
 
     waitToComplete(db.run(logoutFilter).map(_.nonEmpty))
   }
-
-  ///SJHIKSLJKOSLKJS
+*/
 }
