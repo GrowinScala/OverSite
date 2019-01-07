@@ -79,29 +79,5 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     }
   }
 
-  /** Test the logout of an user into database */
-  "UsersRepository #logoutUser" should {
-    "logout with an available user in database" in {
-      val result = userActionsTest.insertLogoutTest(userCreation, None, None)
-      assert(result === true)
-    }
-  }
-
-  /** Test the logout of an user into database with a wrong token*/
-  "UsersRepository #logoutUser" should {
-    "logout with an available user in database with wrong token" in {
-      val result = userActionsTest.insertLogoutTest(userCreation, Option("00000"), None)
-      assert(result === false)
-    }
-  }
-
-  /** Test the logout of an user into database with wrong boolean for active*/
-  "UsersRepository #logoutUser" should {
-    "logout with an available user in database with wrong boolean for active" in {
-      val result = userActionsTest.insertLogoutTest(userCreation, None, Option(true))
-      assert(result === false)
-    }
-  }
-
 }
 

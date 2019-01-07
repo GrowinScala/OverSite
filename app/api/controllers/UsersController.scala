@@ -65,12 +65,15 @@ class UsersController @Inject() (
       },
       user => {
         val loggedUser = userActions.loginUser(user)
-        loggedUser.map(_.length).map {
+        loggedUser.map(_.length).flatMap {
           case 1 =>
-            Ok(JsObject(Seq(
-              (TokenJSONField, JsString(userActions.insertLogin(user))),
-              (TokenValidTimeJsonField, JsString(Token1HourValid)))))
-          case _ => Forbidden(PasswordMissMatchStatus)
+            userActions.insertLogin(user).map{ x=>
+              Ok(JsObject(Seq(
+                (TokenJSONField, JsString(x)),
+                (TokenValidTimeJsonField, JsString(Token1HourValid)))))
+            }
+
+          case _ => Future{Forbidden(PasswordMissMatchStatus)}
         }
       })
   }

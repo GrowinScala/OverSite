@@ -33,9 +33,9 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   override def beforeEach(): Unit = {
     //encrypted "12345" password
-    Await.result(db.run(userTable += UserRow(EmailExample1, EncryptedPasswordExample)), Duration.Inf)
+    Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample1, TokenExample, System.currentTimeMillis() + 360000, true)), Duration.Inf)
+      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, true)), Duration.Inf)
   }
 
   override def beforeAll(): Unit = {
@@ -450,13 +450,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + ToSentFunction should {
     ValidTokenOk + AndStatus + StatusDraft + AndHasToAddress in {
       Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample1, "2018-12-01", "Hello World!", "Have a good day Sir", false)), Duration.Inf)
+        EmailExample, "2018-12-01", "Hello World!", "Have a good day Sir", false)), Duration.Inf)
 
       Await.result(db.run(toAddressTable += ToAddressRow(
         "4d192fff-f787-4d19-926c-1ba62fd03a9a",
         EmailIDExample, "vfernandesgrowin.pt")), Duration.Inf)
 
-      val fakeRequest = FakeRequest(PATCH, s"/emails/draft/" + EmailIDExample)
+      val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + EmailIDExample)
         .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample)
 
       val result = route(app, fakeRequest)
@@ -468,7 +468,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     HasNoToAddressBadRequest in {
 
       Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample1, "2018-12-01", LocalHost, "Have a good day Sir", false)), Duration.Inf)
+        EmailExample, "2018-12-01", LocalHost, "Have a good day Sir", false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + EmailIDExample)
         .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample)

@@ -53,17 +53,6 @@ class UserActions @Inject() (implicit val executionContext: ExecutionContext, im
     loginFilter.nonEmpty
   }
 
-  def insertLogoutTest(user: CreateUserDTO, optionToken: Option[String], optionActive: Option[Boolean]) = {
-    waitToComplete(userActions.insertUser(user))
-    val token = userActions.insertLogin(user)
-    waitToComplete(userActions.insertLogout(token))
-    val logoutFilter = loginTable.filter(_.username === user.username)
-      .filter(_.token === optionToken.getOrElse(token))
-      .filter(_.validDate > System.currentTimeMillis())
-      .filter(_.active === optionActive.getOrElse(false)).result
-
-    waitToComplete(db.run(logoutFilter).map(_.nonEmpty))
-  }
 
   ///SJHIKSLJKOSLKJS
 }

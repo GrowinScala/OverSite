@@ -1,6 +1,12 @@
 package controllers
 
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import actions.UserActions
+import database.mappings.ChatMappings.chatTable
+import database.mappings.EmailMappings.{bccTable, ccTable, emailTable, toAddressTable}
+import database.mappings.UserMappings._
+import database.mappings.{LoginRow, UserRow}
+import definedStrings.testStrings.ControllerStrings._
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
@@ -9,18 +15,10 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import actions.UserActions
-import database.mappings.ChatMappings.chatTable
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
-import database.mappings.UserMappings._
-import database.mappings.{ LoginRow, UserRow }
-import org.scalatest.tools.Durations
 import slick.jdbc.H2Profile.api._
-import definedStrings.testStrings.ControllerStrings._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
-import scala.util.Try
+import scala.concurrent.{Await, ExecutionContext}
 
 class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
@@ -47,16 +45,16 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
 
   override def beforeEach(): Unit = {
     //encrypted "12345" password
-    Await.result(db.run(userTable += UserRow("pedro@hotmail.com", "13012420314234138112108765216110414524878123")), Duration.Inf)
+    Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow("pedro@hotmail.com", "9e2907a7-b939-4b33-8899-6741e6054822", System.currentTimeMillis() + 360000, true)), Duration.Inf)
+      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, true)), Duration.Inf)
   }
 
   /** POST /sign end-point */
-  "UsersController #signIn" should {
-    "send a BadRequest if JSON body has an invalid format: case username" in {
-      val fakeRequest = FakeRequest(POST, s"/signin")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + SignInFunction should {
+    InvalidJSONBodyBadRequest + CaseUsername in {
+      val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "NOTusername": "pedro@hotmail.com",
@@ -68,10 +66,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #signIn" should {
-    "send a BadRequest if JSON body has an invalid format: case password" in {
-      val fakeRequest = FakeRequest(POST, s"/signin")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + SignInFunction should {
+    InvalidJSONBodyBadRequest + CasePassword in {
+      val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail.com",
@@ -83,10 +81,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #signIn" should {
-    "send a BadRequest if JSON body has an invalid format: case missing password parameter" in {
-      val fakeRequest = FakeRequest(POST, s"/signin")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + SignInFunction should {
+    InvalidJSONBodyBadRequest + CaseMissingPassword in {
+      val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail.com"
@@ -97,10 +95,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #signIn" should {
-    "send a BadRequest if JSON body has an invalid format: case missing username parameter" in {
-      val fakeRequest = FakeRequest(POST, s"/signin")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + SignInFunction should {
+    InvalidJSONBodyBadRequest + CaseMissingUsername in {
+      val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "password": "12345"
@@ -111,10 +109,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #signIn" should {
-    "send a BadRequest if username is not a valid email address" in {
-      val fakeRequest = FakeRequest(POST, s"/signin")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + SignInFunction should {
+    InvalidEmailAddress in {
+      val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail",
@@ -126,10 +124,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #signIn" should {
-    "send a Created if JSON body has a valid format " in {
-      val fakeRequest = FakeRequest(POST, s"/signin")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + SignInFunction should {
+    ValidJSONBodyCreated in {
+      val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail.com",
@@ -144,10 +142,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
 
   /** POST /login end-point */
 
-  "UsersController #logIn" should {
-    "send a BadRequest if JSON body has an invalid format: case username" in {
-      val fakeRequest = FakeRequest(POST, s"/login")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + LoginFunction should {
+    InvalidJSONBodyBadRequest + CaseUsername in {
+      val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "NOTusername": "pedro@hotmail.com",
@@ -159,10 +157,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #logIn" should {
-    "send a BadRequest if JSON body has an invalid format: case password" in {
-      val fakeRequest = FakeRequest(POST, s"/login")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + LoginFunction should {
+    InvalidJSONBodyBadRequest + CasePassword in {
+      val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail.com",
@@ -174,10 +172,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #login" should {
-    "send a BadRequest if JSON body has an invalid format: case missing password parameter" in {
-      val fakeRequest = FakeRequest(POST, s"/login")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + LoginFunction should {
+    InvalidJSONBodyBadRequest + CaseMissingPassword in {
+      val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail.com"
@@ -188,10 +186,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #login" should {
-    "send a BadRequest if JSON body has an invalid format: case missing username parameter" in {
-      val fakeRequest = FakeRequest(POST, s"/login")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + LoginFunction should {
+    InvalidJSONBodyBadRequest + CaseMissingUsername in {
+      val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "password": "12345"
@@ -202,10 +200,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #logIn" should {
-    "send an Ok if JSON body has a valid format" in {
-      val fakeRequest = FakeRequest(POST, s"/login")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + LoginFunction should {
+    ValidTokenOk in {
+      val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail.com",
@@ -217,10 +215,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     }
   }
 
-  "UsersController #logIn" should {
-    "send a Forbidden if username and password doesn't match" in {
-      val fakeRequest = FakeRequest(POST, s"/login")
-        .withHeaders(HOST -> "localhost:9000")
+  UsersController + LoginFunction should {
+    MissMatchPasswordForbidden in {
+      val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
+        .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse("""
           {
             "username": "pedro@hotmail.com",
@@ -235,32 +233,32 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
 
   /** PATCH /logout end-point */
 
-  "UsersController #logOut" should {
-    "send an Ok if JSON header has a valid token" in {
-      val fakeRequest = FakeRequest(PATCH, s"/logout")
-        .withHeaders(HOST -> "localhost:9000", "Token" -> "9e2907a7-b939-4b33-8899-6741e6054822")
+  UsersController + LogoutFunction should {
+    ValidTokenOk in {
+      val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
+        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
     }
   }
 
-  "UsersController #logOut" should {
-    "send a Forbidden if JSON header has a valid token but the user is already log out" in {
+  UsersController + LogoutFunction should {
+    AlreadyLoggedOutForbidden in {
       Await.result(db.run(
-        loginTable += LoginRow("pedro@hotmail.com", "b93907a7-b939-4b33-8899-6741e6054822", System.currentTimeMillis() + 360000, false)), Duration.Inf)
-      val fakeRequest = FakeRequest(PATCH, s"/logout")
-        .withHeaders(HOST -> "localhost:9000", "Token" -> "b93907a7-b939-4b33-8899-6741e6054822")
+        loginTable += LoginRow(EmailExample, "b93907a7-b939-4b33-8899-6741e6054822", System.currentTimeMillis() + 360000, false)), Duration.Inf)
+      val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
+        .withHeaders(HOST -> LocalHost, TokenKey -> "b93907a7-b939-4b33-8899-6741e6054822")
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
     }
   }
 
-  "UsersController #logOut" should {
-    "send a Forbidden if JSON header has an invalid token" in {
-      val fakeRequest = FakeRequest(PATCH, s"/logout")
-        .withHeaders(HOST -> "localhost:9000", "Token" -> "???")
+  UsersController + LogoutFunction should {
+    InvalidTokenForbidden in {
+      val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
+        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
