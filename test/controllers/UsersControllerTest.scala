@@ -16,6 +16,7 @@ import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
 import org.scalatest.tools.Durations
 import slick.jdbc.H2Profile.api._
+import definedStrings.testStrings.ControllerStrings._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
