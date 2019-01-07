@@ -20,7 +20,6 @@ case class UserRow(
  * @param tag slick tag
  */
 class LoginTable(tag: Tag) extends Table[LoginRow](tag, LoginsTable) {
-  //TODO Insert userID to improve the search
   def username = column[String](UsernameRow)
   def token = column[String](TokenRow)
   def validDate = column[Long](ValidDateRow)
