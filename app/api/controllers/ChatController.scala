@@ -3,7 +3,7 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.dtos.CreateShareDTO
 import api.validators.TokenValidator
-import database.repository.{ ChatRepository, UserRepository }
+import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepositoryImpl }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
@@ -19,8 +19,8 @@ class ChatController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   implicit val db: Database,
-  chatActions: ChatRepository,
-  usersActions: UserRepository)(implicit exec: ExecutionContext)
+  chatActions: ChatRepositoryImpl,
+  usersActions: UserRepositoryImpl)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   /**

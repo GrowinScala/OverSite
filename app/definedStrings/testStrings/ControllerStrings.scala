@@ -30,13 +30,13 @@ object ControllerStrings {
   val LoginFunction = "#logIn"
   val LogoutFunction = "#logOut"
 
-  val EmailEndpointRoute = s"/email"
-  val EmailsEndpointRoute = s"/emails/"
-  val ChatsEndpointRoute = s"/chats"
-  val SharesEndpointRoute = s"/shares"
-  val SignInEndpointRoute = s"/signin"
-  val LogInEndpointRoute = s"/login"
-  val LogOutEndpointRoute = s"/logout"
+  val EmailEndpointRoute = "/email"
+  val EmailsEndpointRoute = "/emails/"
+  val ChatsEndpointRoute = "/chats"
+  val SharesEndpointRoute = "/shares"
+  val SignInEndpointRoute = "/signin"
+  val LogInEndpointRoute = "/login"
+  val LogOutEndpointRoute = "/logout"
 
   /** For Controller */
 

@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import api.dtos.CreateUserDTO
 import api.validators.EmailAddressValidator._
 import api.validators.TokenValidator
-import database.repository.UserRepository
+import database.repository.UserRepositoryImpl
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
@@ -21,7 +21,7 @@ class UsersController @Inject() (
   actorSystem: ActorSystem,
   tokenValidator: TokenValidator,
   implicit val db: Database,
-  userActions: UserRepository)(implicit exec: ExecutionContext)
+  userActions: UserRepositoryImpl)(implicit exec: ExecutionContext)
 
   extends AbstractController(cc) {
 

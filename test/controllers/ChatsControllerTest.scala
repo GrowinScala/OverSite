@@ -1,10 +1,10 @@
 package controllers
-import actions.ChatActions
+
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
-import database.repository.ChatRepository
+import database.repository.{ ChatRepository, ChatRepositoryImpl }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -26,8 +26,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
-  lazy implicit val rep = new ChatRepository()
-  val chatActionsTest = new ChatActions()
+  lazy implicit val rep = new ChatRepositoryImpl()
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
