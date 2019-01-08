@@ -111,8 +111,11 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    */
   def insertPermission(from: String, share: CreateShareDTO): Future[String] = {
     val shareID = randomUUID().toString
-    db.run(shareTable += ShareRow(shareID, share.chatID, from, share.supervisor))
-    Future { shareID }
+
+    for {
+      _ <- db.run(shareTable += ShareRow(shareID, share.chatID, from, share.supervisor))
+
+    } yield shareID
   }
 
   /** Auxiliary function*/
