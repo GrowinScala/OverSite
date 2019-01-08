@@ -95,6 +95,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
       .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse(EmptyString), x._1.header, x._1.body, x._1.dateOf))
       .result
+
     db.run(queryResult)
   }
 

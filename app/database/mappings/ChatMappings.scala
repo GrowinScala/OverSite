@@ -19,7 +19,7 @@ case class ShareRow(
   shareID: String,
   chatID: String,
   fromUser: String,
-  toID: String)
+  toUser: String)
 
 /** Class that defines the chat table, establishing chatID as primary key in the database */
 class ChatTable(tag: Tag) extends Table[ChatRow](tag, ChatsTable) {

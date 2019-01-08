@@ -12,20 +12,5 @@ import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
 
 
-   def waitToComplete[T](x: Future[T]) = {
-    Await.result(x, Duration.Inf)
-  }
-
-
-def help={
-  val a =  Future{1+1}
-  val b = Future{true || false}.toString
-  val c = Future{List(1,9,5,3,2).map(_+1)}
-
-
-  Future{a + b + c}
-
-
-
-}
-Await.result(help, Duration.Inf)
+   val x = Seq().zip(Seq())
+println(x.map(r => r._1))

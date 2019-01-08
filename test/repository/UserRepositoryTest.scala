@@ -4,14 +4,14 @@ import api.dtos.CreateUserDTO
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
-import database.repository.UserRepositoryImpl
+import database.repository.{ ChatRepositoryImpl, EmailRepositoryImpl, UserRepositoryImpl }
+import definedStrings.AlgorithmStrings.MD5Algorithm
 import encryption.EncryptString
 import org.scalatest._
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
-import definedStrings.AlgorithmStrings.MD5Algorithm
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
@@ -124,7 +124,6 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
 
       /** Verify if the logout is processed correctly*/
       resultLogOut.map(row => assert(row.active === true))
-
     }
   }
 }
