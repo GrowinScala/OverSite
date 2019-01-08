@@ -38,17 +38,6 @@ create table Users (
     PRIMARY KEY(USERNAME)
 );
 
-create table ChatUsers (
-    CHATUSERID varchar(100) not null,
-    CHATID varchar(100) not null,
-    USERNAME varchar(100) not null,
-    PRIMARY KEY(CHATUSERID),
-    FOREIGN KEY(CHATID) REFERENCES Chats(CHATID),
-    FOREIGN KEY(USERNAME) REFERENCES Users(USERNAME)
-);
-
-
-
 create table Logins (
     USERNAME varchar(100) not null,
     token varchar(100) not null,
