@@ -24,7 +24,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
 
-  lazy implicit val rep = new ChatRepositoryImpl()
+  lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
   val emailActions = new EmailRepositoryImpl()
 
   val userCreation = new CreateUserDTO("rvalente@growin.com", "12345")
@@ -81,13 +81,13 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
 
       /** Verify if emailID and chatID have an IIUD format **/
       assert(Try[Boolean] {
-        UUID.fromString(result.map(_.chatID).head);
+        UUID.fromString(result.map(_.chatID).head)
         true
       }
         .getOrElse(false))
 
       assert(Try[Boolean] {
-        UUID.fromString(result.map(_.emailID).head);
+        UUID.fromString(result.map(_.emailID).head)
         true
       }
         .getOrElse(false))
@@ -108,7 +108,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
 
       /** Verify if chatID have an IIUD format **/
       assert(Try[Boolean] {
-        UUID.fromString(result.map(_.chatID).head);
+        UUID.fromString(result.map(_.chatID).head)
         true
       }
         .getOrElse(false))
@@ -175,14 +175,14 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
 
           /** Verify if sequence of ccIDs have an IIUD format **/
           assert(Try[Boolean] {
-            resultBCCtable.map(row => UUID.fromString(row.BCCID));
+            resultBCCtable.map(row => UUID.fromString(row.BCCID))
             true
           }
             .getOrElse(false))
 
           /** Verify if the sequence of emailID have an IIUD format **/
           assert(Try[Boolean] {
-            UUID.fromString(resultBCCtable.map(_.emailID).head);
+            UUID.fromString(resultBCCtable.map(_.emailID).head)
             true
           }
             .getOrElse(false))
@@ -217,14 +217,14 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
           /** Verify if sequence of ccIDs have an IIUD format **/
           assert(Try[Boolean] {
             resultCCtable.map(row =>
-              UUID.fromString(row.CCID));
+              UUID.fromString(row.CCID))
             true
           }
             .getOrElse(false))
 
           /** Verify if the sequence of emailID have an IIUD format **/
           assert(Try[Boolean] {
-            UUID.fromString(resultCCtable.map(_.emailID).head);
+            UUID.fromString(resultCCtable.map(_.emailID).head)
             true
           }
             .getOrElse(false))
@@ -245,25 +245,23 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
     "check if the function getEmails is able to reach the email inserted" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      emailCreation.sendNow match {
+      /** getEmails for sent and received cases */
+      if (emailCreation.sendNow) {
+        val resultSent = Await.result(emailActions.getEmails(userCreation.username, "sent"), Duration.Inf)
+        val resultReceived = emailCreation.to.get.map(row =>
+          Await.result(emailActions.getEmails(row, "received"), Duration.Inf))
 
+        assert(resultSent === resultEmailTable.map(row =>
+          (row.emailID, row.header)))
+
+        assert(resultReceived === emailCreation.to.get.map(_ =>
+          resultEmailTable.map(row => (row.emailID, row.header))))
+      }
+      else {
         /** getEmails for drafted cases */
-        case false =>
-          val resultDraft = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
-          assert(resultDraft === resultEmailTable.map(row =>
-            EmailMinimalInfoDTO(row.emailID, row.header)))
-
-        /** getEmails for sent and received cases */
-        case _ =>
-          val resultSent = Await.result(emailActions.getEmails(userCreation.username, "sent"), Duration.Inf)
-          val resultReceived = emailCreation.to.get.map(row =>
-            Await.result(emailActions.getEmails(row, "received"), Duration.Inf))
-
-          assert(resultSent === resultEmailTable.map(row =>
-            (row.emailID, row.header)))
-
-          assert(resultReceived === emailCreation.to.get.map(to =>
-            resultEmailTable.map(row => (row.emailID, row.header))))
+        val resultDraft = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
+        assert(resultDraft === resultEmailTable.map(row =>
+          EmailMinimalInfoDTO(row.emailID, row.header)))
       }
     }
   }
@@ -273,70 +271,65 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
     "check if the function getEmail is able to reach the email inserted" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      emailCreation.sendNow match {
+      if (emailCreation.sendNow) {
+        val resultSent = Await.result(emailActions.getEmail(userCreation.username, "sent", resultEmailTable.map(_.emailID).head), Duration.Inf)
+        val resultReceived = emailCreation.to.get.map(row =>
+          Await.result(
+            emailActions.getEmail(row, "received", resultEmailTable.map(_.emailID).head), Duration.Inf))
 
+        val resultTos = emailCreation.to.get.map(to => (
+          resultEmailTable.head.chatID,
+          resultEmailTable.head.fromAddress,
+          to,
+          resultEmailTable.head.header,
+          resultEmailTable.head.body,
+          resultEmailTable.head.dateOf))
+        assert(resultSent === resultTos)
+        assert(resultReceived === emailCreation.to.get.map(_ => resultTos))
+      } else {
         /** getEmail for drafted cases */
-        case false =>
-          val resultDraft = Await.result(emailActions.getEmail(userCreation.username, "draft", resultEmailTable.map(_.emailID).head), Duration.Inf)
+        val resultDraft = Await.result(emailActions.getEmail(userCreation.username, "draft", resultEmailTable.map(_.emailID).head), Duration.Inf)
 
-          emailCreation.to match {
-            /** If the parameter TO exists*/
-            case Some(x) if x.nonEmpty =>
-              assert(resultDraft === emailCreation.to.get.map(to => (
-                resultEmailTable.head.chatID,
-                resultEmailTable.head.fromAddress,
-                to, resultEmailTable.head.header,
-                resultEmailTable.head.body,
-                resultEmailTable.head.dateOf)))
-            /** In case there are no TO parameters in email*/
-            case _ =>
-              assert(resultDraft.head === EmailInfoDTO(
-                resultEmailTable.head.chatID,
-                resultEmailTable.head.fromAddress,
-                "",
-                resultEmailTable.head.header,
-                resultEmailTable.head.body,
-                resultEmailTable.head.dateOf))
-          }
-        /** getEmail for sent and received cases */
-        case _ =>
-          val resultSent = Await.result(emailActions.getEmail(userCreation.username, "sent", resultEmailTable.map(_.emailID).head), Duration.Inf)
-          val resultReceived = emailCreation.to.get.map(row =>
-            Await.result(
-              emailActions.getEmail(row, "received", resultEmailTable.map(_.emailID).head), Duration.Inf))
-
-          val resultTos = emailCreation.to.get.map(to => (
-            resultEmailTable.head.chatID,
-            resultEmailTable.head.fromAddress,
-            to,
-            resultEmailTable.head.header,
-            resultEmailTable.head.body,
-            resultEmailTable.head.dateOf))
-          assert(resultSent === resultTos)
-          assert(resultReceived === emailCreation.to.get.map(to => resultTos))
+        emailCreation.to match {
+          /** If the parameter TO exists*/
+          case Some(x) if x.nonEmpty =>
+            assert(resultDraft === emailCreation.to.get.map(to => (
+              resultEmailTable.head.chatID,
+              resultEmailTable.head.fromAddress,
+              to, resultEmailTable.head.header,
+              resultEmailTable.head.body,
+              resultEmailTable.head.dateOf)))
+          /** In case there are no TO parameters in email*/
+          case _ =>
+            assert(resultDraft.head === EmailInfoDTO(
+              resultEmailTable.head.chatID,
+              resultEmailTable.head.fromAddress,
+              "",
+              resultEmailTable.head.header,
+              resultEmailTable.head.body,
+              resultEmailTable.head.dateOf))
+        }
       }
     }
-  }
 
-  /** Verify if a drafted email is inserted in database is updated to an sent email*/
-  "EmailRepository #insertEmail" should {
-    "check if the function takeDraftMakeSent is able to update the drafted email inserted" in {
-      Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultEmailID = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
+    /** Verify if a drafted email is inserted in database is updated to an sent email*/
+    "EmailRepository #insertEmail" should {
+      "check if the function takeDraftMakeSent is able to update the drafted email inserted" in {
+        Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+        val resultEmailID = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
 
-      /** Verify if there is any drafted email*/
-      resultEmailID.nonEmpty match {
-        case true =>
+        /** Verify if there is any drafted email */
+        if (resultEmailID.nonEmpty) {
           Await.result(emailActions.takeDraftMakeSent(userCreation.username, resultEmailID.head.Id), Duration.Inf)
-
           val resultEmailIDNew = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
 
-          emailCreation.to.get.nonEmpty match {
-            case true => assert(resultEmailIDNew.isEmpty)
-            /** In case there are no parameters in "to" field */
-            case _ => assert(resultEmailIDNew.nonEmpty)
-          }
-        case _ => assert(true)
+          if (emailCreation.to.get.nonEmpty)
+            assert(resultEmailIDNew.isEmpty)
+
+          /** In case there are no parameters in "to" field */
+          else assert(resultEmailIDNew.nonEmpty)
+        } else assert(true === true)
+
       }
     }
   }

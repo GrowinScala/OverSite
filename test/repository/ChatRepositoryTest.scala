@@ -19,7 +19,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
-  lazy implicit val rep = new ChatRepositoryImpl()
+  lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
 
   val emailActions = new EmailRepositoryImpl()
   val chatActions = new ChatRepositoryImpl()
@@ -90,7 +90,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   /* Verify if a chat is inserted in database */
   "ChatRepository #getInbox" should {
     "check if the Inbox is empty for an user without messages" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+      Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultInbox = Await.result(chatActions.getInbox(userCreationWrongUser.username), Duration.Inf)
 
       /** Verify if Inbox is not empty */
@@ -130,7 +130,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   /* Verify if a the function getEmails selects no emails through wrong userName and chatID */
   "ChatRepository #getEmails" should {
     "check if the email is returned properly when wrong chatID and username are provided" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+      Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultGet = Await.result(chatActions.getEmails(userCreation.username, "0000"), Duration.Inf)
 
       /** Verify if Inbox is empty */
@@ -179,7 +179,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
   "ChatRepository #getEmail" should {
     "check if the email is no returned when wrong chatID, emailID and username are provided" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+      Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
       val resultGet = Await.result(chatActions.getEmail(userCreation.username, "0000", resultEmailTable.map(_.emailID).head), Duration.Inf)
 
@@ -192,7 +192,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   "ChatRepository #getEmail" should {
     "check if the email is no returned when chatID, wrong emailID and username are provided" in {
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+      Await.result(db.run(emailTable.result), Duration.Inf)
       val resultGet = Await.result(chatActions.getEmail(userCreation.username, resultChatID, "0000"), Duration.Inf)
 
       /** Verify if resultGet is not empty */
@@ -232,7 +232,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
 
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+      Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
 
       val returnShares = Await.result(chatActions.getShares(shareCreation.supervisor), Duration.Inf)
 
@@ -253,7 +253,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
 
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+      Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
 
       val returnShares = Await.result(chatActions.getShares("jproenca@growin.pt"), Duration.Inf)
 
@@ -294,7 +294,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
 
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
 
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+      Await.result(db.run(emailTable.result), Duration.Inf)
 
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 

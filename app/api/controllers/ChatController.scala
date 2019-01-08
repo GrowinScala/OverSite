@@ -68,7 +68,7 @@ class ChatController @Inject() (
    * @param emailID Identification of the email
    * @return Action that shows the emailID required
    */
-  def getEmail(chatID: String, emailID: String) = tokenValidator.async { request =>
+  def getEmail(chatID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
     request.userName.flatMap {
       chatActions.getEmail(_, chatID, emailID).map {
         emails =>

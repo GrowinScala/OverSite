@@ -25,7 +25,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
-  lazy implicit val rep = new ChatRepositoryImpl()
+  lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
@@ -33,7 +33,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, true)), Duration.Inf)
+      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   override def beforeAll(): Unit = {
@@ -448,7 +448,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + ToSentFunction should {
     ValidTokenOk + AndStatus + StatusDraft + AndHasToAddress in {
       Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample, "2018-12-01", "Hello World!", "Have a good day Sir", false)), Duration.Inf)
+        EmailExample, "2018-12-01", "Hello World!", "Have a good day Sir", active = false)), Duration.Inf)
 
       Await.result(db.run(toAddressTable += ToAddressRow(
         "4d192fff-f787-4d19-926c-1ba62fd03a9a",
@@ -466,7 +466,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     HasNoToAddressBadRequest in {
 
       Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample, "2018-12-01", LocalHost, "Have a good day Sir", false)), Duration.Inf)
+        EmailExample, "2018-12-01", LocalHost, "Have a good day Sir", active = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + EmailIDExample)
         .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample)

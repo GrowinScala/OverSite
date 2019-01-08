@@ -44,7 +44,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, true)), Duration.Inf)
+      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   /** POST /sign end-point */
@@ -243,7 +243,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LogoutFunction should {
     AlreadyLoggedOutForbidden in {
       Await.result(db.run(
-        loginTable += LoginRow(EmailExample, "b93907a7-b939-4b33-8899-6741e6054822", System.currentTimeMillis() + 360000, false)), Duration.Inf)
+        loginTable += LoginRow(EmailExample, "b93907a7-b939-4b33-8899-6741e6054822", System.currentTimeMillis() + 360000, active = false)), Duration.Inf)
       val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
         .withHeaders(HOST -> LocalHost, TokenKey -> "b93907a7-b939-4b33-8899-6741e6054822")
 

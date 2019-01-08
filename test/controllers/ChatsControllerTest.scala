@@ -26,7 +26,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
-  lazy implicit val rep = new ChatRepositoryImpl()
+  lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
@@ -34,7 +34,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, true)), Duration.Inf)
+      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   override def beforeAll(): Unit = {
