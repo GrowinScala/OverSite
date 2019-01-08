@@ -2,15 +2,15 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO }
+import api.dtos.{CreateEmailDTO, CreateShareDTO, EmailInfoDTO}
 import database.mappings.ChatMappings._
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
-import database.mappings.{ ChatRow, ShareRow }
+import database.mappings.EmailMappings.{bccTable, ccTable, emailTable, toAddressTable}
+import database.mappings.{ChatRow, ShareRow}
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends ChatRepository {
   /**
@@ -92,7 +92,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
   }
 
   /** Selects an email after filtering through chatID emailID*/
-  def getEmail(userEmail: String, chatID: String, emailID: String): Future[Seq[(String, String, String, String, String)]] = {
+  def getEmail(userEmail: String, chatID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
     val queryResult = queryChat(userEmail, chatID)
       .filter(_.emailID === emailID)
       //Since every email with sent==true is obligated to have an ToID,
@@ -100,7 +100,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
       .map(x => (x._1.fromAddress, x._2.map(_.username).getOrElse(NoneString), x._1.header, x._1.body, x._1.dateOf))
-      .result
+      .result.map(seq=> seq.map(p=> EmailInfoDTO(chatID, p._1,p._2,p._3,p._4,p._5)))
     db.run(queryResult)
   }
   /**
@@ -163,7 +163,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * Query to get the email, when shareID and emailID are provided
    * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
    */
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[(String, String, String, String, String, String)]] = {
+  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
 
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
@@ -177,7 +177,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
       .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse(NoneString), x._1.header, x._1.body, x._1.dateOf))
       .result
-    db.run(queryChatId)
+    db.run(queryChatId).map(seq=> seq.map(p=> EmailInfoDTO(p._1,p._2,p._3,p._4,p._5,p._6)))
   }
 
   /**

@@ -30,6 +30,7 @@ class ChatTable(tag: Tag) extends Table[ChatRow](tag, ChatsTable) {
   def * = (chatID, header) <> (ChatRow.tupled, ChatRow.unapply)
 }
 
+//TODO delete this table
 /**
  * Class that defines the chatUser table, establishing chatUserID as primary key in the database,
  * chatID and username as foreign keys

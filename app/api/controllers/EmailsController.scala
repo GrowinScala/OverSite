@@ -85,13 +85,13 @@ class EmailsController @Inject() (
               email.map { x =>
                 JsObject(Seq(
                   (EmailIDJSONField, JsString(emailID)),
-                  (ChatIDJSONField, JsString(x._1)),
-                  (FromAddressJSONField, JsString(x._2)),
-                  (ToAddressJSONField, JsString(x._3)),
-                  (HeaderJSONField, JsString(x._4)),
-                  (BodyJSONField, JsString(x._5)),
-                  (DateJSONField, JsString(x._6))))
-              })
+                  (ChatIDJSONField, JsString(x.chatID)),
+                  (FromAddressJSONField, JsString(x.fromAddress)),
+                  (ToAddressJSONField, JsString(x.username)),
+                  (HeaderJSONField, JsString(x.header)),
+                  (BodyJSONField, JsString(x.body)),
+                  (DateJSONField, JsString(x.dateOf)))
+              )})
             Ok(resultEmailID)
           }))
     } else {

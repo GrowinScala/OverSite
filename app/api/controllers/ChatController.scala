@@ -77,12 +77,12 @@ class ChatController @Inject() (
               //emailID, chatID, fromAddress, toAddress , header, body, dateOf
               Seq(
                 (EmailIDJSONField, JsString(emailID)),
-                (ChatIDJSONField, JsString(chatID)),
-                (FromAddressJSONField, JsString(x._1)),
-                (ToAddressJSONField, JsString(x._2)),
-                (HeaderJSONField, JsString(x._3)),
-                (BodyJSONField, JsString(x._4)),
-                (DateJSONField, JsString(x._5))))
+                (ChatIDJSONField, JsString(x.chatID)),
+                (FromAddressJSONField, JsString(x.fromAddress)),
+                (ToAddressJSONField, JsString(x.username)),
+                (HeaderJSONField, JsString(x.header)),
+                (BodyJSONField, JsString(x.body)),
+                (DateJSONField, JsString(x.dateOf))))
           })
           Ok(emailsResult)
       }
@@ -164,12 +164,12 @@ class ChatController @Inject() (
               JsObject(Seq(
                 (ShareIDJSONField, JsString(shareID)),
                 (EmailIDJSONField, JsString(emailID)),
-                (ChatIDJSONField, JsString(x._1)),
-                (FromAddressJSONField, JsString(x._2)),
-                (ToAddressJSONField, JsString(x._3)),
-                (HeaderJSONField, JsString(x._4)),
-                (BodyJSONField, JsString(x._5)),
-                (DateJSONField, JsString(x._6))))
+                (ChatIDJSONField, JsString(x.chatID)),
+                (FromAddressJSONField, JsString(x.fromAddress)),
+                (ToAddressJSONField, JsString(x.username)),
+                (HeaderJSONField, JsString(x.header)),
+                (BodyJSONField, JsString(x.body)),
+                (DateJSONField, JsString(x.dateOf))))
             })
           Ok(resultEmailID)
         }))

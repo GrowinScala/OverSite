@@ -1,9 +1,6 @@
 package api.dtos
 
 import play.api.libs.json._
-import slick.ast.Type
-
-import scala.util.matching.Regex
 
 case class CreateEmailDTO(
 
