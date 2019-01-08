@@ -12,5 +12,5 @@ import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
 
 
-   val x = Seq().zip(Seq())
-println(x.map(r => r._1))
+EmailInfoDTO(8a901ddd-cef1-4471-b751-01569fe5bdef,rvalente@growin.com,,Hello World,This body is meant to say hello world,2025-10-10)
+did not equal (8a901ddd-cef1-4471-b751-01569fe5bdef,rvalente@growin.com,,Hello World,This body is meant to say hello world,2025-10-10)

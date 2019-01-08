@@ -31,20 +31,6 @@ class ChatTable(tag: Tag) extends Table[ChatRow](tag, ChatsTable) {
 }
 
 /**
- * Class that defines the chatUser table, establishing chatUserID as primary key in the database,
- * chatID and username as foreign keys
- */
-class ChatUserTable(tag: Tag) extends Table[ChatUserRow](tag, ChatUsersTable) {
-  def chatUserID = column[String](ChatUserIDRow, O.PrimaryKey)
-  def chatID = column[String](ChatIDRow)
-  def username = column[String](UsernameRow)
-  //def fileIdFK1 = foreignKey(ChatIDRow, chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-  //def fileIdFK2 = foreignKey(UsernameRow, username, UserMappings.userTable)(_.username, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-
-  def * = (chatUserID, chatID, username) <> (ChatUserRow.tupled, ChatUserRow.unapply)
-}
-
-/**
  * Class that defines the share table, establishing shareID as primary key in the database
  * and chatID as foreign key
  */
@@ -62,6 +48,5 @@ object ChatMappings {
 
   /** Queries of user table and login table */
   lazy val chatTable = TableQuery[ChatTable]
-  lazy val chatUserTable = TableQuery[ChatUserTable]
   lazy val shareTable = TableQuery[ShareTable]
 }

@@ -80,10 +80,10 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
       assert(resultInbox.nonEmpty)
 
       /** Verify if the chatID in chat Table matches with email inserted */
-      resultInbox.map(row => assert(row._1 === resultChatID))
+      resultInbox.map(row => assert(row.Id === resultChatID))
 
       /** Verify if the header in chat Table matches with email inserted */
-      resultInbox.map(row => assert(row._2 === emailCreation.header))
+      resultInbox.map(row => assert(row.header === emailCreation.header))
     }
   }
 
@@ -109,10 +109,10 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
       assert(resultGet.nonEmpty)
 
       /** Verify if the chatID in chat Table matches with email inserted */
-      resultGet.map(row => assert(row._1 === resultEmailTable.map(_.emailID).head))
+      resultGet.map(row => assert(row.Id === resultEmailTable.map(_.emailID).head))
 
       /** Verify if the header in chat Table matches with email inserted */
-      resultGet.map(row => assert(row._2 === emailCreation.header))
+      resultGet.map(row => assert(row.header === emailCreation.header))
     }
   }
 
@@ -149,17 +149,17 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
       assert(resultGet.nonEmpty)
 
       /** Verify if the parameters of getEmail return match */
-      resultGet.map(row => assert(row._1 === resultEmailTable.map(_.fromAddress).head))
+      resultGet.map(row => assert(row.fromAddress === resultEmailTable.map(_.fromAddress).head))
 
       /** Verify the "Tos" of resultGet and the ones provided in the emailCreation */
-      val resultTosCompare = resultGet.map(row => row._2).zip(emailCreation.to.getOrElse(Seq()))
+      val resultTosCompare = resultGet.map(row => row.username).zip(emailCreation.to.getOrElse(Seq()))
       resultTosCompare.map(row => assert(row._1 === row._2))
 
-      resultGet.map(row => assert(row._3 === resultEmailTable.map(_.header).head))
+      resultGet.map(row => assert(row.header === resultEmailTable.map(_.header).head))
 
-      resultGet.map(row => assert(row._4 === resultEmailTable.map(_.body).head))
+      resultGet.map(row => assert(row.body === resultEmailTable.map(_.body).head))
 
-      resultGet.map(row => assert(row._5 === resultEmailTable.map(_.dateOf).head))
+      resultGet.map(row => assert(row.dateOf === resultEmailTable.map(_.dateOf).head))
 
     }
   }
@@ -204,9 +204,11 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   "ChatRepository #insertPermission" should {
     "check if the permission to some chat is proceeded correctly" in {
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 
       val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+
       val resultShareTable = Await.result(db.run(shareTable.result), Duration.Inf)
 
       /** Verify if resultShareTable is not empty */
@@ -227,17 +229,20 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   "ChatRepository #getShares" should {
     "check if the emails that were allowed to supervise are returned correctly" in {
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 
       val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+
       val returnShares = Await.result(chatActions.getShares(shareCreation.supervisor), Duration.Inf)
 
       /** Verify if returnShares is not empty */
       assert(returnShares.nonEmpty)
 
       /** Verify if the parameeters returned are correct */
-      returnShares.map(row => assert(row._1 === resultChatID))
-      returnShares.map(row => assert(row._2 === emailCreation.header))
+      returnShares.map(row => assert(row.Id === resultChatID))
+
+      returnShares.map(row => assert(row.header === emailCreation.header))
     }
   }
 
@@ -245,9 +250,11 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   "ChatRepository #getShares" should {
     "check if the emails that were allowed to supervise are not returned for other user" in {
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 
       val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+
       val returnShares = Await.result(chatActions.getShares("jproenca@growin.pt"), Duration.Inf)
 
       /** Verify if returnShares is not empty */
@@ -260,19 +267,23 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     "check if the emails that were allowed to supervise are returned correctly" in {
 
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+
       val resultEmailID = resultEmailTable.map(row => row.emailID).head
+
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 
       val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+
       val returnShares = Await.result(chatActions.getSharedEmails(shareCreation.supervisor, resultShareID), Duration.Inf)
 
       /** Verify if returnShares is not empty */
       assert(returnShares.nonEmpty)
 
       /** Verify if the parameters returned are correct */
-      returnShares.map(row => assert(row._1 === resultEmailID))
-      returnShares.map(row => assert(row._2 === emailCreation.header))
+      returnShares.map(row => assert(row.Id === resultEmailID))
+      returnShares.map(row => assert(row.header === emailCreation.header))
 
     }
   }
@@ -282,10 +293,13 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     "check if the emails that were allowed to supervise are not returned for other user" in {
 
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
 
       val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+
       val returnShares = Await.result(chatActions.getSharedEmails("jproenca@growin.pt", resultShareID), Duration.Inf)
 
       /** Verify if returnShares is not empty */
@@ -300,22 +314,32 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     "check if a specific email that was allowed to supervise is returned correctly" in {
 
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+
       val resultEmailID = resultEmailTable.map(row => row.emailID).head
+
       val shareCreation = new CreateShareDTO(resultChatID, "mreis@growin.pt")
+
       val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+
       val returnShare = Await.result(chatActions.getSharedEmail(shareCreation.supervisor, resultShareID, resultEmailID), Duration.Inf)
 
       /** Verify if returnShares is not empty */
       assert(returnShare.nonEmpty)
 
       /** Verify if the parameters returned are correct */
-      returnShare.map(row => assert(row._1 === resultChatID))
-      returnShare.map(row => assert(row._2 === userCreation.username))
-      returnShare.map(row => assert(row._3 === emailCreation.to.getOrElse(Seq()).head))
-      returnShare.map(row => assert(row._4 === emailCreation.header))
-      returnShare.map(row => assert(row._5 === emailCreation.body))
-      returnShare.map(row => assert(row._6 === emailCreation.dateOf))
+      returnShare.map(row => assert(row.chatID === resultChatID))
+
+      returnShare.map(row => assert(row.fromAddress === userCreation.username))
+
+      returnShare.map(row => assert(row.username === emailCreation.to.getOrElse(Seq()).head))
+
+      returnShare.map(row => assert(row.header === emailCreation.header))
+
+      returnShare.map(row => assert(row.body === emailCreation.body))
+
+      returnShare.map(row => assert(row.dateOf === emailCreation.dateOf))
     }
   }
 
@@ -334,7 +358,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
       assert(returnShare.isEmpty)
     }
   }
-/* NOT WORKING THANKS TO SLICK BUG
+  /* NOT WORKING THANKS TO SLICK BUG
   /* Verify if deletePermission takes the permission from the supervised user*/
   "ChatRepository #deletePermission" should {
     "check if a an user is not allowed to access the emails anymore after permission deleted" in {

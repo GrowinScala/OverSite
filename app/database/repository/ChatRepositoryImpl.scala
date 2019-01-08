@@ -2,7 +2,7 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO }
+import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, EmailMinimalInfoDTO }
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.{ ChatRow, ShareRow }
@@ -58,7 +58,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @param userEmail user email
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
-  def getInbox(userEmail: String): Future[Seq[(String, String)]] = {
+  def getInbox(userEmail: String): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryUserName = queryEmail(userEmail)
     val queryResult = emailTable
       .filter(_.emailID in queryUserName)
@@ -66,7 +66,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .sortBy(_.dateOf)
       .map(x => (x.chatID, x.header))
       .result
-    db.run(queryResult)
+    db.run(queryResult).map(seq => seq.map(p => EmailMinimalInfoDTO(p._1, p._2)))
   }
 
   /**
@@ -84,15 +84,15 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
   }
 
   /** Function that selects emails through userName and chatID*/
-  def getEmails(userEmail: String, chatID: String): Future[Seq[(String, String)]] = {
+  def getEmails(userEmail: String, chatID: String): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryResult = queryChat(userEmail, chatID)
       .map(x => (x.emailID, x.header))
       .result
-    db.run(queryResult)
+    db.run(queryResult).map(seq => seq.map(p => EmailMinimalInfoDTO(p._1, p._2)))
   }
 
   /** Selects an email after filtering through chatID emailID*/
-  def getEmail(userEmail: String, chatID: String, emailID: String): Future[Seq[(String, String, String, String, String)]] = {
+  def getEmail(userEmail: String, chatID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
     val queryResult = queryChat(userEmail, chatID)
       .filter(_.emailID === emailID)
       //Since every email with sent==true is obligated to have an ToID,
@@ -100,7 +100,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
       .map(x => (x._1.fromAddress, x._2.map(_.username).getOrElse(NoneString), x._1.header, x._1.body, x._1.dateOf))
-      .result
+      .result.map(seq => seq.map(p => EmailInfoDTO(chatID, p._1, p._2, p._3, p._4, p._5)))
     db.run(queryResult)
   }
   /**
@@ -111,8 +111,11 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    */
   def insertPermission(from: String, share: CreateShareDTO): Future[String] = {
     val shareID = randomUUID().toString
-    db.run(shareTable += ShareRow(shareID, share.chatID, from, share.supervisor))
-    Future { shareID }
+
+    for {
+      _ <- db.run(shareTable += ShareRow(shareID, share.chatID, from, share.supervisor))
+
+    } yield shareID
   }
 
   /** Auxiliary function*/
@@ -127,7 +130,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @param userEmail Identification of user by email
    * @return List of Chat IDs and respective headers
    */
-  def getShares(userEmail: String): Future[Seq[(String, String)]] = {
+  def getShares(userEmail: String): Future[Seq[EmailMinimalInfoDTO]] = {
 
     val queryEmailId = shareTable.filter(_.toID === userEmail)
       .map(x => (x.chatID, x.fromUser))
@@ -139,12 +142,12 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .sortBy(_.dateOf)
       .map(x => (x.chatID, x.header))
       .result
-    db.run(queryChatId)
+    db.run(queryChatId).map(seq => seq.map(p => EmailMinimalInfoDTO(p._1, p._2)))
 
   }
 
   /** Query to get the list of allowed emails that are linked to the chatID that correspond to shareID */
-  def getSharedEmails(userEmail: String, shareID: String): Future[Seq[(String, String)]] = {
+  def getSharedEmails(userEmail: String, shareID: String): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
       .map(x => (x.chatID, x.fromUser))
@@ -156,14 +159,14 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .sortBy(_.dateOf)
       .map(x => (x.emailID, x.header))
       .result
-    db.run(queryChatId)
+    db.run(queryChatId).map(seq => seq.map(p => EmailMinimalInfoDTO(p._1, p._2)))
   }
 
   /**
    * Query to get the email, when shareID and emailID are provided
    * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
    */
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[(String, String, String, String, String, String)]] = {
+  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
 
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
@@ -177,7 +180,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
       .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse(NoneString), x._1.header, x._1.body, x._1.dateOf))
       .result
-    db.run(queryChatId)
+    db.run(queryChatId).map(seq => seq.map(p => EmailInfoDTO(p._1, p._2, p._3, p._4, p._5, p._6)))
   }
 
   /**
