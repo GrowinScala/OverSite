@@ -4,8 +4,9 @@ import api.dtos.CreateUserDTO
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
-import database.repository.{ ChatRepositoryImpl, EmailRepositoryImpl, UserRepositoryImpl }
+import database.repository.UserRepositoryImpl
 import definedStrings.AlgorithmStrings.MD5Algorithm
+import definedStrings.testStrings.RepositoryStrings._
 import encryption.EncryptString
 import org.scalatest._
 import play.api.Mode
@@ -26,9 +27,9 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   val userActions = new UserRepositoryImpl()
 
   //val userActionsTest = new UserActions()
-  val userCreation = new CreateUserDTO("rvalente@growin.com", "12345")
-  val userCreationWrongPassword = new CreateUserDTO("rvalente@growin.com", "00000")
-  val userCreationWrongUser = new CreateUserDTO("pluis@growin.com", "12345")
+  val userCreation = new CreateUserDTO(RVEmail, PasswordExample)
+  val userCreationWrongPassword = new CreateUserDTO(RVEmail, WrongPasswordExample)
+  val userCreationWrongUser = new CreateUserDTO(PLEmail, PasswordExample)
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
 
@@ -45,7 +46,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   }
 
   /** Verify if an user has signed in into database */
-  "UsersRepository #loginTable" should {
+  UserRepository + LoginTableFunction should {
     "check if the correct user is inserted in login table in database" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
       val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
@@ -56,7 +57,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   }
 
   /** Test the insertion of an user into login database */
-  "UsersRepository #insertUser" should {
+  UserRepository + InsertUserFunction should {
     "insert a correct user in database" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
       val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
@@ -69,7 +70,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   }
 
   /** Test the login of a available user */
-  "UsersRepository #loginUser" should {
+  UserRepository + LoginUserFunction should {
     "login with a available user in database" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
       Await.result(userActions.insertLogin(userCreation), Duration.Inf)
@@ -81,7 +82,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   }
 
   /** Test the login of an user with a wrong username*/
-  "UsersRepository #loginUser" should {
+  UserRepository + LoginUserFunction should {
     "login with an unavailable username in database" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
       Await.result(userActions.insertLogin(userCreation), Duration.Inf)
@@ -92,7 +93,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   }
 
   /** Test the login of an user with a wrong password */
-  "UsersRepository #loginUser" should {
+  UserRepository + LoginUserFunction should {
     "login with an unavailable password in database" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
       Await.result(userActions.insertLogin(userCreation), Duration.Inf)
@@ -103,7 +104,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   }
 
   /** Test the logout of an user into database */
-  "UsersRepository #logoutUser" should {
+  UserRepository + LogoutUserFunction should {
     "logout with an available user in database" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
       val token = Await.result(userActions.insertLogin(userCreation), Duration.Inf)
@@ -116,10 +117,10 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   }
 
   /** Test the logout of an user into database with a wrong token*/
-  "UsersRepository #logoutUser" should {
+  UserRepository + LogoutUserFunction should {
     "logout with an available user in database with wrong token" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
-      Await.result(userActions.insertLogout("0000"), Duration.Inf)
+      Await.result(userActions.insertLogout(WrongTokenExample), Duration.Inf)
       val resultLogOut = Await.result(db.run(loginTable.result), Duration.Inf)
 
       /** Verify if the logout is processed correctly*/

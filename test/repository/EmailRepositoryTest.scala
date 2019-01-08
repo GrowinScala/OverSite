@@ -6,9 +6,9 @@ import api.dtos.{ CreateEmailDTO, CreateUserDTO, EmailInfoDTO, EmailMinimalInfoD
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
-import database.repository.{ ChatRepository, ChatRepositoryImpl, EmailRepositoryImpl }
+import database.repository.{ ChatRepositoryImpl, EmailRepositoryImpl }
+import definedStrings.testStrings.RepositoryStrings._
 import org.scalatest._
-import org.scalatest.tools.Durations
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -27,25 +27,25 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
   val emailActions = new EmailRepositoryImpl()
 
-  val userCreation = new CreateUserDTO("rvalente@growin.com", "12345")
+  val userCreation = new CreateUserDTO(RVEmail, PasswordExample)
   val emailCreation = new CreateEmailDTO(
-    Option(""),
-    "2025-10-10",
-    "Hello World",
-    "This body is meant to say hello world",
+    Option(EmptyChatID),
+    DateOf,
+    Header,
+    Body,
     Option(Seq()),
-    Option(Seq("vfernandes@growin.pt")),
-    Option(Seq("joao@growin.pt")),
+    Option(Seq(VFEmail)),
+    Option(Seq(JPEmail)),
     false)
 
   val emailDraftCreation = new CreateEmailDTO(
-    Option("123"),
-    "2025-10-10",
-    "Hello World",
-    "This body is meant to say hello world",
-    Option(Seq("pcorreia@growin.pt")),
-    Option(Seq("vfernandes@growin.pt")),
-    Option(Seq("joao@growin.pt")),
+    Option(ChatID),
+    DateOf,
+    Header,
+    Body,
+    Option(Seq(PCEmail)),
+    Option(Seq(VFEmail)),
+    Option(Seq(JPEmail)),
     false)
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
@@ -63,7 +63,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   }
 
   /** Verify if an email is inserted in database correctly*/
-  "EmailRepository #insertEmail" should {
+  EmailRepository + InsertEmailFunction should {
     "check if the intended email is inserted in the email table in database" in {
 
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
@@ -95,7 +95,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   }
 
   /** Verify if an email is inserted in chatTable correctly*/
-  "EmailRepository #insertEmail" should {
+  EmailRepository + InsertEmailFunction should {
     "check if the chat parameters are inserted in the chat table in database" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val result = Await.result(db.run(chatTable.result), Duration.Inf)
@@ -116,7 +116,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   }
 
   /** Verify if an email is inserted in the toAddress table correctly */
-  "EmailRepository #insertEmail" should {
+  EmailRepository + InsertEmailFunction should {
     "check if the to is inserted in the toAddress table in database" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultToAddresstable = Await.result(db.run(toAddressTable.result), Duration.Inf)
@@ -157,7 +157,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   }
 
   /** Verify if an email is inserted in BCC table correctly*/
-  "EmailRepository #insertEmail" should {
+  EmailRepository + InsertEmailFunction should {
     "check if the BCC is inserted in the BCC table in database" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultBCCtable = Await.result(db.run(bccTable.result), Duration.Inf)
@@ -199,7 +199,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   }
 
   /** Verify if an email is inserted in CC table correctly*/
-  "EmailRepository #insertEmail" should {
+  EmailRepository + InsertEmailFunction should {
     "check if the CC parameters are inserted in the CC table in database when necessary" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultCCtable = Await.result(db.run(ccTable.result), Duration.Inf)
@@ -241,25 +241,24 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   }
 
   /** Verify the function getEmails */
-  "EmailRepository #getEmails" should {
+  EmailRepository + GetEmailsFunction should {
     "check if the function getEmails is able to reach the email inserted" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
       /** getEmails for sent and received cases */
       if (emailCreation.sendNow) {
-        val resultSent = Await.result(emailActions.getEmails(userCreation.username, "sent"), Duration.Inf)
+        val resultSent = Await.result(emailActions.getEmails(userCreation.username, StatusSent), Duration.Inf)
         val resultReceived = emailCreation.to.get.map(row =>
-          Await.result(emailActions.getEmails(row, "received"), Duration.Inf))
+          Await.result(emailActions.getEmails(row, StatusReceived), Duration.Inf))
 
         assert(resultSent === resultEmailTable.map(row =>
           (row.emailID, row.header)))
 
         assert(resultReceived === emailCreation.to.get.map(_ =>
           resultEmailTable.map(row => (row.emailID, row.header))))
-      }
-      else {
+      } else {
         /** getEmails for drafted cases */
-        val resultDraft = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
+        val resultDraft = Await.result(emailActions.getEmails(userCreation.username, StatusDraft), Duration.Inf)
         assert(resultDraft === resultEmailTable.map(row =>
           EmailMinimalInfoDTO(row.emailID, row.header)))
       }
@@ -267,15 +266,15 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   }
 
   /** Verify the function getEmail **/
-  "EmailRepository #insertEmail" should {
+  EmailRepository + GetEmailFunction should {
     "check if the function getEmail is able to reach the email inserted" in {
       Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
       if (emailCreation.sendNow) {
-        val resultSent = Await.result(emailActions.getEmail(userCreation.username, "sent", resultEmailTable.map(_.emailID).head), Duration.Inf)
+        val resultSent = Await.result(emailActions.getEmail(userCreation.username, StatusSent, resultEmailTable.map(_.emailID).head), Duration.Inf)
         val resultReceived = emailCreation.to.get.map(row =>
           Await.result(
-            emailActions.getEmail(row, "received", resultEmailTable.map(_.emailID).head), Duration.Inf))
+            emailActions.getEmail(row, StatusReceived, resultEmailTable.map(_.emailID).head), Duration.Inf))
 
         val resultTos = emailCreation.to.get.map(to => (
           resultEmailTable.head.chatID,
@@ -288,7 +287,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
         assert(resultReceived === emailCreation.to.get.map(_ => resultTos))
       } else {
         /** getEmail for drafted cases */
-        val resultDraft = Await.result(emailActions.getEmail(userCreation.username, "draft", resultEmailTable.map(_.emailID).head), Duration.Inf)
+        val resultDraft = Await.result(emailActions.getEmail(userCreation.username, StatusDraft, resultEmailTable.map(_.emailID).head), Duration.Inf)
 
         emailCreation.to match {
           /** If the parameter TO exists*/
@@ -313,15 +312,15 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
     }
 
     /** Verify if a drafted email is inserted in database is updated to an sent email*/
-    "EmailRepository #insertEmail" should {
+    EmailRepository + TakeDraftMakeSent should {
       "check if the function takeDraftMakeSent is able to update the drafted email inserted" in {
         Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-        val resultEmailID = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
+        val resultEmailID = Await.result(emailActions.getEmails(userCreation.username, StatusDraft), Duration.Inf)
 
         /** Verify if there is any drafted email */
         if (resultEmailID.nonEmpty) {
           Await.result(emailActions.takeDraftMakeSent(userCreation.username, resultEmailID.head.Id), Duration.Inf)
-          val resultEmailIDNew = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
+          val resultEmailIDNew = Await.result(emailActions.getEmails(userCreation.username, StatusDraft), Duration.Inf)
 
           if (emailCreation.to.get.nonEmpty)
             assert(resultEmailIDNew.isEmpty)

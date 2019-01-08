@@ -448,7 +448,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + ToSentFunction should {
     ValidTokenOk + AndStatus + StatusDraft + AndHasToAddress in {
       Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample, "2018-12-01", "Hello World!", "Have a good day Sir", active = false)), Duration.Inf)
+        EmailExample, "2018-12-01", "Hello World!", "Have a good day Sir", sent = false)), Duration.Inf)
 
       Await.result(db.run(toAddressTable += ToAddressRow(
         "4d192fff-f787-4d19-926c-1ba62fd03a9a",
@@ -466,7 +466,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     HasNoToAddressBadRequest in {
 
       Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample, "2018-12-01", LocalHost, "Have a good day Sir", active = false)), Duration.Inf)
+        EmailExample, "2018-12-01", LocalHost, "Have a good day Sir", sent = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + EmailIDExample)
         .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample)
