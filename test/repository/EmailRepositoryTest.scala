@@ -2,7 +2,6 @@ package repository
 
 import java.util.UUID
 
-import actions.EmailActions
 import api.dtos.{ CreateEmailDTO, CreateUserDTO }
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
@@ -328,7 +327,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
       /** Verify if there is any drafted email*/
       resultEmailID.nonEmpty match {
         case true =>
-          Await.result(emailActions.takeDraftMakeSent(userCreation.username, resultEmailID.head._1), Duration.Inf)
+          Await.result(emailActions.takeDraftMakeSent(userCreation.username, resultEmailID.head.Id), Duration.Inf)
 
           val resultEmailIDNew = Await.result(emailActions.getEmails(userCreation.username, "draft"), Duration.Inf)
 

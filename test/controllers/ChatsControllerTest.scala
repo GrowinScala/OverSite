@@ -1,5 +1,4 @@
 package controllers
-import actions.ChatActions
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
@@ -27,7 +26,6 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
   lazy implicit val rep = new ChatRepositoryImpl()
-  val chatActionsTest = new ChatActions()
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 

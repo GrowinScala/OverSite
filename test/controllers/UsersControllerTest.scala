@@ -1,6 +1,5 @@
 package controllers
 
-import actions.UserActions
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings._
@@ -26,8 +25,6 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
-
-  val userActionsTest = new UserActions()
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
 

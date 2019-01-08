@@ -3,7 +3,7 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{CreateEmailDTO, EmailInfoDTO}
+import api.dtos.{ CreateEmailDTO, EmailInfoDTO, EmailMinimalInfoDTO }
 import database.mappings.EmailMappings.{ emailTable, _ }
 import database.mappings._
 import definedStrings.ApiStrings._
@@ -74,11 +74,11 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @param status Possible status: "sent", "received" and "draft"
    * @return List of emailIDs and corresponding header
    */
-  def getEmails(userEmail: String, status: String): Future[Seq[(String, String)]] = {
+  def getEmails(userEmail: String, status: String): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryResult = auxGetEmails(userEmail, status)
       .map(x => (x.emailID, x.header))
       .result
-    db.run(queryResult)
+    db.run(queryResult).map(seq => seq.map(p => EmailMinimalInfoDTO(p._1, p._2)))
   }
   /**
    * Function that filter the emails, according to their status and emailID
@@ -96,7 +96,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse(EmptyString), x._1.header, x._1.body, x._1.dateOf))
       .result
 
-    db.run(queryResult).map(seq=> seq.map(p=> EmailInfoDTO(p._1,p._2,p._3,p._4,p._5,p._6)))
+    db.run(queryResult).map(seq => seq.map(p => EmailInfoDTO(p._1, p._2, p._3, p._4, p._5, p._6)))
   }
 
   private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {

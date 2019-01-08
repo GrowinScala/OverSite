@@ -1,6 +1,5 @@
 package repository
 
-import actions.UserActions
 import api.dtos.CreateUserDTO
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }

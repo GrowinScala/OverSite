@@ -58,8 +58,8 @@ class EmailsController @Inject() (
             val resultEmailID = JsArray(
               emails.map { x =>
                 JsObject(Seq(
-                  (EmailIDJSONField, JsString(x._1)),
-                  (HeaderJSONField, JsString(x._2))))
+                  (EmailIDJSONField, JsString(x.Id)),
+                  (HeaderJSONField, JsString(x.header))))
               })
             Ok(resultEmailID)
           }))
@@ -90,8 +90,8 @@ class EmailsController @Inject() (
                   (ToAddressJSONField, JsString(x.username)),
                   (HeaderJSONField, JsString(x.header)),
                   (BodyJSONField, JsString(x.body)),
-                  (DateJSONField, JsString(x.dateOf)))
-              )})
+                  (DateJSONField, JsString(x.dateOf))))
+              })
             Ok(resultEmailID)
           }))
     } else {
