@@ -21,11 +21,13 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    */
   def insertChat(email: CreateEmailDTO, chatID: String): Future[String] = {
     val randomChatID = randomUUID().toString
-    existChatID(chatID).map {
-      case true => chatID
+    existChatID(chatID).flatMap {
+      case true => Future { chatID }
       case false =>
-        db.run(chatTable += ChatRow(randomChatID, email.header))
-        randomChatID
+        for {
+          _ <- db.run(chatTable += ChatRow(randomChatID, email.header))
+        } yield randomChatID
+
     }
   }
 

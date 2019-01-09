@@ -17,5 +17,6 @@ libraryDependencies += "com.h2database" % "h2" % "1.4.196" % Test
 libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.2.0",
   "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
-  "mysql" % "mysql-connector-java" % "latest.integration"
+  "mysql" % "mysql-connector-java" % "latest.integration",
+  "org.scalacheck" %% "scalacheck" % "1.14.0" 
 )

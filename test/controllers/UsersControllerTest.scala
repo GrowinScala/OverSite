@@ -44,7 +44,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, TokenExample, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
+      LoginRow(EmailExample, TokenExample1, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   /** POST /sign end-point */
@@ -52,10 +52,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CaseUsername in {
       val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "NOTusername": "pedro@hotmail.com",
-            "password": "12345"
+            "$WrongUsernameKey" : "$EmailExample",
+            "$PasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -67,10 +67,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CasePassword in {
       val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail.com",
-            "NOTpassword": "12345"
+            "$UsernameKey" : "$EmailExample",
+            "$WrongPasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -82,9 +82,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CaseMissingPassword in {
       val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail.com"
+            "$UsernameKey" : "$EmailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -96,9 +96,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CaseMissingUsername in {
       val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "password": "12345"
+            "$PasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -110,10 +110,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidEmailAddress in {
       val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail",
-            "password": "12345"
+            "$UsernameKey" : "$InvalidEmailExample",
+            "$PasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -125,10 +125,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     ValidJSONBodyCreated in {
       val fakeRequest = FakeRequest(POST, SignInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail.com",
-            "password": "12345"
+            "$UsernameKey" : "$EmailExample",
+            "$PasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -143,10 +143,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CaseUsername in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "NOTusername": "pedro@hotmail.com",
-            "password": "12345"
+            "$WrongUsernameKey" : "$EmailExample",
+            "$PasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -158,10 +158,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CasePassword in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail.com",
-            "NOTpassword": "12345"
+            "$UsernameKey" : "$EmailExample",
+            "$WrongPasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -173,9 +173,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CaseMissingPassword in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail.com"
+            "$UsernameKey" : "$EmailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -187,9 +187,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     InvalidJSONBodyBadRequest + CaseMissingUsername in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "password": "12345"
+            "$PasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -201,10 +201,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     ValidTokenOk in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail.com",
-            "password": "12345"
+            "$UsernameKey" : "$EmailExample",
+            "$PasswordKey" : "$PasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -216,10 +216,10 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     MissMatchPasswordForbidden in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
         .withHeaders(HOST -> LocalHost)
-        .withJsonBody(parse("""
+        .withJsonBody(parse(s"""
           {
-            "username": "pedro@hotmail.com",
-            "password": "???"
+            "$UsernameKey" : "$EmailExample",
+            "$PasswordKey" : "$WrongPasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -233,7 +233,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LogoutFunction should {
     ValidTokenOk in {
       val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -243,9 +243,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LogoutFunction should {
     AlreadyLoggedOutForbidden in {
       Await.result(db.run(
-        loginTable += LoginRow(EmailExample, "b93907a7-b939-4b33-8899-6741e6054822", System.currentTimeMillis() + 360000, active = false)), Duration.Inf)
+        loginTable += LoginRow(EmailExample, TokenExample2, System.currentTimeMillis() + 360000, active = false)), Duration.Inf)
       val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> "b93907a7-b939-4b33-8899-6741e6054822")
+        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample2)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
