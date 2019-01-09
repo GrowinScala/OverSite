@@ -8,12 +8,6 @@ object ControllerStrings {
   val StatusReceived = "received"
   val StatusSent = "sent"
 
-  val Emails = "/emails"
-  val StatusUndefined = ":status"
-  val EmailIDUndefined = ":emailID"
-  val ChatIDUndefined = ":chatID"
-  val ShareIDUndefined = ":shareID"
-
   /** For Functions */
 
   val EmailFunction = "#email"
@@ -30,6 +24,8 @@ object ControllerStrings {
   val LoginFunction = "#logIn"
   val LogoutFunction = "#logOut"
 
+  /** For end-points */
+
   val EmailEndpointRoute = "/email"
   val EmailsEndpointRoute = "/emails/"
   val ChatsEndpointRoute = "/chats"
@@ -38,22 +34,72 @@ object ControllerStrings {
   val LogInEndpointRoute = "/login"
   val LogOutEndpointRoute = "/logout"
 
-  /** For Controller */
+  val Emails = "/emails"
+  val StatusUndefined = ":status"
+  val EmailIDUndefined = ":emailID"
+  val ChatIDUndefined = ":chatID"
+  val ShareIDUndefined = ":shareID"
+
+  /** For Controllers */
 
   val EmailsController = "EmailsController"
   val ChatsController = "ChatsController"
   val UsersController = "UsersController"
 
+  /** For examples */
+
   val LocalHost = "localhost:9000"
   val TokenKey = "Token"
 
   val EmailExample = "pedro@hotmail.com"
+  val InvalidEmailExample = "pedro@hotmail"
+
+  val PasswordExample = "12345"
+  val WrongPasswordExample = "???"
   //encrypted "12345" password
   val EncryptedPasswordExample = "13012420314234138112108765216110414524878123"
 
-  val TokenExample = "9e2907a7-b939-4b33-8899-6741e6054822"
+  val TokenExample1 = "9e2907a7-b939-4b33-8899-6741e6054822"
+  val TokenExample2 = "b93907a7-b939-4b33-8899-6741e6054822"
   val WrongTokenExample = "???"
   val EmailIDExample = "1ba62fff-f787-4d19-926c-1ba62fd03a9a"
+  val ChatIDExample = "6e9601ff-f787-4d19-926c-1ba62fd03a9a"
+  /*
+  * "chatID": "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
+            "NOTdateOf": "2018-12-01",
+            "header": "Hello World!",
+            "body": "Have a good day Sir",
+            "to": ["vfernandes@growin.pt"],
+            "BCC": ["rvalente@growin.pt"],
+            "CC": ["joao@growin.pt"],
+            "sendNow"
+  * */
+
+  val UsernameKey = "username"
+  val PasswordKey = "password"
+  val ChatIDKey = "chatID"
+  val SupervisorKey = "supervisor"
+  val DateOfKey = "dateOf"
+  val HeaderKey = "header"
+  val BodyKey = "body"
+  val ToKey = "to"
+  val BCCKey = "BCC"
+  val CCKey = "CC"
+  val SendNowKey = "sendNow"
+
+  val WrongUsernameKey = "NOTusername"
+  val WrongPasswordKey = "NOTpassword"
+  val WrongChatIDKey = "NOTchatID"
+  val WrongSupervisorKey = "NOTsupervisor"
+  val WrongDateOfKey = "NOTdateOf"
+  val WrongHeaderKey = "NOTheader"
+  val WrongBodyKey = "NOTbody"
+  val WrongToKey = "NOTto"
+  val WrongBCCKey = "NOTBCC"
+  val WrongCCKey = "NOTCC"
+  val WrongSendNowKey = "NOTsendNow"
+
+  /** For error messages */
 
   val InvalidJSONBodyBadRequest = "send a BadRequest if JSON body has an invalid format:"
   val ValidJSONBodyOk = "send an OK if JSON body has an valid format:"
@@ -69,6 +115,8 @@ object ControllerStrings {
   val AndJsonBody = " and a valid JSON body"
   val AndStatus = " and status: "
   val AndHasToAddress = "and target email has to address"
+
+  /** */
 
   val CaseDateOf = " case dateOf"
   val CaseHeader = " case header"
