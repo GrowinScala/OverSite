@@ -128,4 +128,3 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     }
   }
 }
-

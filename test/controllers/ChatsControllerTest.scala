@@ -16,6 +16,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{ route, status, _ }
 import slick.jdbc.H2Profile.api._
 import definedStrings.testStrings.ControllerStrings._
+import generators.CreateUserDTOGenerator
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
