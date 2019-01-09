@@ -5,6 +5,7 @@ import database.mappings.UserMappings._
 import database.mappings._
 import database.repository.{ ChatRepository, ChatRepositoryImpl }
 import definedStrings.testStrings.ControllerStrings._
+import generators.Generator
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -27,13 +28,17 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   lazy implicit val db: Database = injector.instanceOf[Database]
   lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
 
-  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
+  private val testGenerator = new Generator()
+  private val chatIDExample = testGenerator.ID
+  private val emailExample = testGenerator.emailAddress
+
+  private val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
   override def beforeEach(): Unit = {
     //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, TokenExample1, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
+      LoginRow(EmailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   override def beforeAll(): Unit = {
@@ -53,7 +58,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseDateOf in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -74,7 +79,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseHeader in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -95,7 +100,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseBody in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -116,7 +121,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseSendNow in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -137,7 +142,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     ValidJSONBodyOk + CaseMissingChatID in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$DateOfKey" : "2018-12-01",
@@ -157,7 +162,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseMissingDateOf in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -177,7 +182,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseMissingHeader in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -197,7 +202,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseMissingBody in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -217,7 +222,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     ValidJSONBodyOk + CaseMissingTo in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -237,7 +242,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     ValidJSONBodyOk + CaseMissingBCC in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -257,7 +262,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     ValidJSONBodyOk + CaseMissingCC in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -277,7 +282,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidJSONBodyBadRequest + CaseMissingSendNow in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -318,7 +323,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     ValidTokenOk + AndJsonBody in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -342,7 +347,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailsFunction should {
     ValidTokenOk + AndStatus + StatusDraft in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusDraft)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -352,7 +357,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailsFunction should {
     ValidTokenOk + AndStatus + StatusReceived in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusReceived)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -362,7 +367,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailsFunction should {
     ValidTokenOk + AndStatus + StatusSent in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusSent)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -372,7 +377,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailsFunction should {
     InvalidStatusBadRequest in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusUndefined)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe BAD_REQUEST
@@ -395,7 +400,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailFunction should {
     ValidTokenOk + AndStatus + StatusDraft in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusDraft + "/" + EmailIDUndefined)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -405,7 +410,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailFunction should {
     ValidTokenOk + AndStatus + StatusReceived in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusReceived + "/" + EmailIDUndefined)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -415,7 +420,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailFunction should {
     ValidTokenOk + AndStatus + StatusSent in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusSent + "/" + EmailIDUndefined)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -425,7 +430,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailFunction should {
     InvalidStatusBadRequest in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusUndefined + "/" + EmailIDUndefined)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe BAD_REQUEST
@@ -455,7 +460,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         EmailIDExample, "vfernandesgrowin.pt")), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + EmailIDExample)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -469,7 +474,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         EmailExample, "2018-12-01", LocalHost, "Have a good day Sir", sent = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusDraft/$EmailIDExample")
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe BAD_REQUEST
@@ -480,7 +485,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     InvalidStatusBadRequest in {
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusUndefined/$EmailIDUndefined")
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe BAD_REQUEST

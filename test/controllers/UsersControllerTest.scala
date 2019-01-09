@@ -5,6 +5,9 @@ import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddres
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
 import definedStrings.testStrings.ControllerStrings._
+import definedStrings.AlgorithmStrings._
+import encryption.EncryptString
+import generators.Generator
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -26,7 +29,16 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
 
-  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+  private val testGenerator = new Generator()
+  private val chatIDExample = testGenerator.ID
+  private val emailExample = testGenerator.emailAddress
+  private val invalidEmailExample = testGenerator.words.head
+  private val encryptedPasswordExample = new EncryptString(testGenerator.password, MD5Algorithm).result.toString
+  private val passwordExample = testGenerator.password
+  private val wrongPasswordExample = new Generator().password
+  private val tokenExample = new Generator().token
+
+  private val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
 
   override def beforeAll(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)
@@ -42,9 +54,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
 
   override def beforeEach(): Unit = {
     //encrypted "12345" password
-    Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
+    Await.result(db.run(userTable += UserRow(emailExample, encryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, TokenExample1, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
+      LoginRow(emailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   /** POST /sign end-point */
@@ -54,8 +66,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$WrongUsernameKey" : "$EmailExample",
-            "$PasswordKey" : "$PasswordExample"
+            "$WrongUsernameKey" : "$emailExample",
+            "$PasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -69,8 +81,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$EmailExample",
-            "$WrongPasswordKey" : "$PasswordExample"
+            "$UsernameKey" : "$emailExample",
+            "$WrongPasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -84,7 +96,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$EmailExample"
+            "$UsernameKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -98,7 +110,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$PasswordKey" : "$PasswordExample"
+            "$PasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -112,8 +124,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$InvalidEmailExample",
-            "$PasswordKey" : "$PasswordExample"
+            "$UsernameKey" : "$invalidEmailExample",
+            "$PasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -127,8 +139,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$EmailExample",
-            "$PasswordKey" : "$PasswordExample"
+            "$UsernameKey" : "$emailExample",
+            "$PasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -145,8 +157,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$WrongUsernameKey" : "$EmailExample",
-            "$PasswordKey" : "$PasswordExample"
+            "$WrongUsernameKey" : "$emailExample",
+            "$PasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -160,8 +172,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$EmailExample",
-            "$WrongPasswordKey" : "$PasswordExample"
+            "$UsernameKey" : "$emailExample",
+            "$WrongPasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -175,7 +187,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$EmailExample"
+            "$UsernameKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -189,7 +201,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$PasswordKey" : "$PasswordExample"
+            "$PasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -200,11 +212,11 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LoginFunction should {
     ValidTokenOk in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
-        .withHeaders(HOST -> LocalHost)
+        .withHeaders(HOST -> LocalHost, TokenKey -> tokenExample)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$EmailExample",
-            "$PasswordKey" : "$PasswordExample"
+            "$UsernameKey" : "$emailExample",
+            "$PasswordKey" : "$passwordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -218,8 +230,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost)
         .withJsonBody(parse(s"""
           {
-            "$UsernameKey" : "$EmailExample",
-            "$PasswordKey" : "$WrongPasswordExample"
+            "$UsernameKey" : "$emailExample",
+            "$PasswordKey" : "$wrongPasswordExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -233,7 +245,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LogoutFunction should {
     ValidTokenOk in {
       val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -243,9 +255,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LogoutFunction should {
     AlreadyLoggedOutForbidden in {
       Await.result(db.run(
-        loginTable += LoginRow(EmailExample, TokenExample2, System.currentTimeMillis() + 360000, active = false)), Duration.Inf)
+        loginTable += LoginRow(EmailExample, tokenExample, System.currentTimeMillis() + 360000, active = false)), Duration.Inf)
       val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample2)
+        .withHeaders(HOST -> LocalHost, TokenKey -> tokenExample)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -255,7 +267,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LogoutFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN

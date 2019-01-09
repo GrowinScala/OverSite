@@ -39,10 +39,11 @@ class Generator extends CommonDTOGenerator {
     s"$dateOfYear-$dateOfMonth-$dateOfDay"
   }
 
+  def words: List[String] = Random.shuffle(listMostCommonWords)
+
   def header: String = {
     val headerNumberAux: Int = choose(2, 5)
-    val headerSenteceAux: List[String] = Random.shuffle(listMostCommonWords).take(headerNumberAux)
-    headerSenteceAux.foldLeft("")((string, word) => string + " " + word)
+    words.take(headerNumberAux).foldLeft("")((string, word) => string + " " + word)
   }
 
   def body: String = {
