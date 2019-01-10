@@ -46,11 +46,11 @@ object ControllerStrings {
   val ChatsController = "ChatsController"
   val UsersController = "UsersController"
 
-  /** For examples */
-
   val LocalHost = "localhost:9000"
-  val TokenKey = "Token"
 
+  /** For Json keys */
+
+  val TokenKey = "Token"
   val UsernameKey = "username"
   val PasswordKey = "password"
   val ChatIDKey = "chatID"
@@ -93,7 +93,7 @@ object ControllerStrings {
   val AndStatus = " and status: "
   val AndHasToAddress = "and target email has to address"
 
-  /** */
+  /** For test cases */
 
   val CaseDateOf = " case dateOf"
   val CaseHeader = " case header"
