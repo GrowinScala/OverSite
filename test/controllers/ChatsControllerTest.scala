@@ -16,6 +16,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{ route, status, _ }
 import slick.jdbc.H2Profile.api._
 import definedStrings.testStrings.ControllerStrings._
+import generators.Generator
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
@@ -28,13 +29,17 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   lazy implicit val db: Database = injector.instanceOf[Database]
   lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
 
-  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
+  private val testGenerator = new Generator()
+  private val chatIDExample = testGenerator.ID
+  private val emailExample = testGenerator.emailAddress
+
+  private val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
   override def beforeEach(): Unit = {
     //encrypted "12345" password
-    Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
+    Await.result(db.run(userTable += UserRow(emailExample, testGenerator.password)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, TokenExample1, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
+      LoginRow(emailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   override def beforeAll(): Unit = {
@@ -54,7 +59,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + InboxFunction should {
     ValidTokenOk in {
       val fakeRequest = FakeRequest(GET, ChatsEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -64,7 +69,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + InboxFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, ChatsEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -78,7 +83,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     ValidTokenOk in {
 
       val fakeRequest = FakeRequest(GET, s"$ChatsEndpointRoute/$ChatIDUndefined$Emails")
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -88,7 +93,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + GetEmailsFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, s"$ChatsEndpointRoute/$ChatIDUndefined$Emails")
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -101,7 +106,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + GetEmailFunction should {
     ValidTokenOk in {
       val fakeRequest = FakeRequest(GET, s"$ChatsEndpointRoute/$ChatIDUndefined$Emails/$EmailIDUndefined")
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -111,7 +116,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + GetEmailFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, s"$ChatsEndpointRoute/$ChatIDUndefined$Emails/$EmailIDUndefined")
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -124,7 +129,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SupervisedFunction should {
     InvalidJSONBodyBadRequest + CaseChatID in {
       val fakeRequest = FakeRequest(POST, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$WrongChatIDKey" : "$ChatIDExample",
@@ -139,7 +144,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SupervisedFunction should {
     InvalidJSONBodyBadRequest + CaseSupervisor in {
       val fakeRequest = FakeRequest(POST, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -154,7 +159,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SupervisedFunction should {
     InvalidJSONBodyBadRequest + CaseMissingSupervisor in {
       val fakeRequest = FakeRequest(POST, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample"
@@ -168,7 +173,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SupervisedFunction should {
     InvalidJSONBodyBadRequest + CaseMissingChatID in {
       val fakeRequest = FakeRequest(POST, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$SupervisorKey" : "$EmailExample"
@@ -182,7 +187,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SupervisedFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(POST, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -197,7 +202,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SupervisedFunction should {
     ValidTokenOk + AndJsonBody in {
       val fakeRequest = FakeRequest(POST, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -215,7 +220,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SharesFunction should {
     ValidTokenOk in {
       val fakeRequest = FakeRequest(GET, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -225,7 +230,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + SharesFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -239,7 +244,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     ValidTokenOk in {
 
       val fakeRequest = FakeRequest(GET, s"$SharesEndpointRoute/$ShareIDUndefined$Emails")
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -249,7 +254,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + GetSharedEmailsFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, s"$SharesEndpointRoute/$ShareIDUndefined$Emails")
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -263,7 +268,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     ValidTokenOk in {
 
       val fakeRequest = FakeRequest(GET, s"$SharesEndpointRoute/$ShareIDUndefined$Emails/$EmailIDUndefined")
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
@@ -273,7 +278,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + GetSharedEmailFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, s"$SharesEndpointRoute/$ShareIDUndefined$Emails/$EmailIDUndefined")
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -286,7 +291,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + TakePermissionsFunction should {
     InvalidJSONBodyBadRequest + CaseChatID in {
       val fakeRequest = FakeRequest(DELETE, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$WrongChatIDKey" : "$ChatIDExample",
@@ -301,7 +306,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + TakePermissionsFunction should {
     InvalidJSONBodyBadRequest + CaseSupervisor in {
       val fakeRequest = FakeRequest(DELETE, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -316,7 +321,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + TakePermissionsFunction should {
     InvalidJSONBodyBadRequest + CaseMissingSupervisor in {
       val fakeRequest = FakeRequest(DELETE, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample"
@@ -330,7 +335,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + TakePermissionsFunction should {
     InvalidJSONBodyBadRequest + CaseMissingChatID in {
       val fakeRequest = FakeRequest(DELETE, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$SupervisorKey" : "$EmailExample"
@@ -344,7 +349,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + TakePermissionsFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(DELETE, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",
@@ -359,7 +364,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   ChatsController + TakePermissionsFunction should {
     ValidTokenOk in {
       val fakeRequest = FakeRequest(DELETE, SharesEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> TokenExample1)
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
             "$ChatIDKey" : "$ChatIDExample",

@@ -8,6 +8,7 @@ import database.repository.UserRepositoryImpl
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.RepositoryStrings._
 import encryption.EncryptString
+import generators._
 import org.scalatest._
 import play.api.Mode
 import play.api.inject.Injector
@@ -25,11 +26,10 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   lazy implicit val db: Database = injector.instanceOf[Database]
 
   val userActions = new UserRepositoryImpl()
-
-  //val userActionsTest = new UserActions()
-  val userCreation = new CreateUserDTO(RVEmail, PasswordExample)
-  val userCreationWrongPassword = new CreateUserDTO(RVEmail, WrongPasswordExample)
-  val userCreationWrongUser = new CreateUserDTO(PLEmail, PasswordExample)
+  val userGenerator = new Generator()
+  val userCreation = CreateUserDTO(userGenerator.username, userGenerator.password)
+  val userCreationWrongPassword = new CreateUserDTO(userCreation.username, new Generator().password)
+  val userCreationWrongUser = new CreateUserDTO(new Generator().username, userCreation.password)
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
 
@@ -120,7 +120,7 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   UserRepository + LogoutUserFunction should {
     "logout with an available user in database with wrong token" in {
       Await.result(userActions.insertUser(userCreation), Duration.Inf)
-      Await.result(userActions.insertLogout(WrongTokenExample), Duration.Inf)
+      Await.result(userActions.insertLogout(new Generator().token), Duration.Inf)
       val resultLogOut = Await.result(db.run(loginTable.result), Duration.Inf)
 
       /** Verify if the logout is processed correctly*/
@@ -128,4 +128,3 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     }
   }
 }
-

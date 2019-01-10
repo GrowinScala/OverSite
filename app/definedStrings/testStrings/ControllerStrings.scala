@@ -59,7 +59,7 @@ object ControllerStrings {
   //encrypted "12345" password
   val EncryptedPasswordExample = "13012420314234138112108765216110414524878123"
 
-  val TokenExample1 = "9e2907a7-b939-4b33-8899-6741e6054822"
+  val testGenerator = "9e2907a7-b939-4b33-8899-6741e6054822"
   val TokenExample2 = "b93907a7-b939-4b33-8899-6741e6054822"
   val WrongTokenExample = "???"
   val EmailIDExample = "1ba62fff-f787-4d19-926c-1ba62fd03a9a"

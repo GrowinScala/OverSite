@@ -8,6 +8,7 @@ import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddres
 import database.mappings.UserMappings.{ loginTable, userTable }
 import database.repository.{ ChatRepositoryImpl, EmailRepositoryImpl }
 import definedStrings.testStrings.RepositoryStrings._
+import generators._
 import org.scalatest._
 import play.api.Mode
 import play.api.inject.Injector
@@ -27,25 +28,29 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
   lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
   val emailActions = new EmailRepositoryImpl()
 
-  val userCreation = new CreateUserDTO(RVEmail, PasswordExample)
-  val emailCreation = new CreateEmailDTO(
-    Option(EmptyChatID),
-    DateOf,
-    Header,
-    Body,
-    Option(Seq()),
-    Option(Seq(VFEmail)),
-    Option(Seq(JPEmail)),
-    false)
+  val userGenerator = new Generator()
+  val userCreation = new CreateUserDTO(userGenerator.username, userGenerator.password)
 
+  val defaultCreation = new Generator()
+  val emailCreation = new CreateEmailDTO(
+    Option(defaultCreation.ID),
+    defaultCreation.dateOf,
+    defaultCreation.header,
+    defaultCreation.body,
+    Option(new Generator().emailAddresses),
+    Option(new Generator().emailAddresses),
+    Option(new Generator().emailAddresses),
+    true)
+
+  val DraftCreation = new Generator()
   val emailDraftCreation = new CreateEmailDTO(
-    Option(ChatID),
-    DateOf,
-    Header,
-    Body,
-    Option(Seq(PCEmail)),
-    Option(Seq(VFEmail)),
-    Option(Seq(JPEmail)),
+    Option(DraftCreation.ID),
+    DraftCreation.dateOf,
+    DraftCreation.header,
+    DraftCreation.body,
+    Option(new Generator().emailAddresses),
+    Option(new Generator().emailAddresses),
+    Option(new Generator().emailAddresses),
     false)
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
@@ -147,7 +152,9 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
             .getOrElse(false))
 
           /** Verify if emailID of email table is the same as toAddress table */
-          assert(resultToAddresstable.map(_.emailID) === resultEmailTable.map(_.emailID))
+          resultEmailTable.map(row =>
+            resultToAddresstable.map(rowTo =>
+              assert(rowTo.emailID === row.emailID)))
 
         case _ =>
           /** If the parameter TO does not exists it is verified if the CC table is empty*/
@@ -173,7 +180,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
           /** Verify if the username of CC table is the same as CC parameter of email inserted*/
           assert(resultBCCtable.map(_.username) === emailCreation.BCC.get)
 
-          /** Verify if sequence of ccIDs have an IIUD format **/
+          /** Verify if sequence of ccIDs have an UUID format **/
           assert(Try[Boolean] {
             resultBCCtable.map(row => UUID.fromString(row.BCCID))
             true
@@ -188,7 +195,9 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
             .getOrElse(false))
 
           /** Verify if emailID of email table is the same as CC table */
-          assert(resultBCCtable.map(_.emailID).head === resultEmailTable.map(_.emailID).head)
+          resultEmailTable.map(row =>
+            resultBCCtable.map(rowBCC =>
+              assert(rowBCC.emailID === row.emailID)))
 
         case _ =>
 
@@ -230,7 +239,9 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
             .getOrElse(false))
 
           /** Verify if emailID of email table is the same as CC table */
-          assert(resultCCtable.map(_.emailID).head === resultEmailTable.map(_.emailID).head)
+          resultEmailTable.map(row =>
+            resultCCtable.map(rowCC =>
+              assert(rowCC.emailID === row.emailID)))
 
         case _ =>
 
@@ -252,10 +263,10 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
           Await.result(emailActions.getEmails(row, StatusReceived), Duration.Inf))
 
         assert(resultSent === resultEmailTable.map(row =>
-          (row.emailID, row.header)))
+          EmailMinimalInfoDTO(row.emailID, row.header)))
 
         assert(resultReceived === emailCreation.to.get.map(_ =>
-          resultEmailTable.map(row => (row.emailID, row.header))))
+          resultEmailTable.map(row => EmailMinimalInfoDTO(row.emailID, row.header))))
       } else {
         /** getEmails for drafted cases */
         val resultDraft = Await.result(emailActions.getEmails(userCreation.username, StatusDraft), Duration.Inf)
@@ -276,7 +287,7 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
           Await.result(
             emailActions.getEmail(row, StatusReceived, resultEmailTable.map(_.emailID).head), Duration.Inf))
 
-        val resultTos = emailCreation.to.get.map(to => (
+        val resultTos = emailCreation.to.get.map(to => EmailInfoDTO(
           resultEmailTable.head.chatID,
           resultEmailTable.head.fromAddress,
           to,
@@ -295,7 +306,8 @@ class EmailRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAnd
             assert(resultDraft === emailCreation.to.get.map(to => (
               resultEmailTable.head.chatID,
               resultEmailTable.head.fromAddress,
-              to, resultEmailTable.head.header,
+              to,
+              resultEmailTable.head.header,
               resultEmailTable.head.body,
               resultEmailTable.head.dateOf)))
           /** In case there are no TO parameters in email*/
