@@ -53,10 +53,9 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
       val resultUserTable = db.run(userTable.result)
 
-      resultUserTable.map(seq => {
-        //seq.forall(_.username === userCreation.username) shouldBe true
-        seq.head.username shouldEqual userCreation.username
-        seq.head.password shouldEqual encrypt.result.toString
+      resultUserTable.map(seqUserRow => {
+        seqUserRow.head.username shouldEqual userCreation.username
+        seqUserRow.head.password shouldEqual encrypt.result.toString
       })
     }
   }
@@ -69,9 +68,9 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val resultLoginUser = userActions.loginUser(userCreation)
 
       /** Verify if user is inserted in login table correctly */
-      resultLoginUser.map(seq => {
-        seq.head.username shouldEqual userCreation.username
-        seq.head.password shouldEqual encrypt.result.toString
+      resultLoginUser.map(seqUserDTO => {
+        seqUserDTO.head.username shouldEqual userCreation.username
+        seqUserDTO.head.password shouldEqual encrypt.result.toString
       })
     }
   }
@@ -79,12 +78,15 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   /** Test the login of a available user */
   UserRepository + LoginUserFunction should {
     "login with a available user in database" in {
-      userActions.insertUser(userCreation)
-      userActions.insertLogin(userCreation)
-      val resultLoginTable = db.run(loginTable.result)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        resultLoginTable <- db.run(loginTable.result)
+      } yield resultLoginTable
 
       /** Verify if user is inserted in login table correctly */
-      resultLoginTable.map(x => assert(x.head.username === userCreation.username))
+      result.map(seqLoginRow => assert(seqLoginRow.head.username === userCreation.username))
     }
   }
 
@@ -99,7 +101,7 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultLoginUser
 
       /** Verify if user is inserted in login table correctly */
-      result.map(x => assert(x.isEmpty))
+      result.map(seqUserDTO => assert(seqUserDTO.isEmpty))
     }
   }
 
@@ -114,7 +116,7 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultLoginUser
 
       /** Verify if user is inserted in login table correctly */
-      result.map(x => assert(x.isEmpty))
+      result.map(seqUserDTO => assert(seqUserDTO.isEmpty))
     }
   }
 
@@ -126,11 +128,11 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         _ <- userActions.insertUser(userCreation)
         token <- userActions.insertLogin(userCreation)
         _ <- userActions.insertLogout(token)
-        resultLogOut <- db.run(loginTable.result)
-      } yield resultLogOut
+        resultLoginTable <- db.run(loginTable.result)
+      } yield resultLoginTable
 
       /** Verify if the logout is processed correctly*/
-      result.map(seq => seq.head.active shouldEqual false)
+      result.map(seqLoginRow => seqLoginRow.head.active shouldEqual false)
 
     }
   }
@@ -143,11 +145,11 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         _ <- userActions.insertUser(userCreation)
         _ <- userActions.insertLogin(userCreation)
         _ <- userActions.insertLogout(new Generator().token)
-        resultLogOut <- db.run(loginTable.result)
-      } yield resultLogOut
+        resultLoginTable <- db.run(loginTable.result)
+      } yield resultLoginTable
 
       /** Verify if the logout is processed correctly*/
-      result.map(seq => seq.head.active shouldEqual true)
+      result.map(seqLoginRow => seqLoginRow.head.active shouldEqual true)
 
     }
 
