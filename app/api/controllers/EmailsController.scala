@@ -99,6 +99,11 @@ class EmailsController @Inject() (
     }
   }
 
+  /**
+   * Receive a target draft email and sends it if that email has a to parameter
+   * @param status Identification of the email status
+   * @param emailID Identification of the email
+   */
   def toSent(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
 
     if (status.equals(EndPointDraft))

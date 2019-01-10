@@ -54,8 +54,8 @@ class UsersController @Inject() (
    *         and the generated token is sent to user, otherwise an error message is sent
    */
   def logIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
+
     val emailResult = request.body.validate[CreateUserDTO]
-    // Getting the token from the request API call
 
     emailResult.fold(
       errors => {
@@ -71,7 +71,11 @@ class UsersController @Inject() (
               Ok(JsObject(Seq(
                 (TokenJSONField, JsString(x)),
                 (TokenValidTimeJsonField, JsString(Token1HourValid))))))
-          case _ => Future { Forbidden(PasswordMissMatchStatus) }
+          case x =>
+            Future {
+              println(x)
+              Forbidden(PasswordMissMatchStatus)
+            }
         }
       })
   }

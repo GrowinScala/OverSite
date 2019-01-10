@@ -210,7 +210,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   }
 
   UsersController + LoginFunction should {
-    ValidTokenOk in {
+    PasswordMatchOk in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)
         .withHeaders(HOST -> LocalHost, TokenKey -> tokenExample)
         .withJsonBody(parse(s"""

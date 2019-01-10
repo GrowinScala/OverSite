@@ -48,6 +48,7 @@ class UserRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
 
   }
 
+  /** Patches the ACTIVE column to false */
   def insertLogout(token: String): Future[Int] = {
     val notActive = false
     val insertTableLogin = loginTable.filter(_.token === token).map(_.active).update(notActive)

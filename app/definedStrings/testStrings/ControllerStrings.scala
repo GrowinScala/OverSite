@@ -46,11 +46,11 @@ object ControllerStrings {
   val ChatsController = "ChatsController"
   val UsersController = "UsersController"
 
-  /** For examples */
-
   val LocalHost = "localhost:9000"
-  val TokenKey = "Token"
 
+  /** For Json keys */
+
+  val TokenKey = "Token"
   val UsernameKey = "username"
   val PasswordKey = "password"
   val ChatIDKey = "chatID"
@@ -86,13 +86,14 @@ object ControllerStrings {
   val InvalidEmailAddress = "send a BadRequest if username is not a valid email address"
   val ValidJSONBodyCreated = "send a Created if JSON body has a valid format "
   val MissMatchPasswordForbidden = "send a Forbidden if username and password doesn't match"
+  val PasswordMatchOk = "send an Ok if username and password match"
   val AlreadyLoggedOutForbidden = "send a Forbidden if JSON header has a valid token but the user is already log out"
 
   val AndJsonBody = " and a valid JSON body"
   val AndStatus = " and status: "
   val AndHasToAddress = "and target email has to address"
 
-  /** */
+  /** For test cases */
 
   val CaseDateOf = " case dateOf"
   val CaseHeader = " case header"
