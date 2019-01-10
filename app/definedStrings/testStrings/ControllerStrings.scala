@@ -51,30 +51,6 @@ object ControllerStrings {
   val LocalHost = "localhost:9000"
   val TokenKey = "Token"
 
-  val EmailExample = "pedro@hotmail.com"
-  val InvalidEmailExample = "pedro@hotmail"
-
-  val PasswordExample = "12345"
-  val WrongPasswordExample = "???"
-  //encrypted "12345" password
-  val EncryptedPasswordExample = "13012420314234138112108765216110414524878123"
-
-  val testGenerator = "9e2907a7-b939-4b33-8899-6741e6054822"
-  val TokenExample2 = "b93907a7-b939-4b33-8899-6741e6054822"
-  val WrongTokenExample = "???"
-  val EmailIDExample = "1ba62fff-f787-4d19-926c-1ba62fd03a9a"
-  val ChatIDExample = "6e9601ff-f787-4d19-926c-1ba62fd03a9a"
-  /*
-  * "chatID": "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-            "NOTdateOf": "2018-12-01",
-            "header": "Hello World!",
-            "body": "Have a good day Sir",
-            "to": ["vfernandes@growin.pt"],
-            "BCC": ["rvalente@growin.pt"],
-            "CC": ["joao@growin.pt"],
-            "sendNow"
-  * */
-
   val UsernameKey = "username"
   val PasswordKey = "password"
   val ChatIDKey = "chatID"

@@ -33,8 +33,8 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   private val chatIDExample = testGenerator.ID
   private val emailExample = testGenerator.emailAddress
   private val invalidEmailExample = testGenerator.words.head
-  private val encryptedPasswordExample = new EncryptString(testGenerator.password, MD5Algorithm).result.toString
   private val passwordExample = testGenerator.password
+  private val encryptedPasswordExample = new EncryptString(passwordExample, MD5Algorithm).result.toString
   private val wrongPasswordExample = new Generator().password
   private val tokenExample = new Generator().token
 
@@ -255,7 +255,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   UsersController + LogoutFunction should {
     AlreadyLoggedOutForbidden in {
       Await.result(db.run(
-        loginTable += LoginRow(EmailExample, tokenExample, System.currentTimeMillis() + 360000, active = false)), Duration.Inf)
+        loginTable += LoginRow(emailExample, tokenExample, System.currentTimeMillis() + 360000, active = false)), Duration.Inf)
       val fakeRequest = FakeRequest(PATCH, LogOutEndpointRoute)
         .withHeaders(HOST -> LocalHost, TokenKey -> tokenExample)
 
