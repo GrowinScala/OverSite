@@ -132,8 +132,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$WrongChatIDKey" : "$ChatIDExample",
-            "$SupervisorKey" : "$EmailExample"
+            "$WrongChatIDKey" : "$chatIDExample",
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -147,8 +147,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$WrongSupervisorKey" : "$EmailExample"
+            "$ChatIDKey" : "$chatIDExample",
+            "$WrongSupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -162,7 +162,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample"
+            "$ChatIDKey" : "$chatIDExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -176,7 +176,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$SupervisorKey" : "$EmailExample"
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -190,8 +190,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$SupervisorKey" : "$EmailExample"
+            "$ChatIDKey" : "$chatIDExample",
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -205,8 +205,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$SupervisorKey" : "$EmailExample"
+            "$ChatIDKey" : "$chatIDExample",
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -294,8 +294,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$WrongChatIDKey" : "$ChatIDExample",
-            "$SupervisorKey" : "$EmailExample"
+            "$WrongChatIDKey" : "$chatIDExample",
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -309,8 +309,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$WrongSupervisorKey" : "$EmailExample"
+            "$ChatIDKey" : "$chatIDExample",
+            "$WrongSupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -324,7 +324,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample"
+            "$ChatIDKey" : "$chatIDExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -338,7 +338,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$SupervisorKey" : "$EmailExample"
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -352,8 +352,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$SupervisorKey" : "$EmailExample"
+            "$ChatIDKey" : "$chatIDExample",
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)
@@ -367,8 +367,8 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$SupervisorKey" : "$EmailExample"
+            "$ChatIDKey" : "$chatIDExample",
+            "$SupervisorKey" : "$emailExample"
           }
         """))
       val result = route(app, fakeRequest)

@@ -3,8 +3,10 @@ import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.mappings._
-import database.repository.{ ChatRepository, ChatRepositoryImpl }
+import database.repository.ChatRepositoryImpl
+import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.ControllerStrings._
+import encryption.EncryptString
 import generators.Generator
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
@@ -30,15 +32,27 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   private val testGenerator = new Generator()
   private val chatIDExample = testGenerator.ID
+  private val emailIDExample = new Generator().ID
   private val emailExample = testGenerator.emailAddress
+  private val wrongTokenExample = new Generator().token
+  private val passwordExample = testGenerator.password
+  private val dateExample = testGenerator.dateOf
+  private val headerExample = testGenerator.header
+  private val bodyExample = testGenerator.body
+
+  private val toAddressesJsonExample = testGenerator.emailAddresses.mkString("\" , \"")
+  private val bccJsonExample = new Generator().emailAddresses.mkString("\" , \"")
+  private val ccJsonExample = new Generator().emailAddresses.mkString("\" , \"")
+
+  private val encryptedPasswordExample = new EncryptString(passwordExample, MD5Algorithm).result.toString
 
   private val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
   override def beforeEach(): Unit = {
     //encrypted "12345" password
-    Await.result(db.run(userTable += UserRow(EmailExample, EncryptedPasswordExample)), Duration.Inf)
+    Await.result(db.run(userTable += UserRow(emailExample, encryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
-      LoginRow(EmailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
+      LoginRow(emailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }
 
   override def beforeAll(): Unit = {
@@ -61,13 +75,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$WrongDateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$WrongDateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -82,13 +96,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$WrongHeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$WrongHeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -103,13 +117,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$WrongBodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$WrongBodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -124,13 +138,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$WrongSendNowKey" : true
           }
         """))
@@ -145,12 +159,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -165,12 +179,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -185,12 +199,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -205,12 +219,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -225,12 +239,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -245,12 +259,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey": ["vfernandes@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey": ["$toAddressesJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -265,12 +279,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" :"Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" :"$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -285,13 +299,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"]
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"]
           }
         """))
       val result = route(app, fakeRequest)
@@ -302,16 +316,16 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + EmailFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(POST, EmailEndpointRoute)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -326,13 +340,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
         .withJsonBody(parse(s"""
           {
-            "$ChatIDKey" : "$ChatIDExample",
-            "$DateOfKey" : "2018-12-01",
-            "$HeaderKey" : "Hello World!",
-            "$BodyKey" : "Have a good day Sir",
-            "$ToKey" : ["vfernandes@growin.pt"],
-            "$BCCKey" : ["rvalente@growin.pt"],
-            "$CCKey" : ["joao@growin.pt"],
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
             "$SendNowKey" : true
           }
         """))
@@ -387,7 +401,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailsFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusUndefined)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -440,7 +454,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + GetEmailFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusUndefined)
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
@@ -452,14 +466,14 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   EmailsController + ToSentFunction should {
     ValidTokenOk + AndStatus + StatusDraft + AndHasToAddress in {
-      Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample, "2018-12-01", "Hello World!", "Have a good day Sir", sent = false)), Duration.Inf)
+      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
+        emailExample, dateExample, headerExample, bodyExample, sent = false)), Duration.Inf)
 
       Await.result(db.run(toAddressTable += ToAddressRow(
-        "4d192fff-f787-4d19-926c-1ba62fd03a9a",
-        EmailIDExample, "vfernandesgrowin.pt")), Duration.Inf)
+        new Generator().ID,
+        emailIDExample, new Generator().emailAddress)), Duration.Inf)
 
-      val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + EmailIDExample)
+      val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + emailIDExample)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -470,10 +484,10 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + ToSentFunction should {
     HasNoToAddressBadRequest in {
 
-      Await.result(db.run(emailTable += EmailRow(EmailIDExample, "6e9601ff-f787-4d19-926c-1ba62fd03a9a",
-        EmailExample, "2018-12-01", LocalHost, "Have a good day Sir", sent = false)), Duration.Inf)
+      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
+        emailExample, dateExample, headerExample, bodyExample, sent = false)), Duration.Inf)
 
-      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusDraft/$EmailIDExample")
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusDraft/$emailIDExample")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -495,7 +509,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + ToSentFunction should {
     InvalidTokenForbidden in {
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusUndefined/$EmailIDUndefined")
-        .withHeaders(HOST -> LocalHost, TokenKey -> WrongTokenExample)
+        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN

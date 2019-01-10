@@ -21,13 +21,13 @@ class Generator extends CommonDTOGenerator {
     emailAddressAux.take(numberEmailAddress) + "@growin.pt"
   }
 
-  def emailAddressesSeq(num: Int): Seq[String] = {
+  def emailAddressesSeq(num: Int): Array[String] = {
 
-    if (num == 0) Seq()
+    if (num == 0) Array()
     else emailAddressesSeq(num - 1) :+ emailAddress
   }
 
-  def emailAddresses: Seq[String] = {
+  def emailAddresses: Array[String] = {
     val emailNumberAux: Int = choose(1, 5)
     emailAddressesSeq(emailNumberAux)
   }

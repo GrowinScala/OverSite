@@ -5,7 +5,7 @@ import org.scalacheck.Gen.{option, posNum}
 import org.scalacheck.Gen._
 
 
-option(strGen(255))
+"[" + Seq("a@growin.pt","b@growin.pt").mkString(""\" , "\"") + "]"
 /**
 
 val stringsGen = for {
