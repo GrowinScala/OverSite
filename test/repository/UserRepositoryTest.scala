@@ -58,11 +58,9 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         seq.head.username shouldEqual userCreation.username
         seq.head.password shouldEqual encrypt.result.toString
       })
-      //resultUserTable.map(_.map(user =>
-      //assert((user.username, user.password) === (userCreation.username, encrypt.result.toString))))
     }
   }
-  /*
+
   /** Test the insertion of an user into login database */
   UserRepository + InsertUserFunction should {
     "insert a correct user in database" in {
@@ -71,8 +69,10 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val resultLoginUser = userActions.loginUser(userCreation)
 
       /** Verify if user is inserted in login table correctly */
-      resultLoginUser.map(_.map(user =>
-        assert((user.username, user.password) === (userCreation.username, encrypt.result.toString))))
+      resultLoginUser.map(seq => {
+        seq.head.username shouldEqual userCreation.username
+        seq.head.password shouldEqual encrypt.result.toString
+      })
     }
   }
 
@@ -91,52 +91,66 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   /** Test the login of an user with a wrong username*/
   UserRepository + LoginUserFunction should {
     "login with an unavailable username in database" in {
-      userActions.insertUser(userCreation)
-      userActions.insertLogin(userCreation)
-      val resultLoginUser = userActions.loginUser(userCreationWrongUser)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        resultLoginUser <- userActions.loginUser(userCreationWrongUser)
+      } yield resultLoginUser
+
       /** Verify if user is inserted in login table correctly */
-      resultLoginUser.map(x => assert(x.isEmpty))
+      result.map(x => assert(x.isEmpty))
     }
   }
 
   /** Test the login of an user with a wrong password */
   UserRepository + LoginUserFunction should {
     "login with an unavailable password in database" in {
-      userActions.insertUser(userCreation)
-      userActions.insertLogin(userCreation)
-      val resultLoginUser = userActions.loginUser(userCreationWrongPassword)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        resultLoginUser <- userActions.loginUser(userCreationWrongPassword)
+      } yield resultLoginUser
 
       /** Verify if user is inserted in login table correctly */
-      resultLoginUser.map(x => assert(x.isEmpty))
+      result.map(x => assert(x.isEmpty))
     }
   }
 
   /** Test the logout of an user into database */
   UserRepository + LogoutUserFunction should {
     "logout with an available user in database" in {
-      userActions.insertUser(userCreation)
-      val token = userActions.insertLogin(userCreation)
-      token.map(tkn => userActions.insertLogout(tkn))
-      val resultLogOut = db.run(loginTable.result)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        token <- userActions.insertLogin(userCreation)
+        _ <- userActions.insertLogout(token)
+        resultLogOut <- db.run(loginTable.result)
+      } yield resultLogOut
 
       /** Verify if the logout is processed correctly*/
-      resultLogOut.map(_.map(x => assert(x.active === false)))
+      result.map(seq => seq.head.active shouldEqual false)
+
     }
   }
 
   /** Test the logout of an user into database with a wrong token*/
   UserRepository + LogoutUserFunction should {
     "logout with an available user in database with wrong token" in {
-      userActions.insertUser(userCreation)
-      userActions.insertLogout(new Generator().token)
-      val resultLogOut = db.run(loginTable.result)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        _ <- userActions.insertLogout(new Generator().token)
+        resultLogOut <- db.run(loginTable.result)
+      } yield resultLogOut
 
       /** Verify if the logout is processed correctly*/
-      resultLogOut.map( seq =>
-        _.map(x => assert(x.active === true))
-      )
+      result.map(seq => seq.head.active shouldEqual true)
+
     }
 
   }
-  */
+
 }

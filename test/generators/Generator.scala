@@ -11,8 +11,9 @@ class Generator extends CommonDTOGenerator {
 
   def password: String = {
     val passwordAux: String = alphaNumStr
+    //listOfN(10, alphaNumStr)
     val numberPassword: Int = choose(1, 20)
-    transformEmail(passwordAux).take(numberPassword)
+    passwordAux.take(numberPassword)
   }
 
   def emailAddress: String = {
@@ -21,13 +22,13 @@ class Generator extends CommonDTOGenerator {
     emailAddressAux.take(numberEmailAddress) + "@growin.pt"
   }
 
-  def emailAddressesSeq(num: Int): Array[String] = {
+  def emailAddressesSeq(num: Int): Seq[String] = {
 
-    if (num == 0) Array()
+    if (num == 0) Seq()
     else emailAddressesSeq(num - 1) :+ emailAddress
   }
 
-  def emailAddresses: Array[String] = {
+  def emailAddresses: Seq[String] = {
     val emailNumberAux: Int = choose(1, 5)
     emailAddressesSeq(emailNumberAux)
   }

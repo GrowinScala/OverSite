@@ -71,11 +71,8 @@ class UsersController @Inject() (
               Ok(JsObject(Seq(
                 (TokenJSONField, JsString(x)),
                 (TokenValidTimeJsonField, JsString(Token1HourValid))))))
-          case x =>
-            Future {
-              println(x)
-              Forbidden(PasswordMissMatchStatus)
-            }
+          case _ =>
+            Future.successful(Forbidden(PasswordMissMatchStatus))
         }
       })
   }
