@@ -12,12 +12,12 @@ import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
-
+import org.scalatest.Matchers
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
 import scala.reflect.internal.util.JavaClearable
 
-class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
@@ -60,323 +60,351 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   /* Verify if a chat is inserted in database */
   ChatRepository + InsertChatFunction should {
     "check if the chat is inserted in the chat table correctly" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      Await.result(chatActions.insertChat(emailCreation, resultChatID), Duration.Inf)
-      val resultChatTable = Await.result(db.run(chatTable.result), Duration.Inf)
+      val resultChatID = emailActions.insertEmail(userCreation.username, emailCreation)
+
+      resultChatID.map(id =>
+        chatActions.insertChat(emailCreation, id))
+
+      val resultChatTable = db.run(chatTable.result)
 
       /** Verify if something was inserted in the chat table */
-      assert(resultChatTable.nonEmpty)
+      resultChatTable.map(seqChatRow =>
+        seqChatRow.isEmpty shouldBe true)
 
       /** Verify if the chatID in chat Table matches with email inserted */
-      resultChatTable.map(row => assert(row.chatID === resultChatID))
+      resultChatTable.map(seqChatRow =>
+        seqChatRow.forall(_.chatID === emailCreation.chatID) shouldBe true)
 
       /** Verify if the header in chat Table matches with email inserted */
-      resultChatTable.map(row => assert(row.header === emailCreation.header))
+      resultChatTable.map(seqChatRow =>
+        seqChatRow.forall(_.header === emailCreation.header) shouldBe true)
     }
   }
 
   /* Verify if a chat is inserted in database */
   ChatRepository + GetInboxFunction should {
     "check if the Inbox has the right messages for an specific user" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultInbox = Await.result(chatActions.getInbox(userCreation.username), Duration.Inf)
+      emailActions.insertEmail(userCreation.username, emailCreation)
+      val resultInbox = chatActions.getInbox(userCreation.username)
 
       /** Verify if Inbox is not empty */
-      assert(resultInbox.nonEmpty)
+      resultInbox.map(seqEmailMinimal =>
+        seqEmailMinimal.isEmpty shouldBe true)
 
       /** Verify if the chatID in chat Table matches with email inserted */
-      resultInbox.map(row => assert(row.Id === resultChatID))
+      resultInbox.map(seqEmailMinimal =>
+        seqEmailMinimal.forall(_.Id === emailCreation.chatID) shouldBe true)
 
       /** Verify if the header in chat Table matches with email inserted */
-      resultInbox.map(row => assert(row.header === emailCreation.header))
+      resultInbox.map(seqEmailMinimal =>
+        seqEmailMinimal.forall(_.header === emailCreation.header) shouldBe true)
     }
   }
 
   /* Verify if a chat is inserted in database */
   ChatRepository + GetInboxFunction should {
     "check if the Inbox is empty for an user without messages" in {
-      Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultInbox = Await.result(chatActions.getInbox(userCreationWrongUser.username), Duration.Inf)
+      emailActions.insertEmail(userCreation.username, emailCreation)
+      val resultInbox = chatActions.getInbox(userCreationWrongUser.username)
 
       /** Verify if Inbox is not empty */
-      assert(resultInbox.isEmpty)
+      resultInbox.map(seqEmailMinimal =>
+        seqEmailMinimal.isEmpty shouldBe true)
     }
   }
 
   /* Verify if a the function getEmails selects the right emails through userName and chatID */
   ChatRepository + GetEmailsFunction should {
     "check if the email is returned properly when chatID and username are provided" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultGet = Await.result(chatActions.getEmails(userCreation.username, resultChatID), Duration.Inf)
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultGet <- chatActions.getEmails(userCreation.username, resultChatID)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield (resultGet, resultEmailTable)
 
       /** Verify if Inbox is not empty */
-      assert(resultGet.nonEmpty)
+      result.map {
+        case (resultGet, _) =>
+          resultGet.nonEmpty shouldBe true
+      }
 
-      /** Verify if the chatID in chat Table matches with email inserted */
-      resultGet.map(row => assert(row.Id === resultEmailTable.map(_.emailID).head))
+      /** Verify if the emailID in chat Table matches with email inserted */
+      result.flatMap {
+        case (resultGet, resultEmailTable) =>
+          resultGet.map(_.Id).toSet shouldEqual resultEmailTable.map(_.emailID).toSet
+      }
 
       /** Verify if the header in chat Table matches with email inserted */
-      resultGet.map(row => assert(row.header === emailCreation.header))
+      result.flatMap {
+        case (resultGet, resultEmailTable) =>
+          resultGet.forall(_.header === emailCreation.header) shouldBe true
+      }
     }
   }
 
   /* Verify if a the function getEmails selects no emails through wrong userName and chatID */
   ChatRepository + GetEmailsFunction should {
     "check if the email is returned properly when chatID and wrong username are provided" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultGet = Await.result(chatActions.getEmails(userCreationWrongUser.username, resultChatID), Duration.Inf)
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultGet <- chatActions.getEmails(userCreationWrongUser.username, resultChatID)
+      } yield resultGet
 
       /** Verify if Inbox is empty */
-      assert(resultGet.isEmpty)
+      result.map(seqEmailMinimal =>
+        seqEmailMinimal.isEmpty shouldBe true)
     }
   }
 
   /* Verify if a the function getEmails selects no emails through wrong userName and chatID */
   ChatRepository + GetEmailsFunction should {
     "check if the email is returned properly when wrong chatID and username are provided" in {
-      Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultGet = Await.result(chatActions.getEmails(userCreation.username, new Generator().ID), Duration.Inf)
+      emailActions.insertEmail(userCreation.username, emailCreation)
+      val resultGet = chatActions.getEmails(userCreation.username, new Generator().ID)
 
       /** Verify if Inbox is empty */
-      assert(resultGet.isEmpty)
+      resultGet.map(seqEmailMinimal =>
+        seqEmailMinimal.isEmpty shouldBe true)
     }
   }
 
-  /* Verify if a the function getEmail selects the right email through userName and chatID */
-  ChatRepository + GetEmailFunction should {
-    "check if the email is returned properly when chatID, emailID and username are provided" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      val resultGet = Await.result(chatActions.getEmail(userCreation.username, resultChatID, resultEmailTable.map(_.emailID).head), Duration.Inf)
-
-      /** Verify if resultGet is not empty */
-      assert(resultGet.nonEmpty)
-
-      /** Verify if the parameters of getEmail return match */
-      resultGet.map(row => assert(row.fromAddress === resultEmailTable.map(_.fromAddress).head))
-
-      /** Verify the "Tos" of resultGet and the ones provided in the emailCreation */
-      val resultTosCompare = resultGet.map(row => row.username).zip(emailCreation.to.getOrElse(Seq()))
-      resultTosCompare.map(row => assert(row._1 === row._2))
-
-      resultGet.map(row => assert(row.header === resultEmailTable.map(_.header).head))
-
-      resultGet.map(row => assert(row.body === resultEmailTable.map(_.body).head))
-
-      resultGet.map(row => assert(row.dateOf === resultEmailTable.map(_.dateOf).head))
-
-    }
-  }
-
-  /* Verify if a the function getEmail selects no emails through wrong userName and chatID */
-  ChatRepository + GetEmailFunction should {
-    "check if the email is no returned when chatID, emailID and wrong username are provided" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      val resultGet = Await.result(chatActions.getEmail(userCreationWrongUser.username, resultChatID, resultEmailTable.map(_.emailID).head), Duration.Inf)
-
-      /** Verify if resultGet is not empty */
-      assert(resultGet.isEmpty)
-    }
-  }
-
-  /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
-  ChatRepository + GetEmailFunction should {
-    "check if the email is no returned when wrong chatID, emailID and username are provided" in {
-      Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      val resultGet = Await.result(chatActions.getEmail(userCreation.username, new Generator().ID, resultEmailTable.map(_.emailID).head), Duration.Inf)
-
-      /** Verify if resultGet is not empty */
-      assert(resultGet.isEmpty)
-    }
-  }
-
-  /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
-  ChatRepository + GetEmailFunction should {
-    "check if the email is no returned when chatID, wrong emailID and username are provided" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      Await.result(db.run(emailTable.result), Duration.Inf)
-      val resultGet = Await.result(chatActions.getEmail(userCreation.username, resultChatID, new Generator().ID), Duration.Inf)
-
-      /** Verify if resultGet is not empty */
-      assert(resultGet.isEmpty)
-    }
-  }
-
-  /* Verify if a the function insertPermission inserts the permission correctly */
-  ChatRepository + InsertPermissionFunction should {
-    "check if the permission to some chat is proceeded correctly" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-
-      val resultShareTable = Await.result(db.run(shareTable.result), Duration.Inf)
-
-      /** Verify if resultShareTable is not empty */
-      assert(resultShareTable.nonEmpty)
-
-      /** verify if the parameters of the sharTeable are correct */
-      resultShareTable.map(row => assert(row.chatID === resultChatID))
-
-      resultShareTable.map(row => assert(row.fromUser === userCreation.username))
-
-      resultShareTable.map(row => assert(row.shareID === resultShareID))
-
-      resultShareTable.map(row => assert(row.toUser === shareCreation.supervisor))
-    }
-  }
-
-  /* Verify if getShares returns the permissions correctly */
-  ChatRepository + GetSharesFunction should {
-    "check if the emails that were allowed to supervise are returned correctly" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-
-      Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-
-      val returnShares = Await.result(chatActions.getShares(shareCreation.supervisor), Duration.Inf)
-
-      /** Verify if returnShares is not empty */
-      assert(returnShares.nonEmpty)
-
-      /** Verify if the parameeters returned are correct */
-      returnShares.map(row => assert(row.Id === resultChatID))
-
-      returnShares.map(row => assert(row.header === emailCreation.header))
-    }
-  }
-
-  /* Verify if getShares doesn't return the permissions to other user */
-  ChatRepository + GetSharesFunction should {
-    "check if the emails that were allowed to supervise are not returned for other user" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-
-      Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-
-      val returnShares = Await.result(chatActions.getShares(new Generator().emailAddress), Duration.Inf)
-
-      /** Verify if returnShares is not empty */
-      assert(returnShares.isEmpty)
-    }
-  }
-
-  /* Verify if getSharedEmails returns the permission emails correctly */
-  ChatRepository + GetSharedEmailFunction should {
-    "check if the emails that were allowed to supervise are returned correctly" in {
-
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-
-      val resultEmailID = resultEmailTable.map(row => row.emailID).head
-
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-
-      val returnShares = Await.result(chatActions.getSharedEmails(shareCreation.supervisor, resultShareID), Duration.Inf)
-
-      /** Verify if returnShares is not empty */
-      assert(returnShares.nonEmpty)
-
-      /** Verify if the parameters returned are correct */
-      returnShares.map(row => assert(row.Id === resultEmailID))
-      returnShares.map(row => assert(row.header === emailCreation.header))
-
-    }
-  }
-
-  /* Verify if getSharedEmails doesnt return the permission emails for an unauthorized user */
-  ChatRepository + GetSharedEmailFunction should {
-    "check if the emails that were allowed to supervise are not returned for other user" in {
-
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-
-      Await.result(db.run(emailTable.result), Duration.Inf)
-
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-
-      val returnShares = Await.result(chatActions.getSharedEmails(new Generator().emailAddress, resultShareID), Duration.Inf)
-
-      /** Verify if returnShares is not empty */
-      assert(returnShares.isEmpty)
-    }
-  }
-
-  // def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[(String, String, String, String, String, String)]] = {
-
-  /* Verify if getSharedEmail return a specific email correctly */
-  ChatRepository + GetSharedEmailFunction should {
-    "check if a specific email that was allowed to supervise is returned correctly" in {
-
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-
-      val resultEmailID = resultEmailTable.map(row => row.emailID).head
-
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-
-      val returnShare = Await.result(chatActions.getSharedEmail(shareCreation.supervisor, resultShareID, resultEmailID), Duration.Inf)
-
-      /** Verify if returnShares is not empty */
-      assert(returnShare.nonEmpty)
-
-      /** Verify if the parameters returned are correct */
-      returnShare.map(row => assert(row.chatID === resultChatID))
-
-      returnShare.map(row => assert(row.fromAddress === userCreation.username))
-
-      returnShare.map(row => assert(emailCreation.to.getOrElse(Seq()).contains(row.username)))
-
-      returnShare.map(row => assert(row.header === emailCreation.header))
-
-      returnShare.map(row => assert(row.body === emailCreation.body))
-
-      returnShare.map(row => assert(row.dateOf === emailCreation.dateOf))
-    }
-  }
-
-  /* Verify if getSharedEmail doesnt return a specific email to the wrong user */
-  ChatRepository + GetSharedEmailFunction should {
-    "check if a specific email that was allowed to supervise is not accessed by the wrong user" in {
-
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      val resultEmailID = resultEmailTable.map(row => row.emailID).head
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-      val returnShare = Await.result(chatActions.getSharedEmail(new Generator().emailAddress, resultShareID, resultEmailID), Duration.Inf)
-
-      /** Verify if returnShares is not empty */
-      assert(returnShare.isEmpty)
-    }
-  }
-  /* NOT WORKING THANKS TO SLICK BUG
-  /* Verify if deletePermission takes the permission from the supervised user*/
-  ChatRepository + DeletePermissionFunction should {
-    "check if a an user is not allowed to access the emails anymore after permission deleted" in {
-      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      val resultEmailID = resultEmailTable.map(row => row.emailID).head
-      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-      Await.result(chatActions.deletePermission(userCreation.username, shareCreation.supervisor, resultChatID), Duration.Inf)
-      val returnShares = Await.result(chatActions.getSharedEmails(shareCreation.supervisor, resultShareID), Duration.Inf)
-      /** Verify if returnShares is not empty */
-      assert(returnShares.isEmpty)
-    }
-  }
-*/
+   /* Verify if a the function getEmail selects the right email through userName and chatID */
+   ChatRepository + GetEmailFunction should {
+   "check if the email is returned properly when chatID, emailID and username are provided" in {
+
+   val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+   val resultGet = Await.result(chatActions.getEmail(userCreation.username, resultChatID, resultEmailTable.map(_.emailID).head), Duration.Inf)
+
+   /** Verify if resultGet is not empty */
+   assert(resultGet.nonEmpty)
+
+   /** Verify if the parameters of getEmail return match */
+   resultGet.map(row => assert(row.fromAddress === resultEmailTable.map(_.fromAddress).head))
+
+   /** Verify the "Tos" of resultGet and the ones provided in the emailCreation */
+   val resultTosCompare = resultGet.map(row => row.username).zip(emailCreation.to.getOrElse(Seq()))
+   resultTosCompare.map(row => assert(row._1 === row._2))
+
+   resultGet.map(row => assert(row.header === resultEmailTable.map(_.header).head))
+
+   resultGet.map(row => assert(row.body === resultEmailTable.map(_.body).head))
+
+   resultGet.map(row => assert(row.dateOf === resultEmailTable.map(_.dateOf).head))
+
+   }
+   }
+/*   *
+   * /* Verify if a the function getEmail selects no emails through wrong userName and chatID */
+   * ChatRepository + GetEmailFunction should {
+   * "check if the email is no returned when chatID, emailID and wrong username are provided" in {
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   * val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+   * val resultGet = Await.result(chatActions.getEmail(userCreationWrongUser.username, resultChatID, resultEmailTable.map(_.emailID).head), Duration.Inf)
+   *
+   * /** Verify if resultGet is not empty */
+   * assert(resultGet.isEmpty)
+   * }
+   * }
+   *
+   * /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
+   * ChatRepository + GetEmailFunction should {
+   * "check if the email is no returned when wrong chatID, emailID and username are provided" in {
+   * Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   * val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+   * val resultGet = Await.result(chatActions.getEmail(userCreation.username, new Generator().ID, resultEmailTable.map(_.emailID).head), Duration.Inf)
+   *
+   * /** Verify if resultGet is not empty */
+   * assert(resultGet.isEmpty)
+   * }
+   * }
+   *
+   * /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
+   * ChatRepository + GetEmailFunction should {
+   * "check if the email is no returned when chatID, wrong emailID and username are provided" in {
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   * Await.result(db.run(emailTable.result), Duration.Inf)
+   * val resultGet = Await.result(chatActions.getEmail(userCreation.username, resultChatID, new Generator().ID), Duration.Inf)
+   *
+   * /** Verify if resultGet is not empty */
+   * assert(resultGet.isEmpty)
+   * }
+   * }
+   *
+   * /* Verify if a the function insertPermission inserts the permission correctly */
+   * ChatRepository + InsertPermissionFunction should {
+   * "check if the permission to some chat is proceeded correctly" in {
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   *
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   *
+   * val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   *
+   * val resultShareTable = Await.result(db.run(shareTable.result), Duration.Inf)
+   *
+   * /** Verify if resultShareTable is not empty */
+   * assert(resultShareTable.nonEmpty)
+   *
+   * /** verify if the parameters of the sharTeable are correct */
+   * resultShareTable.map(row => assert(row.chatID === resultChatID))
+   *
+   * resultShareTable.map(row => assert(row.fromUser === userCreation.username))
+   *
+   * resultShareTable.map(row => assert(row.shareID === resultShareID))
+   *
+   * resultShareTable.map(row => assert(row.toUser === shareCreation.supervisor))
+   * }
+   * }
+   *
+   * /* Verify if getShares returns the permissions correctly */
+   * ChatRepository + GetSharesFunction should {
+   * "check if the emails that were allowed to supervise are returned correctly" in {
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   *
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   *
+   * Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   *
+   * val returnShares = Await.result(chatActions.getShares(shareCreation.supervisor), Duration.Inf)
+   *
+   * /** Verify if returnShares is not empty */
+   * assert(returnShares.nonEmpty)
+   *
+   * /** Verify if the parameeters returned are correct */
+   * returnShares.map(row => assert(row.Id === resultChatID))
+   *
+   * returnShares.map(row => assert(row.header === emailCreation.header))
+   * }
+   * }
+   *
+   * /* Verify if getShares doesn't return the permissions to other user */
+   * ChatRepository + GetSharesFunction should {
+   * "check if the emails that were allowed to supervise are not returned for other user" in {
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   *
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   *
+   * Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   *
+   * val returnShares = Await.result(chatActions.getShares(new Generator().emailAddress), Duration.Inf)
+   *
+   * /** Verify if returnShares is not empty */
+   * assert(returnShares.isEmpty)
+   * }
+   * }
+   *
+   * /* Verify if getSharedEmails returns the permission emails correctly */
+   * ChatRepository + GetSharedEmailFunction should {
+   * "check if the emails that were allowed to supervise are returned correctly" in {
+   *
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   *
+   * val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+   *
+   * val resultEmailID = resultEmailTable.map(row => row.emailID).head
+   *
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   *
+   * val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   *
+   * val returnShares = Await.result(chatActions.getSharedEmails(shareCreation.supervisor, resultShareID), Duration.Inf)
+   *
+   * /** Verify if returnShares is not empty */
+   * assert(returnShares.nonEmpty)
+   *
+   * /** Verify if the parameters returned are correct */
+   * returnShares.map(row => assert(row.Id === resultEmailID))
+   * returnShares.map(row => assert(row.header === emailCreation.header))
+   *
+   * }
+   * }
+   *
+   * /* Verify if getSharedEmails doesnt return the permission emails for an unauthorized user */
+   * ChatRepository + GetSharedEmailFunction should {
+   * "check if the emails that were allowed to supervise are not returned for other user" in {
+   *
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   *
+   * Await.result(db.run(emailTable.result), Duration.Inf)
+   *
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   *
+   * val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   *
+   * val returnShares = Await.result(chatActions.getSharedEmails(new Generator().emailAddress, resultShareID), Duration.Inf)
+   *
+   * /** Verify if returnShares is not empty */
+   * assert(returnShares.isEmpty)
+   * }
+   * }
+   *
+   * // def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[(String, String, String, String, String, String)]] = {
+   *
+   * /* Verify if getSharedEmail return a specific email correctly */
+   * ChatRepository + GetSharedEmailFunction should {
+   * "check if a specific email that was allowed to supervise is returned correctly" in {
+   *
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   *
+   * val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+   *
+   * val resultEmailID = resultEmailTable.map(row => row.emailID).head
+   *
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   *
+   * val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   *
+   * val returnShare = Await.result(chatActions.getSharedEmail(shareCreation.supervisor, resultShareID, resultEmailID), Duration.Inf)
+   *
+   * /** Verify if returnShares is not empty */
+   * assert(returnShare.nonEmpty)
+   *
+   * /** Verify if the parameters returned are correct */
+   * returnShare.map(row => assert(row.chatID === resultChatID))
+   *
+   * returnShare.map(row => assert(row.fromAddress === userCreation.username))
+   *
+   * returnShare.map(row => assert(emailCreation.to.getOrElse(Seq()).contains(row.username)))
+   *
+   * returnShare.map(row => assert(row.header === emailCreation.header))
+   *
+   * returnShare.map(row => assert(row.body === emailCreation.body))
+   *
+   * returnShare.map(row => assert(row.dateOf === emailCreation.dateOf))
+   * }
+   * }
+   *
+   * /* Verify if getSharedEmail doesnt return a specific email to the wrong user */
+   * ChatRepository + GetSharedEmailFunction should {
+   * "check if a specific email that was allowed to supervise is not accessed by the wrong user" in {
+   *
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   * val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+   * val resultEmailID = resultEmailTable.map(row => row.emailID).head
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   * val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   * val returnShare = Await.result(chatActions.getSharedEmail(new Generator().emailAddress, resultShareID, resultEmailID), Duration.Inf)
+   *
+   * /** Verify if returnShares is not empty */
+   * assert(returnShare.isEmpty)
+   * }
+   * }
+   * /* NOT WORKING THANKS TO SLICK BUG
+   * /* Verify if deletePermission takes the permission from the supervised user*/
+   * ChatRepository + DeletePermissionFunction should {
+   * "check if a an user is not allowed to access the emails anymore after permission deleted" in {
+   * val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+   * val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+   * val resultEmailID = resultEmailTable.map(row => row.emailID).head
+   * val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+   * val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+   * Await.result(chatActions.deletePermission(userCreation.username, shareCreation.supervisor, resultChatID), Duration.Inf)
+   * val returnShares = Await.result(chatActions.getSharedEmails(shareCreation.supervisor, resultShareID), Duration.Inf)
+   * /** Verify if returnShares is not empty */
+   * assert(returnShares.isEmpty)
+   * }
+   * }
+   * */
+   */
 }
