@@ -41,10 +41,10 @@ class UsersController @Inject() (
       user => {
         if (validateEmailAddress(emailAddressPattern, Left(user.username))) {
           userActions.insertUser(user)
-          Future {
+          Future.successful {
             Created
           }
-        } else Future { BadRequest(InvalidEmailAddressStatus) }
+        } else Future.successful { BadRequest(InvalidEmailAddressStatus) }
       })
   }
 
