@@ -168,7 +168,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if emailID of email table is the same as toAddress table */
-              tosTable.map(x => x.emailID).contains(emailsTable.head.emailID) shouldEqual true
+              tosTable.map(toRow => toRow.emailID).contains(emailsTable.head.emailID) shouldEqual true
 
           }
 
@@ -222,7 +222,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if emailID of email table is the same as BCC table */
-              bccsTable.map(x => x.emailID).contains(emailsTable.head.emailID) shouldEqual true
+              bccsTable.map(bccRow => bccRow.emailID).contains(emailsTable.head.emailID) shouldEqual true
 
           }
 
@@ -276,7 +276,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if emailID of email table is the same as CC table */
-              ccsTable.map(x => x.emailID).contains(emailsTable.head.emailID) shouldEqual true
+              ccsTable.map(ccRow => ccRow.emailID).contains(emailsTable.head.emailID) shouldEqual true
 
           }
 
@@ -360,7 +360,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
             emailCreation.to match {
 
               /** If the parameter TO exists*/
-              case Some(x) if x.nonEmpty =>
+              case Some(seq) if seq.nonEmpty =>
 
                 resultDrafts shouldEqual resultTos
 
