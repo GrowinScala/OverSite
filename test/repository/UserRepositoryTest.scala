@@ -53,10 +53,10 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
       val resultUserTable = db.run(userTable.result)
 
-      resultUserTable.map(seqUserRow => {
+      resultUserTable.map { seqUserRow =>
         seqUserRow.head.username shouldEqual userCreation.username
         seqUserRow.head.password shouldEqual encrypt.result.toString
-      })
+      }
     }
   }
 
@@ -68,10 +68,10 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val resultLoginUser = userActions.loginUser(userCreation)
 
       /** Verify if user is inserted in login table correctly */
-      resultLoginUser.map(seqUserDTO => {
+      resultLoginUser.map { seqUserDTO =>
         seqUserDTO.head.username shouldEqual userCreation.username
         seqUserDTO.head.password shouldEqual encrypt.result.toString
-      })
+      }
     }
   }
 
