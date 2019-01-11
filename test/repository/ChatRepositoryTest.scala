@@ -6,17 +6,15 @@ import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.repository.{ ChatRepositoryImpl, EmailRepositoryImpl }
 import definedStrings.testStrings.RepositoryStrings._
-import generators.{ Generator, _ }
-import org.scalatest._
+import generators.Generator
+import org.scalatest.{ Matchers, _ }
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
-import org.scalatest.Matchers
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
-import scala.reflect.internal.util.JavaClearable
 
 class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
@@ -105,14 +103,17 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     }
   }
 
-  /* Verify if a chat is inserted in database */
+  /* Verify if a chat is not inserted in database */
   ChatRepository + GetInboxFunction should {
     "check if the Inbox is empty for an user without messages" in {
-      emailActions.insertEmail(userCreation.username, emailCreation)
-      val resultInbox = chatActions.getInbox(userCreationWrongUser.username)
+      val result = for {
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultInbox <- chatActions.getInbox(userCreationWrongUser.username)
+      } yield resultInbox
 
-      /** Verify if Inbox is not empty */
-      resultInbox.map(_.isEmpty shouldBe true)
+      /** Verify if Inbox is empty */
+      result.map(_.isEmpty shouldBe true)
+
     }
   }
 
@@ -401,5 +402,5 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     }
     }
     */
-
 }
+
