@@ -1,6 +1,7 @@
 package api.controllers
 
 import akka.actor.ActorSystem
+import api.AuxFunctions._
 import api.dtos.CreateShareDTO
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepositoryImpl }
@@ -27,17 +28,12 @@ class ChatController @Inject() (
    * Get inbox action
    * @return When a valid user is logged, the conversations are shown as an inbox
    */
+
   def inbox: Action[AnyContent] = tokenValidator.async { request =>
     request.userName.flatMap {
       chatActions.getInbox(_).map {
-        inbox =>
-          val chatsResult = JsArray(
-            inbox.map { x =>
-              JsObject(Seq(
-                (EmailIDJSONField, JsString(x.Id)),
-                (HeaderJSONField, JsString(x.header))))
-            })
-          Ok(chatsResult)
+        emails =>
+          Ok(Json.toJson(emails))
       }
     }
   }
@@ -47,17 +43,12 @@ class ChatController @Inject() (
    * @param chatID Identification of the chat
    * @return Action that shows the EmailID and respective Header of all emails that belong to the chat selected
    */
+
   def getEmails(chatID: String): Action[AnyContent] = tokenValidator.async { request =>
     request.userName.flatMap {
       chatActions.getEmails(_, chatID).map {
         emails =>
-          val emailsResult = JsArray(
-            emails.map { x =>
-              JsObject(Seq(
-                (EmailIDJSONField, JsString(x.Id)),
-                (HeaderJSONField, JsString(x.header))))
-            })
-          Ok(emailsResult)
+          Ok(Json.toJson(emails))
       }
     }
   }
@@ -72,18 +63,10 @@ class ChatController @Inject() (
     request.userName.flatMap {
       chatActions.getEmail(_, chatID, emailID).map {
         emails =>
-          val emailsResult = JsArray(emails.map { x =>
-            JsObject(
-              //emailID, chatID, fromAddress, toAddress , header, body, dateOf
-              Seq(
-                (EmailIDJSONField, JsString(emailID)),
-                (ChatIDJSONField, JsString(x.chatID)),
-                (FromAddressJSONField, JsString(x.fromAddress)),
-                (ToAddressJSONField, JsString(x.username)),
-                (HeaderJSONField, JsString(x.header)),
-                (BodyJSONField, JsString(x.body)),
-                (DateJSONField, JsString(x.dateOf))))
-          })
+          val emailsResult = JsArray(
+            emails.map { email =>
+              Json.toJson(convertEmailInfoToSender(email, emailID))
+            })
           Ok(emailsResult)
       }
     }
@@ -117,13 +100,7 @@ class ChatController @Inject() (
     request.userName.flatMap(
       chatActions.getShares(_).map(
         emails => {
-          val resultEmailID = JsArray(
-            emails.map { x =>
-              JsObject(Seq(
-                (EmailIDJSONField, JsString(x.Id)),
-                (HeaderJSONField, JsString(x.header))))
-            })
-          Ok(resultEmailID)
+          Ok(Json.toJson(emails))
         }))
   }
 
@@ -137,13 +114,7 @@ class ChatController @Inject() (
     request.userName.flatMap(
       chatActions.getSharedEmails(_, shareID).map(
         emails => {
-          val resultEmailID = JsArray(
-            emails.map { x =>
-              JsObject(Seq(
-                (EmailIDJSONField, JsString(x.Id)),
-                (HeaderJSONField, JsString(x.header))))
-            })
-          Ok(resultEmailID)
+          Ok(Json.toJson(emails))
         }))
 
   }
@@ -154,22 +125,27 @@ class ChatController @Inject() (
    * @param emailID Identification of the email
    * @return All details of the email required
    */
+  /**
+   *
+   * request.userName.flatMap(
+   * emailActions.getEmail(_, status, emailID).map(
+   * emails => {
+   * val resultEmailID = JsArray(
+   * emails.map { email =>
+   * Json.toJson(convertEmailInfoToSender(email, emailID))
+   * })
+   * Ok(resultEmailID)
+   * }))
+   */
+
   def getSharedEmail(shareID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
 
     request.userName.flatMap(
       chatActions.getSharedEmail(_, shareID, emailID).map(
-        email => {
+        emails => {
           val resultEmailID = JsArray(
-            email.map { x =>
-              JsObject(Seq(
-                (ShareIDJSONField, JsString(shareID)),
-                (EmailIDJSONField, JsString(emailID)),
-                (ChatIDJSONField, JsString(x.chatID)),
-                (FromAddressJSONField, JsString(x.fromAddress)),
-                (ToAddressJSONField, JsString(x.username)),
-                (HeaderJSONField, JsString(x.header)),
-                (BodyJSONField, JsString(x.body)),
-                (DateJSONField, JsString(x.dateOf))))
+            emails.map { email =>
+              Json.toJson(convertEmailInfoToShareSender(email, shareID, emailID))
             })
           Ok(resultEmailID)
         }))
@@ -188,7 +164,7 @@ class ChatController @Inject() (
       share => {
         request.userName.map(
           chatActions.deletePermission(_, share.supervisor, share.chatID))
-        Future {
+        Future.successful {
           Ok
         }
       })

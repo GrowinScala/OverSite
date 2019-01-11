@@ -9,6 +9,7 @@ import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
+import api.AuxFunctions._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -39,7 +40,7 @@ class EmailsController @Inject() (
       email => {
         request.userName.map(
           emailActions.insertEmail(_, email))
-        Future {
+        Future.successful {
           Ok(MailSentStatus)
         }
       })
@@ -52,11 +53,13 @@ class EmailsController @Inject() (
    */
   def getEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
     if (PossibleEndPointStatus.contains(status)) {
-      request.userName.flatMap(emailActions.getEmails(_, status).map(emails => { Ok(Json.toJson(emails)) }))
+      request.userName.flatMap(emailActions.getEmails(_, status).map(emails => {
+        Ok(Json.toJson(emails))
+      }))
     } else if (status == SatanString) {
-      Future(BadRequest(SatanStatus))
+      Future.successful(BadRequest(SatanStatus))
     } else {
-      Future(BadRequest(InvalidEndPointStatus))
+      Future.successful(BadRequest(InvalidEndPointStatus))
     }
   }
 
@@ -70,22 +73,15 @@ class EmailsController @Inject() (
     if (PossibleEndPointStatus.contains(status)) {
       request.userName.flatMap(
         emailActions.getEmail(_, status, emailID).map(
-          email => {
+          emails => {
             val resultEmailID = JsArray(
-              email.map { x =>
-                JsObject(Seq(
-                  (EmailIDJSONField, JsString(emailID)),
-                  (ChatIDJSONField, JsString(x.chatID)),
-                  (FromAddressJSONField, JsString(x.fromAddress)),
-                  (ToAddressJSONField, JsString(x.username)),
-                  (HeaderJSONField, JsString(x.header)),
-                  (BodyJSONField, JsString(x.body)),
-                  (DateJSONField, JsString(x.dateOf))))
+              emails.map { email =>
+                Json.toJson(convertEmailInfoToSender(email, emailID))
               })
             Ok(resultEmailID)
           }))
     } else {
-      Future { BadRequest(InvalidEndPointStatus) }
+      Future.successful { BadRequest(InvalidEndPointStatus) }
     }
   }
 
@@ -102,6 +98,6 @@ class EmailsController @Inject() (
           case 0 => BadRequest
           case _ => Ok
         })
-    else Future { BadRequest(InvalidEndPointStatus) }
+    else Future.successful { BadRequest(InvalidEndPointStatus) }
   }
 }
