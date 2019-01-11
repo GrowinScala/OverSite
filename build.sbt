@@ -19,6 +19,4 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
   "mysql" % "mysql-connector-java" % "8.0.13",
   "org.scalacheck" %% "scalacheck" % "1.14.0",
-  "net.sourceforge.cobertura" % "cobertura" % "2.1.1" % Test
-
 )
