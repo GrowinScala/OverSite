@@ -52,17 +52,7 @@ class EmailsController @Inject() (
    */
   def getEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
     if (PossibleEndPointStatus.contains(status)) {
-      request.userName.flatMap(
-        emailActions.getEmails(_, status).map(
-          emails => {
-            val resultEmailID = JsArray(
-              emails.map { x =>
-                JsObject(Seq(
-                  (EmailIDJSONField, JsString(x.Id)),
-                  (HeaderJSONField, JsString(x.header))))
-              })
-            Ok(resultEmailID)
-          }))
+      request.userName.flatMap(emailActions.getEmails(_, status).map(emails => { Ok(Json.toJson(emails)) }))
     } else if (status == SatanString) {
       Future(BadRequest(SatanStatus))
     } else {
@@ -99,6 +89,11 @@ class EmailsController @Inject() (
     }
   }
 
+  /**
+   * Receive a target draft email and sends it if that email has a to parameter
+   * @param status Identification of the email status
+   * @param emailID Identification of the email
+   */
   def toSent(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
 
     if (status.equals(EndPointDraft))

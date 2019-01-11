@@ -78,7 +78,10 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     val queryResult = auxGetEmails(userEmail, status)
       .map(x => (x.emailID, x.header))
       .result
-    db.run(queryResult).map(seq => seq.map(p => EmailMinimalInfoDTO(p._1, p._2)))
+    db.run(queryResult).map(seq => seq.map {
+      case (emailId, header) =>
+        EmailMinimalInfoDTO(emailId, header)
+    })
   }
   /**
    * Function that filter the emails, according to their status and emailID

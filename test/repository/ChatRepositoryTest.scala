@@ -180,7 +180,7 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
       assert(resultGet.isEmpty)
     }
   }
-
+/**
   /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
   ChatRepository + GetEmailFunction should {
     "check if the email is no returned when wrong chatID, emailID and username are provided" in {
@@ -379,4 +379,5 @@ class ChatRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
     }
   }
 */
+  * */
 }

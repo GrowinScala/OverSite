@@ -14,11 +14,12 @@ import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
+import org.scalatest.Matchers
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
 
-class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
@@ -48,83 +49,110 @@ class UserRepositoryTest extends WordSpec with BeforeAndAfterAll with BeforeAndA
   /** Verify if an user has signed in into database */
   UserRepository + LoginTableFunction should {
     "check if the correct user is inserted in login table in database" in {
-      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      userActions.insertUser(userCreation)
       val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
-      val resultUserTable = Await.result(db.run(userTable.result), Duration.Inf)
-      resultUserTable.map(user =>
-        assert((user.username, user.password) === (userCreation.username, encrypt.result.toString)))
+      val resultUserTable = db.run(userTable.result)
+
+      resultUserTable.map(seqUserRow => {
+        seqUserRow.head.username shouldEqual userCreation.username
+        seqUserRow.head.password shouldEqual encrypt.result.toString
+      })
     }
   }
 
   /** Test the insertion of an user into login database */
   UserRepository + InsertUserFunction should {
     "insert a correct user in database" in {
-      Await.result(userActions.insertUser(userCreation), Duration.Inf)
+      userActions.insertUser(userCreation)
       val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
-      val resultLoginUser = Await.result(userActions.loginUser(userCreation), Duration.Inf)
+      val resultLoginUser = userActions.loginUser(userCreation)
 
       /** Verify if user is inserted in login table correctly */
-      resultLoginUser.map(user =>
-        assert((user.username, user.password) === (userCreation.username, encrypt.result.toString)))
+      resultLoginUser.map(seqUserDTO => {
+        seqUserDTO.head.username shouldEqual userCreation.username
+        seqUserDTO.head.password shouldEqual encrypt.result.toString
+      })
     }
   }
 
   /** Test the login of a available user */
   UserRepository + LoginUserFunction should {
     "login with a available user in database" in {
-      Await.result(userActions.insertUser(userCreation), Duration.Inf)
-      Await.result(userActions.insertLogin(userCreation), Duration.Inf)
-      val resultLoginTable = Await.result(db.run(loginTable.result), Duration.Inf)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        resultLoginTable <- db.run(loginTable.result)
+      } yield resultLoginTable
 
       /** Verify if user is inserted in login table correctly */
-      assert(resultLoginTable.head.username === userCreation.username)
+      result.map(seqLoginRow => assert(seqLoginRow.head.username === userCreation.username))
     }
   }
 
   /** Test the login of an user with a wrong username*/
   UserRepository + LoginUserFunction should {
     "login with an unavailable username in database" in {
-      Await.result(userActions.insertUser(userCreation), Duration.Inf)
-      Await.result(userActions.insertLogin(userCreation), Duration.Inf)
-      val resultLoginUser = Await.result(userActions.loginUser(userCreationWrongUser), Duration.Inf)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        resultLoginUser <- userActions.loginUser(userCreationWrongUser)
+      } yield resultLoginUser
+
       /** Verify if user is inserted in login table correctly */
-      assert(resultLoginUser.isEmpty)
+      result.map(seqUserDTO => assert(seqUserDTO.isEmpty))
     }
   }
 
   /** Test the login of an user with a wrong password */
   UserRepository + LoginUserFunction should {
     "login with an unavailable password in database" in {
-      Await.result(userActions.insertUser(userCreation), Duration.Inf)
-      Await.result(userActions.insertLogin(userCreation), Duration.Inf)
-      val resultLoginUser = Await.result(userActions.loginUser(userCreationWrongPassword), Duration.Inf)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        resultLoginUser <- userActions.loginUser(userCreationWrongPassword)
+      } yield resultLoginUser
+
       /** Verify if user is inserted in login table correctly */
-      assert(resultLoginUser.isEmpty)
+      result.map(seqUserDTO => assert(seqUserDTO.isEmpty))
     }
   }
 
   /** Test the logout of an user into database */
   UserRepository + LogoutUserFunction should {
     "logout with an available user in database" in {
-      Await.result(userActions.insertUser(userCreation), Duration.Inf)
-      val token = Await.result(userActions.insertLogin(userCreation), Duration.Inf)
-      Await.result(userActions.insertLogout(token), Duration.Inf)
-      val resultLogOut = Await.result(db.run(loginTable.result), Duration.Inf)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        token <- userActions.insertLogin(userCreation)
+        _ <- userActions.insertLogout(token)
+        resultLoginTable <- db.run(loginTable.result)
+      } yield resultLoginTable
 
       /** Verify if the logout is processed correctly*/
-      resultLogOut.map(row => assert(row.active === false))
+      result.map(seqLoginRow => seqLoginRow.head.active shouldEqual false)
+
     }
   }
 
   /** Test the logout of an user into database with a wrong token*/
   UserRepository + LogoutUserFunction should {
     "logout with an available user in database with wrong token" in {
-      Await.result(userActions.insertUser(userCreation), Duration.Inf)
-      Await.result(userActions.insertLogout(new Generator().token), Duration.Inf)
-      val resultLogOut = Await.result(db.run(loginTable.result), Duration.Inf)
+
+      val result = for {
+        _ <- userActions.insertUser(userCreation)
+        _ <- userActions.insertLogin(userCreation)
+        _ <- userActions.insertLogout(new Generator().token)
+        resultLoginTable <- db.run(loginTable.result)
+      } yield resultLoginTable
 
       /** Verify if the logout is processed correctly*/
-      resultLogOut.map(row => assert(row.active === true))
+      result.map(seqLoginRow => seqLoginRow.head.active shouldEqual true)
+
     }
+
   }
+
 }

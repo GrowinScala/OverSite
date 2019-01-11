@@ -12,8 +12,9 @@ class Generator extends CommonDTOGenerator {
   /** Generates a random password that varies between 1 and 20 alphanumeric strings*/
   def password: String = {
     val passwordAux: String = alphaNumStr
+    //listOfN(10, alphaNumStr)
     val numberPassword: Int = choose(1, 20)
-    transformEmail(passwordAux).take(numberPassword)
+    passwordAux.take(numberPassword)
   }
 
   /** Generates a random email address that varies between 1 and 10 alphanumeric strings + "@growin.pt"*/
