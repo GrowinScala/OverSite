@@ -54,8 +54,8 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val resultUserTable = db.run(userTable.result)
 
       resultUserTable.map { seqUserRow =>
-        seqUserRow.head.username shouldEqual userCreation.username
-        seqUserRow.head.password shouldEqual encrypt.result.toString
+        seqUserRow.forall(_.username === userCreation.username) shouldBe true
+        seqUserRow.forall(_.password === encrypt.result.toString) shouldBe true
       }
     }
   }
@@ -66,11 +66,10 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       userActions.insertUser(userCreation)
       val encrypt = new EncryptString(userCreation.password, MD5Algorithm)
       val resultLoginUser = userActions.loginUser(userCreation)
-
       /** Verify if user is inserted in login table correctly */
       resultLoginUser.map { seqUserDTO =>
-        seqUserDTO.head.username shouldEqual userCreation.username
-        seqUserDTO.head.password shouldEqual encrypt.result.toString
+        seqUserDTO.forall(_.username === userCreation.username) shouldBe true
+        seqUserDTO.forall(_.password === encrypt.result.toString) shouldBe true
       }
     }
   }
@@ -86,7 +85,8 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultLoginTable
 
       /** Verify if user is inserted in login table correctly */
-      result.map(seqLoginRow => assert(seqLoginRow.head.username === userCreation.username))
+      result.map(seqLoginRow =>
+        seqLoginRow.forall(_.username === userCreation.username) shouldBe true)
     }
   }
 
@@ -101,7 +101,7 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultLoginUser
 
       /** Verify if user is inserted in login table correctly */
-      result.map(seqUserDTO => assert(seqUserDTO.isEmpty))
+      result.map(_.isEmpty shouldBe true)
     }
   }
 
@@ -116,7 +116,7 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultLoginUser
 
       /** Verify if user is inserted in login table correctly */
-      result.map(seqUserDTO => assert(seqUserDTO.isEmpty))
+      result.map(_.isEmpty shouldBe true)
     }
   }
 
@@ -132,8 +132,8 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultLoginTable
 
       /** Verify if the logout is processed correctly*/
-      result.map(seqLoginRow => seqLoginRow.head.active shouldEqual false)
-
+      result.map(seqLoginRow =>
+        seqLoginRow.forall(_.active === false) shouldEqual true)
     }
   }
 
@@ -149,7 +149,8 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultLoginTable
 
       /** Verify if the logout is processed correctly*/
-      result.map(seqLoginRow => seqLoginRow.head.active shouldEqual true)
+      result.map(seqLoginRow =>
+        seqLoginRow.forall(_.active === true) shouldEqual true)
 
     }
 

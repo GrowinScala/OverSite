@@ -5,7 +5,11 @@ import org.scalacheck.Gen.{option, posNum}
 import org.scalacheck.Gen._
 
 
-"[" + Seq("a@growin.pt","b@growin.pt").mkString(""\" , "\"") + "]"
+def strGen(max: Int): Gen[String] =
+  choose(1, max).flatMap(n =>
+    listOfN(n, Gen.alphaNumChar).map(_.mkString))
+
+strGen(10).sample.get
 /**
 
 val stringsGen = for {

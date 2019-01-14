@@ -1,6 +1,7 @@
 package generators
 import org.scalacheck.Gen._
 import definedStrings.testStrings.RepositoryStrings._
+import org.scalacheck.Gen
 
 import scala.util.Random
 class Generator extends CommonDTOGenerator {
@@ -9,20 +10,15 @@ class Generator extends CommonDTOGenerator {
   lazy val token: String = uuid
   lazy val username: String = emailAddress
 
+  def strGen(max: Int): Gen[String] =
+    choose(1, max).flatMap(n =>
+      listOfN(n, Gen.alphaNumChar).map(_.mkString))
+
   /** Generates a random password that varies between 1 and 20 alphanumeric strings*/
-  def password: String = {
-    val passwordAux: String = alphaNumStr
-    //listOfN(10, alphaNumStr)
-    val numberPassword: Int = choose(1, 20)
-    passwordAux.take(numberPassword)
-  }
+  def password: String = strGen(20)
 
   /** Generates a random email address that varies between 1 and 10 alphanumeric strings + "@growin.pt"*/
-  def emailAddress: String = {
-    val emailAddressAux: String = alphaNumStr
-    val numberEmailAddress: Int = choose(1, 10)
-    emailAddressAux.take(numberEmailAddress) + "@growin.pt"
-  }
+  def emailAddress: String = strGen(10) + "@growin.pt"
 
   /** Creates a sequence of n random email addresses */
   def emailAddressesSeq(num: Int): Seq[String] = {

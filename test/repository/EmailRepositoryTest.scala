@@ -82,24 +82,27 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         seqEmailRow.nonEmpty shouldEqual true
 
         /** Verify if the respective arguments match **/
-        seqEmailRow.head.fromAddress shouldEqual userCreation.username
+        seqEmailRow.forall(_.fromAddress === userCreation.username) shouldBe true
 
-        seqEmailRow.head.header shouldEqual emailCreation.header
+        seqEmailRow.forall(_.header === emailCreation.header) shouldBe true
 
-        seqEmailRow.head.body shouldEqual emailCreation.body
+        seqEmailRow.forall(_.body === emailCreation.body) shouldBe true
 
-        seqEmailRow.head.dateOf shouldEqual emailCreation.dateOf
+        seqEmailRow.forall(_.dateOf === emailCreation.dateOf) shouldBe true
 
-        seqEmailRow.head.sent shouldEqual emailCreation.sendNow
+        seqEmailRow.forall(_.sent === emailCreation.sendNow) shouldBe true
 
         /** Verify if emailID and chatID have an UUID format **/
-        assert(Try[Boolean] {UUID.fromString(seqEmailRow.head.chatID)
-          true}
-          .getOrElse(false))
 
-        assert(Try[Boolean] {UUID.fromString(seqEmailRow.head.emailID)
-          true}
-          .getOrElse(false))
+        Try[Boolean] {
+          UUID.fromString(seqEmailRow.head.chatID)
+          true
+        }.getOrElse(false) shouldEqual true
+
+        Try[Boolean] {
+          UUID.fromString(seqEmailRow.head.emailID)
+          true
+        }.getOrElse(false) shouldEqual true
 
       }
     }
@@ -125,11 +128,11 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
       /** Verify if chatID have an UUID format **/
 
-      assert(Try[Boolean] {
+      Try[Boolean] {
         result.map(seqChatRow => UUID.fromString(seqChatRow.head.chatID))
         true
       }
-        .getOrElse(false))
+        .getOrElse(false) shouldEqual true
     }
   }
 
@@ -171,7 +174,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if emailID of email table is the same as toAddress table */
-              tosTable.map(toRow => toRow.emailID).contains(emailsTable.head.emailID) shouldEqual true
+              emailsTable.forall(emailRow =>
+                tosTable.map(toRow => toRow.emailID).contains(emailRow.emailID)) shouldEqual true
 
           }
 
@@ -225,13 +229,13 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if emailID of email table is the same as BCC table */
-              bccsTable.map(bccRow => bccRow.emailID).contains(emailsTable.head.emailID) shouldEqual true
-
+              emailsTable.forall(emailRow =>
+                bccsTable.map(bccRow => bccRow.emailID).contains(emailRow.emailID)) shouldEqual true
           }
 
         case _ =>
 
-          result.map{
+          result.map {
             case (bccsTable, _) =>
 
               /** If the parameter BCC does not exists it is verified if the BCC table is empty*/
@@ -279,8 +283,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if emailID of email table is the same as CC table */
-              ccsTable.map(ccRow => ccRow.emailID).contains(emailsTable.head.emailID) shouldEqual true
-
+              emailsTable.forall(emailRow =>
+                ccsTable.map(ccRow => ccRow.emailID).contains(emailRow.emailID)) shouldBe true
           }
 
         case _ =>
@@ -302,25 +306,24 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
         resultSent <- emailActions.getEmails(userCreation.username, StatusSent)
-        resultReceived <- emailCreation.to.get.map(row =>
-          emailActions.getEmails(row, StatusReceived)).head
         resultDrafts <- emailActions.getEmails(userCreation.username, StatusDraft)
+        resultReceived <- Future.sequence(emailCreation.to.get.map(emailActions.getEmails(_, StatusReceived)))
       } yield (resultEmailTable, resultSent, resultReceived, resultDrafts)
 
       /** getEmails for sent and received cases */
       result.map {
-        case (emailsTable, sentEmails, receivedEmails, draftsEmails) =>
+        case (resultEmailTable, resultSent, resultReceived, resultDrafts) =>
           if (emailCreation.sendNow) {
 
-            emailsTable.map(emailsRow => EmailMinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual sentEmails
+            resultEmailTable.map(emailsRow => EmailMinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
 
-            receivedEmails shouldEqual emailCreation.to.get.map(_ => emailsTable.map(row =>
-              EmailMinimalInfoDTO(row.emailID, row.header))).head
+            resultReceived.forall(seqEmailInfo =>
+              seqEmailInfo === resultEmailTable.map(row =>
+                EmailMinimalInfoDTO(row.emailID, row.header))) shouldBe true
 
             /** getEmails for drafted cases */
-          }
-          else {
-            draftsEmails shouldEqual emailsTable.map(row => EmailMinimalInfoDTO(row.emailID, row.header))
+          } else {
+            resultDrafts shouldEqual resultEmailTable.map(row => EmailMinimalInfoDTO(row.emailID, row.header))
           }
       }
     }
@@ -334,8 +337,10 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
         resultSent <- emailActions.getEmail(userCreation.username, StatusSent, resultEmailTable.map(_.emailID).head)
-        resultReceived <- emailCreation.to.get.map(to => emailActions.getEmail(to, StatusReceived, resultEmailTable
-          .map(_.emailID).head)).head.map(seqEmailInfoDto => seqEmailInfoDto)
+        resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
+          emailActions.getEmail(to, StatusReceived, resultEmailTable.map(emailRow =>
+            emailRow.emailID).head)).map(seqEmailInfoDto =>
+          seqEmailInfoDto))
         resultDrafts <- emailActions.getEmail(userCreation.username, StatusDraft, resultEmailTable.map(_.emailID).head)
         resultTos <- Future.successful(emailCreation.to.get.map(to => EmailInfoDTO(
           resultEmailTable.head.chatID,
@@ -352,9 +357,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
           if (emailCreation.sendNow) {
 
             resultSent shouldEqual resultTos
-            resultReceived shouldEqual resultTos
-          }
-          else {
+            resultReceived.forall(seqEmailInfoDTo => seqEmailInfoDTo === resultTos) shouldBe true
+          } else {
 
             emailCreation.to match {
 

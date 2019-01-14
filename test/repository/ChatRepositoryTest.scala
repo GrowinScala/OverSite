@@ -174,7 +174,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield resultGet
 
       result.map { resultGet =>
-
+        resultGet.foreach(println(_))
         /** Verify if resultGet is not empty */
         resultGet.nonEmpty shouldBe true
 
@@ -348,10 +348,10 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         shareCreation = CreateShareDTO(resultChatID, new Generator().emailAddress)
         resultShareID <- chatActions.insertPermission(userCreation.username, shareCreation)
         returnShare <- chatActions.getSharedEmail(shareCreation.supervisor, resultShareID, resultEmailID)
-      } yield (resultChatID, resultEmailID, returnShare)
+      } yield (resultChatID, returnShare)
 
       result.map {
-        case (resultChatID, resultEmailID, returnShare) =>
+        case (resultChatID, returnShare) =>
 
           /** Verify if returnShare is not empty */
           returnShare.nonEmpty shouldBe true
