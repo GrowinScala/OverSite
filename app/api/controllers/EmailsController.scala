@@ -2,7 +2,7 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
-import api.dtos.CreateEmailDTO
+import api.dtos.{ CreateEmailDTO, EmailInfoDTOSender, EmailMinimalInfoDTO }
 import api.validators.TokenValidator
 import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
@@ -53,9 +53,17 @@ class EmailsController @Inject() (
    * @return List of emails asked by the user
    */
   def getEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
+
+    implicit val req: RequestHeader = request
+
     if (PossibleEndPointStatus.contains(status)) {
       request.userName.flatMap(emailActions.getEmails(_, status).map(emails => {
-        Ok(Json.toJson(emails))
+        val result = emails.map(email =>
+
+          EmailMinimalInfoDTO.addLink(
+            email,
+            List(routes.EmailsController.getEmail(status, email.Id).absoluteURL())))
+        Ok(Json.toJson(result))
       }))
     } else if (status == SatanString) {
       Future.successful(BadRequest(SatanStatus))
@@ -71,6 +79,9 @@ class EmailsController @Inject() (
    * @return Action that shows the emailID required
    */
   def getEmail(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+
+    implicit val req: RequestHeader = request
+
     if (PossibleEndPointStatus.contains(status)) {
       request.userName.flatMap(
         emailActions.getEmail(_, status, emailID).map(

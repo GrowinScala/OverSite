@@ -32,6 +32,7 @@ class UsersController @Inject() (
    */
   def signIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
     val userResult = request.body.validate[CreateUserDTO]
+    implicit val req: RequestHeader = request
 
     userResult.fold(
       errors => {
@@ -58,6 +59,7 @@ class UsersController @Inject() (
    */
   def logIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
 
+    implicit val req: RequestHeader = request
     val emailResult = request.body.validate[CreateUserDTO]
 
     emailResult.fold(
@@ -87,7 +89,8 @@ class UsersController @Inject() (
   def logOut: Action[AnyContent] = tokenValidator.async { request =>
     val authToken = request.headers.get(TokenHeader).getOrElse("")
     userActions.insertLogout(authToken).map {
-      case 1 => Ok
+      case 1 =>
+        Ok
       case _ => NotModified
     }
   }
