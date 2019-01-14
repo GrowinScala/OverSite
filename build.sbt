@@ -14,9 +14,11 @@ libraryDependencies ++= Seq(
   guice,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2",
   "com.h2database" % "h2" % "1.4.196" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.14.0",
-  "com.typesafe.slick" %% "slick" % "3.2.0",
   "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
   "mysql" % "mysql-connector-java" % "8.0.13",
-  "org.scalacheck" %% "scalacheck" % "1.14.0",
+  "org.scalacheck" %% "scalacheck" % "1.14.0"
 )
+
+
+
+

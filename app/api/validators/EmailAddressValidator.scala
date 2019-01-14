@@ -2,6 +2,7 @@ package api.validators
 
 import regex.RegexPatterns.emailAddressPattern
 
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.matching.Regex
 
 object EmailAddressValidator {
@@ -12,12 +13,13 @@ object EmailAddressValidator {
   }
 
   /** Checks if a list of target strings are all email addresses */
-  def validateEmailAddress(regexPattern: Regex, possibleEmailAddress: Either[String, List[String]]): Boolean = {
+  def validateEmailAddress(regexPattern: Regex, possibleEmailAddress: Either[String, List[String]]): Future[Boolean] = {
 
     possibleEmailAddress match {
-      case Left(value) => isEmailAddress(regexPattern, value)
+      case Left(value) => Future.successful(isEmailAddress(regexPattern, value))
 
-      case Right(value) => value.forall(isEmailAddress(emailAddressPattern, _))
+      case Right(value) =>
+        Future.successful(value.forall(isEmailAddress(emailAddressPattern, _)))
     }
   }
 }

@@ -1,7 +1,8 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.AuxFunctions._
+import api.JsonObjects.jsonErrors
+import api.dtos.AuxFunctions._
 import api.dtos.CreateShareDTO
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepositoryImpl }
@@ -80,7 +81,7 @@ class ChatController @Inject() (
     val emailResult = request.body.validate[CreateShareDTO]
     emailResult.fold(
       errors => Future {
-        BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
+        BadRequest(jsonErrors(errors))
       },
       share => {
         request.userName.map(
@@ -159,7 +160,7 @@ class ChatController @Inject() (
     val shareResult = request.body.validate[CreateShareDTO]
     shareResult.fold(
       errors => Future {
-        BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
+        BadRequest(jsonErrors(errors))
       },
       share => {
         request.userName.map(

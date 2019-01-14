@@ -1,6 +1,4 @@
-package api
-
-import api.dtos.{ EmailInfoDTO, EmailInfoDTOSender, ShareInfoDTOSender }
+package api.dtos
 
 object AuxFunctions {
 

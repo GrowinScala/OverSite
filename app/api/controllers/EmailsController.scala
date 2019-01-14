@@ -1,6 +1,7 @@
 package api.controllers
 
 import akka.actor.ActorSystem
+import api.JsonObjects.jsonErrors
 import api.dtos.CreateEmailDTO
 import api.validators.TokenValidator
 import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
@@ -9,7 +10,7 @@ import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
-import api.AuxFunctions._
+import api.dtos.AuxFunctions._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -34,7 +35,7 @@ class EmailsController @Inject() (
     emailResult.fold(
       errors => {
         Future {
-          BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
+          BadRequest(jsonErrors(errors))
         }
       },
       email => {

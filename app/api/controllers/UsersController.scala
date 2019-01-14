@@ -11,6 +11,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import regex.RegexPatterns.emailAddressPattern
 import slick.jdbc.MySQLProfile.api._
+import api.JsonObjects._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -35,16 +36,18 @@ class UsersController @Inject() (
     userResult.fold(
       errors => {
         Future {
-          BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
+          BadRequest(jsonErrors(errors))
         }
       },
       user => {
-        if (validateEmailAddress(emailAddressPattern, Left(user.username))) {
-          userActions.insertUser(user)
-          Future.successful {
+
+        validateEmailAddress(emailAddressPattern, Left(user.username)).map {
+          case true =>
+            userActions.insertUser(user)
             Created
-          }
-        } else Future.successful { BadRequest(InvalidEmailAddressStatus) }
+
+          case false => BadRequest(InvalidEmailAddressStatus)
+        }
       })
   }
 
