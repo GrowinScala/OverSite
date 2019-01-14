@@ -330,7 +330,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function getEmail **/
-  EmailRepository + GetEmailFunction should {
+  EmailRepository + GetOneEmailFunction should {
     "check if the function getEmail is able to reach the email inserted" in {
 
       val result = for {

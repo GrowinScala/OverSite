@@ -52,7 +52,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     Await.result(db.run(DBIO.seq(tables.map(_.schema.drop): _*)), Duration.Inf)
   }
 
-  override def afterEach(): Unit = {
+  override def beforeEach(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
 
@@ -64,7 +64,6 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         _ <- chatActions.insertChat(emailCreation, resultChatID)
         resultChatTable <- db.run(chatTable.result)
       } yield (resultChatID, resultChatTable)
-
       result.map {
         case (resultChatID, resultChatTable) =>
 
@@ -87,7 +86,6 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultInbox <- chatActions.getInbox(userCreation.username)
       } yield (resultChatID, resultInbox)
-
       result.map {
         case (resultChatID, resultInbox) =>
 
@@ -110,7 +108,6 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultInbox <- chatActions.getInbox(userCreationWrongUser.username)
       } yield resultInbox
-
       /** Verify if Inbox is empty */
       result.map(_.isEmpty shouldBe true)
 
@@ -126,7 +123,6 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         resultGet <- chatActions.getEmails(userCreation.username, resultChatID)
         resultEmailTable <- db.run(emailTable.result)
       } yield (resultGet, resultEmailTable)
-
       /** Verify if Inbox is not empty */
       result.map {
         case (resultGet, resultEmailTable) =>
@@ -146,9 +142,35 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultGet <- chatActions.getEmails(userCreationWrongUser.username, resultChatID)
       } yield resultGet
-
       /** Verify if Inbox is empty */
       result.map(_.isEmpty shouldBe true)
+    }
+  }
+
+  /* Verify if a the function getEmail selects the right email through userName and chatID */
+  ChatRepository + GetOneEmailFunction should {
+    "check if the email is returned properly when chatID, emailID and username are provided" in {
+
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultEmailTable <- db.run(emailTable.result)
+        //.head is being used since there are some entries from other tests that are not being deleted properly
+        resultGet <- chatActions.getEmail(userCreation.username, resultChatID, resultEmailTable.map(_.emailID).head)
+      } yield (resultGet, resultEmailTable, resultChatID)
+
+      result.map {
+        case (resultGet, resultEmailTable, resultChatID) =>
+          /** Verify if resultGet is not empty */
+          resultGet.nonEmpty shouldBe true
+          /** Verify if the parameters of getEmail return match */
+          resultGet.forall(_.fromAddress === userCreation.username) shouldBe true
+
+          /** Verify the "Tos" of resultGet and the ones provided in the emailCreation */
+          resultGet.map(_.username).toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
+          resultGet.forall(_.header === emailCreation.header) shouldBe true
+          resultGet.forall(_.body === emailCreation.body) shouldBe true
+          resultGet.forall(_.dateOf === emailCreation.dateOf) shouldBe true
+      }
     }
   }
 
@@ -159,39 +181,14 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val resultGet = chatActions.getEmails(userCreation.username, new Generator().ID)
 
       /** Verify if Inbox is empty */
-      resultGet.map(_.isEmpty shouldBe true)
-    }
-  }
-
-  /* Verify if a the function getEmail selects the right email through userName and chatID */
-  ChatRepository + GetEmailFunction should {
-    "check if the email is returned properly when chatID, emailID and username are provided" in {
-
-      val result = for {
-        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
-        resultEmailTable <- db.run(emailTable.result)
-        resultGet <- chatActions.getEmail(userCreation.username, resultChatID, resultEmailTable.map(_.emailID).head)
-      } yield resultGet
-
-      result.map { resultGet =>
-        resultGet.foreach(println(_))
-        /** Verify if resultGet is not empty */
-        resultGet.nonEmpty shouldBe true
-
-        /** Verify if the parameters of getEmail return match */
-        resultGet.forall(_.fromAddress === userCreation.username) shouldBe true
-
-        /** Verify the "Tos" of resultGet and the ones provided in the emailCreation */
-        resultGet.map(_.username).toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
-        resultGet.forall(_.header === emailCreation.header) shouldBe true
-        resultGet.forall(_.body === emailCreation.body) shouldBe true
-        resultGet.forall(_.dateOf === emailCreation.dateOf) shouldBe true
+      resultGet.map {
+        _.isEmpty shouldBe true
       }
     }
   }
 
   /* Verify if a the function getEmail selects no emails through wrong userName and chatID */
-  ChatRepository + GetEmailFunction should {
+  ChatRepository + GetOneEmailFunction should {
     "check if the email is no returned when chatID, emailID and wrong username are provided" in {
       val result = for {
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
@@ -205,7 +202,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   }
 
   /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
-  ChatRepository + GetEmailFunction should {
+  ChatRepository + GetOneEmailFunction should {
     "check if the email is no returned when wrong chatID, emailID and username are provided" in {
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
@@ -219,7 +216,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   }
 
   /* Verify if a the function getEmail selects no emails through  userName and wrong chatID */
-  ChatRepository + GetEmailFunction should {
+  ChatRepository + GetOneEmailFunction should {
     "check if the email is no returned when chatID, wrong emailID and username are provided" in {
       val result = for {
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)

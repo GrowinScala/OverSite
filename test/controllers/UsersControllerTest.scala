@@ -151,6 +151,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
 
   /** POST /login end-point */
 
+  //ERROR 1 TIME
   UsersController + LoginFunction should {
     InvalidJSONBodyBadRequest + CaseUsername in {
       val fakeRequest = FakeRequest(POST, LogInEndpointRoute)

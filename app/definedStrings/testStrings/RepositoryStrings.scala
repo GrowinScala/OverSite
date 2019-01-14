@@ -11,7 +11,7 @@ object RepositoryStrings {
   /** Functions */
   val InsertEmailFunction = " #insertEmail"
   val GetEmailsFunction = " #getEmails"
-  val GetEmailFunction = " #getEmail"
+  val GetOneEmailFunction = " #getOneEmail"
   val TakeDraftMakeSent = " #takeDraftMakeSent"
   val InsertChatFunction = " #insertChat"
   val GetInboxFunction = " #getInbox"
