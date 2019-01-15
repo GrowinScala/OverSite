@@ -30,10 +30,10 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     val chatId = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
     chatId.flatMap(id => {
       val insertEmail = for {
-        _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isDraft, false)
-        _ <- toAddressTable ++= email.to.getOrElse(Seq()).map(ToAddressRow(randomUUID().toString, randomEmailID, _, false))
-        _ <- ccTable ++= email.CC.getOrElse(Seq()).map(CCRow(randomUUID().toString, randomEmailID, _, false))
-        _ <- bccTable ++= email.BCC.getOrElse(Seq()).map(BCCRow(randomUUID().toString, randomEmailID, _, false))
+        _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isDraft, trash = false)
+        _ <- toAddressTable ++= email.to.getOrElse(Seq()).map(ToAddressRow(randomUUID().toString, randomEmailID, _, trash = false))
+        _ <- ccTable ++= email.CC.getOrElse(Seq()).map(CCRow(randomUUID().toString, randomEmailID, _, trash = false))
+        _ <- bccTable ++= email.BCC.getOrElse(Seq()).map(BCCRow(randomUUID().toString, randomEmailID, _, trash = false))
       } yield id
 
       db.run(insertEmail.transactionally)
@@ -46,8 +46,19 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @param status Possible status: "sent", "received" and "draft"
    * @return Return different queries taking into account the status
    */
-  private def auxGetEmails(userEmail: String, status: String) = {
+  private def auxGetEmails(userEmail: String, status: String): Query[EmailTable, EmailRow, Seq] = {
     status match {
+      case "trash" =>
+        val queryTrashEmailIds = emailTable.filter(_.fromAddress === userEmail).filter(_.trash === true).map(_.emailID)
+        .union(toAddressTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
+        .union(ccTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
+        .union(bccTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
+
+        emailTable.filter(_.emailID in queryTrashEmailIds)
+          .filter(_.sent === true)
+          .sortBy(_.dateOf)
+
+
       case EndPointSent =>
         emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === true)
@@ -98,10 +109,12 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     val queryResult = auxGetEmails(userEmail, status)
       .filter(_.emailID === emailID)
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
-      .map(x => (x._1.chatID, x._1.fromAddress, x._2.map(_.username).getOrElse(EmptyString), x._1.header, x._1.body, x._1.dateOf))
+      .map(table => (table._1.chatID, table._1.fromAddress, table._2.map(_.username).getOrElse(EmptyString), table._1.header, table._1.body, table._1.dateOf))
       .result
 
-    db.run(queryResult).map(seq => seq.map(p => EmailInfoDTO(p._1, p._2, p._3, p._4, p._5, p._6)))
+    db.run(queryResult).map(seq => seq.map{
+      case (chatID, fromAddress, username, header, body, dateOf) =>
+        EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)})
   }
 
   private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
@@ -112,13 +125,14 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     val hasToAddress = toAddressTable.filter(_.emailID === emailID).result
 
-    val toSent = emailTable.filter(p => (p.emailID === emailID) && (p.fromAddress === userName))
+    val toSent = emailTable.filter(emailTable => (emailTable.emailID === emailID) && (emailTable.fromAddress === userName))
+      .filter(_.trash === false)
       .map(_.sent)
       .update(true)
 
     db.run(hasToAddress).map(_.length).flatMap {
       case 1 => db.run(toSent)
-      case _ => Future { 0 }
+      case _ => Future {0}
     }
   }
 

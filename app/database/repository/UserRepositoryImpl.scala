@@ -30,8 +30,8 @@ class UserRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     val realUser = userTable.filter(_.username === user.username)
       .filter(_.password === encrypt.result.toString).result
     db.run(realUser).map(users =>
-      users.map(x =>
-        CreateUserDTO(x.username, x.password)))
+      users.map(userRow =>
+        CreateUserDTO(userRow.username, userRow.password)))
   }
 
   /**
@@ -51,7 +51,10 @@ class UserRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
   /** Patches the ACTIVE column to false */
   def insertLogout(token: String): Future[Int] = {
     val notActive = false
-    val insertTableLogin = loginTable.filter(_.token === token).map(_.active).update(notActive)
+    val insertTableLogin = loginTable
+      .filter(_.token === token)
+      .map(_.active)
+      .update(notActive)
 
     db.run(insertTableLogin)
 
