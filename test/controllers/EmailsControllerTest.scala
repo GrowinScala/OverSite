@@ -49,10 +49,13 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   private val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
   override def beforeEach(): Unit = {
+
+    Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
     //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(emailExample, encryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
       LoginRow(emailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
+
   }
 
   override def beforeAll(): Unit = {
@@ -61,10 +64,6 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   override def afterAll(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.schema.drop): _*)), Duration.Inf)
-  }
-
-  override def afterEach(): Unit = {
-    Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
 
   /** POST /email end-point */

@@ -42,7 +42,7 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     Await.result(db.run(DBIO.seq(tables.map(_.schema.drop): _*)), Duration.Inf)
   }
 
-  override def afterEach(): Unit = {
+  override def beforeEach(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
   }
 

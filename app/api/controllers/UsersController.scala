@@ -11,6 +11,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import regex.RegexPatterns.emailAddressPattern
 import slick.jdbc.MySQLProfile.api._
+import api.JsonObjects._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -31,20 +32,23 @@ class UsersController @Inject() (
    */
   def signIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
     val userResult = request.body.validate[CreateUserDTO]
+    implicit val req: RequestHeader = request
 
     userResult.fold(
       errors => {
         Future {
-          BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
+          BadRequest(jsonErrors(errors))
         }
       },
       user => {
-        if (validateEmailAddress(emailAddressPattern, Left(user.username))) {
-          userActions.insertUser(user)
-          Future.successful {
+
+        validateEmailAddress(emailAddressPattern, Left(user.username)).map {
+          case true =>
+            userActions.insertUser(user)
             Created
-          }
-        } else Future.successful { BadRequest(InvalidEmailAddressStatus) }
+
+          case false => BadRequest(InvalidEmailAddressStatus)
+        }
       })
   }
 
@@ -55,6 +59,7 @@ class UsersController @Inject() (
    */
   def logIn: Action[JsValue] = Action(parse.json).async { request: Request[JsValue] =>
 
+    implicit val req: RequestHeader = request
     val emailResult = request.body.validate[CreateUserDTO]
 
     emailResult.fold(
@@ -84,7 +89,8 @@ class UsersController @Inject() (
   def logOut: Action[AnyContent] = tokenValidator.async { request =>
     val authToken = request.headers.get(TokenHeader).getOrElse("")
     userActions.insertLogout(authToken).map {
-      case 1 => Ok
+      case 1 =>
+        Ok
       case _ => NotModified
     }
   }

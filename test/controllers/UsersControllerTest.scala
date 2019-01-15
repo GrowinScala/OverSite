@@ -48,11 +48,9 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
     Await.result(db.run(DBIO.seq(tables.map(_.schema.drop): _*)), Duration.Inf)
   }
 
-  override def afterEach(): Unit = {
-    Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
-  }
-
   override def beforeEach(): Unit = {
+
+    Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
     //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(emailExample, encryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=

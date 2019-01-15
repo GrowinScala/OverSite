@@ -1,8 +1,9 @@
 package api.controllers
 
 import akka.actor.ActorSystem
-import api.AuxFunctions._
-import api.dtos.CreateShareDTO
+import api.JsonObjects.jsonErrors
+import api.dtos.AuxFunctions._
+import api.dtos.{ CreateShareDTO, EmailMinimalInfoDTO }
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepositoryImpl }
 import javax.inject._
@@ -30,10 +31,19 @@ class ChatController @Inject() (
    */
 
   def inbox: Action[AnyContent] = tokenValidator.async { request =>
+
+    implicit val req: RequestHeader = request
+
     request.userName.flatMap {
       chatActions.getInbox(_).map {
         emails =>
           Ok(Json.toJson(emails))
+          val result = emails.map(email =>
+
+            EmailMinimalInfoDTO.addLink(
+              email,
+              List(routes.EmailsController.getEmail(EndPointReceived, email.Id).absoluteURL())))
+          Ok(Json.toJson(result))
       }
     }
   }
@@ -45,10 +55,17 @@ class ChatController @Inject() (
    */
 
   def getEmails(chatID: String): Action[AnyContent] = tokenValidator.async { request =>
+    implicit val req: RequestHeader = request
+
     request.userName.flatMap {
       chatActions.getEmails(_, chatID).map {
         emails =>
-          Ok(Json.toJson(emails))
+          val result = emails.map(email =>
+
+            EmailMinimalInfoDTO.addLink(
+              email,
+              List(routes.ChatController.getEmail(chatID, email.Id).absoluteURL())))
+          Ok(Json.toJson(result))
       }
     }
   }
@@ -80,7 +97,7 @@ class ChatController @Inject() (
     val emailResult = request.body.validate[CreateShareDTO]
     emailResult.fold(
       errors => Future {
-        BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
+        BadRequest(jsonErrors(errors))
       },
       share => {
         request.userName.map(
@@ -111,10 +128,17 @@ class ChatController @Inject() (
    */
   def getSharedEmails(shareID: String): Action[AnyContent] = tokenValidator.async { request =>
 
+    implicit val req: RequestHeader = request
+
     request.userName.flatMap(
       chatActions.getSharedEmails(_, shareID).map(
         emails => {
-          Ok(Json.toJson(emails))
+
+          val result = emails.map(email =>
+            EmailMinimalInfoDTO.addLink(
+              email,
+              List(routes.ChatController.getSharedEmail(shareID, email.Id).absoluteURL())))
+          Ok(Json.toJson(result))
         }))
 
   }
@@ -124,18 +148,6 @@ class ChatController @Inject() (
    * @param shareID Identification of the share
    * @param emailID Identification of the email
    * @return All details of the email required
-   */
-  /**
-   *
-   * request.userName.flatMap(
-   * emailActions.getEmail(_, status, emailID).map(
-   * emails => {
-   * val resultEmailID = JsArray(
-   * emails.map { email =>
-   * Json.toJson(convertEmailInfoToSender(email, emailID))
-   * })
-   * Ok(resultEmailID)
-   * }))
    */
 
   def getSharedEmail(shareID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
@@ -159,7 +171,7 @@ class ChatController @Inject() (
     val shareResult = request.body.validate[CreateShareDTO]
     shareResult.fold(
       errors => Future {
-        BadRequest(Json.obj(StatusJSONField -> ErrorString, MessageString -> JsError.toJson(errors)))
+        BadRequest(jsonErrors(errors))
       },
       share => {
         request.userName.map(
