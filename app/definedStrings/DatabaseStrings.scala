@@ -26,6 +26,7 @@ object DatabaseStrings {
   val DateOfRow = "dateOf"
   val BodyRow = "body"
   val SentRow = "sent"
+  val TrashRow = "trash"
   val CCIDRow = "CCID"
   val BCCIDRow = "BCCID"
   val TokenRow = "token"

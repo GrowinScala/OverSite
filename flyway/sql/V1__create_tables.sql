@@ -12,6 +12,7 @@ create table Emails (
     HEADER varchar(256) null, -- In an email a header is not a mandatory parameter
     BODY varchar(10000) null, -- In an email a body is not a mandatory parameter
     SENT boolean,
+    TRASH boolean,
     PRIMARY KEY(EMAILID),
     FOREIGN KEY(CHATID) REFERENCES Chats(CHATID)
 );
@@ -19,6 +20,7 @@ create table CCs (
     CCID varchar(100) not null,
     EMAILID varchar(100) not null,
     USERNAME varchar(100) not null,
+    TRASH boolean,
     PRIMARY KEY(CCID),
     FOREIGN KEY(EMAILID) REFERENCES Emails(EMAILID)
 );
@@ -28,6 +30,7 @@ create table BCCs (
     BCCID varchar(100) not null,
     EMAILID varchar(100) not null,
     USERNAME varchar(100) not null,
+    TRASH boolean,
     PRIMARY KEY(BCCID),
     FOREIGN KEY(EMAILID) REFERENCES Emails(EMAILID)
 );
@@ -52,6 +55,7 @@ create table ToAddresses (
     TOID varchar(100) not null,
     EMAILID varchar(100) not null,
     USERNAME varchar(100) not null,
+    TRASH boolean,
     PRIMARY KEY(TOID),
     FOREIGN KEY(EMAILID) REFERENCES Emails(EMAILID)
 );

@@ -14,7 +14,8 @@ case class EmailRow(
   dateOf: String,
   header: String,
   body: String,
-  sent: Boolean)
+  sent: Boolean,
+  trash: Boolean)
 
 /**
  * Case class of ToAddress Table Row
@@ -22,7 +23,8 @@ case class EmailRow(
 case class ToAddressRow(
   toID: String,
   emailID: String,
-  username: String)
+  username: String,
+  trash: Boolean)
 
 /**
  * Case class of CC Table Row
@@ -30,7 +32,8 @@ case class ToAddressRow(
 case class CCRow(
   CCID: String,
   emailID: String,
-  username: String)
+  username: String,
+  trash: Boolean)
 
 /**
  * Case class of BCC Table Row
@@ -38,7 +41,8 @@ case class CCRow(
 case class BCCRow(
   BCCID: String,
   emailID: String,
-  username: String)
+  username: String,
+  trash: Boolean)
 
 /** Class that defines the email table,establishing emailID as primary key in the database and chatId as foreign key */
 class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
@@ -49,10 +53,11 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def header = column[String](HeaderRow)
   def body = column[String](BodyRow)
   def sent = column[Boolean](SentRow)
+  def trash = column[Boolean](TrashRow)
 
   //def fileIdFK = foreignKey(ChatIDRow, chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
-  def * = (emailID, chatID, fromAddress, dateOf, header, body, sent) <> (EmailRow.tupled, EmailRow.unapply)
+  def * = (emailID, chatID, fromAddress, dateOf, header, body, sent, trash) <> (EmailRow.tupled, EmailRow.unapply)
 }
 
 /** Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key */
@@ -61,8 +66,8 @@ class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable
   def emailID = column[String](EmailIDRow)
   def toID = column[String](ToIDRow, O.PrimaryKey)
   def username = column[String](UsernameRow)
-
-  def * = (toID, emailID, username) <> (ToAddressRow.tupled, ToAddressRow.unapply)
+  def trash = column[Boolean](TrashRow)
+  def * = (toID, emailID, username, trash) <> (ToAddressRow.tupled, ToAddressRow.unapply)
 }
 
 /** Class that defines the cc table,establishing ccID as primary key in the database and emailID as foreign key*/
@@ -71,8 +76,9 @@ class CCTable(tag: Tag) extends Table[CCRow](tag, CCsTable) {
   def emailID = column[String](EmailIDRow)
   def CCID = column[String](CCIDRow, O.PrimaryKey)
   def username = column[String](UsernameRow)
+  def trash = column[Boolean](TrashRow)
 
-  def * = (CCID, emailID, username) <> (CCRow.tupled, CCRow.unapply)
+  def * = (CCID, emailID, username, trash) <> (CCRow.tupled, CCRow.unapply)
 }
 
 /** Class that defines the bcc table,establishing bccID as primary key in the database and emailID as foreign key*/
@@ -81,8 +87,9 @@ class BCCTable(tag: Tag) extends Table[BCCRow](tag, BCCsTable) {
   def BCCID = column[String](BCCIDRow, O.PrimaryKey)
   def emailID = column[String](EmailIDRow)
   def username = column[String](UsernameRow)
+  def trash = column[Boolean](TrashRow)
 
-  def * = (BCCID, emailID, username) <> (BCCRow.tupled, BCCRow.unapply)
+  def * = (BCCID, emailID, username, trash) <> (BCCRow.tupled, BCCRow.unapply)
 }
 
 object EmailMappings {

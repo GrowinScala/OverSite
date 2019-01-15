@@ -24,7 +24,7 @@ GET    /emails/:status/:emailID             api.controllers.EmailsController.get
     #PATCH ONLY AVAILABLE TO "DRAFTS"->"SENT", #"SOMETHING"<->#"TRASH"
 
 PATCH /emails/:status/:emailID              api.controllers.EmailsController.toSent(status: String, emailID: String)
-
+PATCH /emails/:emailID                      api.controllers.EmailsController.moveInOutTrash(emailID: String)
 
     #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 

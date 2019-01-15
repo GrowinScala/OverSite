@@ -3,7 +3,7 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.{ CreateEmailDTO, EmailInfoDTOSender, EmailMinimalInfoDTO }
-import api.validators.TokenValidator
+import api.validators.{ EmailAddressValidator, TokenValidator }
 import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
 import javax.inject._
@@ -112,4 +112,20 @@ class EmailsController @Inject() (
         })
     else Future.successful { BadRequest(InvalidEndPointStatus) }
   }
+
+  /**
+   * Change the email required to trash or take it from trash
+   * @param status Identification of the email status
+   * @param emailID Identification of the email
+   */
+  def moveInOutTrash(emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+
+    request.userName.flatMap(
+      emailActions.changeTrash(_, emailID).map {
+        case 0 => BadRequest
+        case _ => Ok
+      })
+  }
+
+  //changeTrash
 }
