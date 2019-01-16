@@ -8,11 +8,10 @@ POST   /email                               api.controllers.EmailsController.ema
 
 
     #INBOX
+GET    /chats                               api.controllers.ChatController.inbox(isTrash: Option[Boolean])
+GET    /chats/:chatID/emails                api.controllers.ChatController.getEmails(chatID: String, isTrash: Option[Boolean])
 
-GET    /chats                               api.controllers.ChatController.inbox
-GET    /chats/:chatID/emails                api.controllers.ChatController.getEmails(chatID: String)
-
-GET    /chats/:chatID/emails/:emailID       api.controllers.ChatController.getEmail(chatID: String, emailID: String)
+GET    /chats/:chatID/emails/:emailID       api.controllers.ChatController.getEmail(chatID: String, emailID: String, isTrash: Option[Boolean])
 
 
     #SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT"

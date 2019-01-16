@@ -13,6 +13,5 @@ object AuxFunctions {
 
     ShareInfoDTOSender(shareId, emailID, emailInfoDTO.chatID, emailInfoDTO.fromAddress,
       emailInfoDTO.username, emailInfoDTO.header, emailInfoDTO.body, emailInfoDTO.dateOf)
-
   }
 }

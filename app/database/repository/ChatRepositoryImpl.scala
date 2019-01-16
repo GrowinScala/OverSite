@@ -5,7 +5,7 @@ import java.util.UUID.randomUUID
 import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, EmailMinimalInfoDTO }
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
-import database.mappings.{ ChatRow, ShareRow }
+import database.mappings.{ ChatRow, EmailRow, EmailTable, ShareRow }
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
@@ -13,6 +13,20 @@ import definedStrings.DatabaseStrings._
 import scala.concurrent.{ ExecutionContext, Future }
 
 class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends ChatRepository {
+
+  /**
+   * Aims to find an chatID already exists in the database
+   * @param chatID Reference to an email conversation
+   * @return True or False depending if the chatID exists or not
+   */
+  private def existChatID(chatID: String): Future[Boolean] = {
+    val tableSearch = chatTable.filter(_.chatID === chatID).result
+    db.run(tableSearch).map(_.length).map {
+      case 1 => true
+      case _ => false
+    }
+  }
+
   /**
    * Insert a chat into database
    * @param email email passed on json body
@@ -33,80 +47,71 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
   }
 
   /**
-   * Aims to find an chatID already exists in the database
-   * @param chatID Reference to an email conversation
-   * @return True or False depending if the chatID exists or not
-   */
-  private def existChatID(chatID: String): Future[Boolean] = {
-    val tableSearch = chatTable.filter(_.chatID === chatID).result
-    db.run(tableSearch).map(_.length).map {
-      case 1 => true
-      case _ => false
-    }
-  }
-
-  /**
    * Query that search for all the emails which have a certain userName involved
    * @param userEmail the user identity
    * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
    */
-  private def queryEmail(userEmail: String) = {
+  private def queryEmail(userEmail: String): Query[Rep[String], String, Seq] = {
     emailTable.filter(_.fromAddress === userEmail).map(_.emailID)
       .union(toAddressTable.filter(_.username === userEmail).map(_.emailID))
       .union(ccTable.filter(_.username === userEmail).map(_.emailID))
       .union(bccTable.filter(_.username === userEmail).map(_.emailID))
   }
   /**
-   * Queries to find the inbox messages of an user
+   * Queries to find the inbox messages of an user,
    * @param userEmail user email
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
-  def getInbox(userEmail: String): Future[Seq[EmailMinimalInfoDTO]] = {
+  def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryUserName = queryEmail(userEmail)
     val queryResult = emailTable
       .filter(_.emailID in queryUserName)
-      .filter(_.sent === true)
-      .filter(_.trash === false)
+      .filter(emailTable =>
+        if (isTrash)
+          emailTable.isTrash === isTrash
+        else
+          (emailTable.sent === true) && (emailTable.isTrash === isTrash))
       .sortBy(_.dateOf)
       .map(emailTable => (emailTable.chatID, emailTable.header))
       .result
     db.run(queryResult).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
   }
 
-  override def getTrash(userEmail: String, isTrash: Boolean) = print("")
-
   /**
    * Query that selects the emailIDs from the EmailTable that
    * are returned by the auxiliary query "queryUserName", filters by chatID inputed,
    * by the state "Sent", and sort by the date.
    */
-  //TODO: private def queryChat(userEmail: String, chatID: String, isTrash: boolean)
-  private def queryChat(userEmail: String, chatID: String) = {
+  //TODO -> DONE: private def queryChat(userEmail: String, chatID: String, isTrash: boolean)
+  private def queryChat(userEmail: String, chatID: String, isTrash: Boolean): Query[EmailTable, EmailRow, Seq] = {
     val queryUserName = queryEmail(userEmail)
     emailTable
       .filter(_.emailID in queryUserName)
       .filter(_.chatID === chatID)
-      .filter(_.sent === true)
-      .filter(_.trash === false)
+      .filter(emailTable =>
+        if (isTrash)
+          (emailTable.sent === true) && (emailTable.isTrash === isTrash)
+        else
+          emailTable.isTrash === isTrash)
       .sortBy(_.dateOf)
   }
 
   /** Function that selects emails through userName and chatID*/
-  //TODO: def getEmails(userEmail: String, chatID: String, isTrash: Boolean)
-  def getEmails(userEmail: String, chatID: String): Future[Seq[EmailMinimalInfoDTO]] = {
-    val queryResult = queryChat(userEmail, chatID)
+  //TODO -> DONE: def getEmails(userEmail: String, chatID: String, isTrash: Boolean)
+  def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
+    val queryResult = queryChat(userEmail, chatID, isTrash)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
     db.run(queryResult).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
   }
 
   /** Selects an email after filtering through chatID emailID*/
-  def getEmail(userEmail: String, chatID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
-    val queryResult = queryChat(userEmail, chatID)
+  def getEmail(userEmail: String, chatID: String, emailID: String, isTrash: Boolean): Future[Seq[EmailInfoDTO]] = {
+    val queryResult = queryChat(userEmail, chatID, isTrash)
       .filter(_.emailID === emailID)
 
       //Since every email with sent==true is obligated to have an ToID,
-      // the following join has the same effect as joinleft
+      // the following join has the same effect as joinLeft
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
 
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf

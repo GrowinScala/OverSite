@@ -466,11 +466,11 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   EmailsController + ToSentFunction should {
     ValidTokenOk + AndStatus + StatusDraft + AndHasToAddress in {
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, sent = false, trash = false)), Duration.Inf)
+        emailExample, dateExample, headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
 
       Await.result(db.run(toAddressTable += ToAddressRow(
         new Generator().ID,
-        emailIDExample, new Generator().emailAddress, trash = false)), Duration.Inf)
+        emailIDExample, new Generator().emailAddress, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + emailIDExample)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -484,7 +484,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     HasNoToAddressBadRequest in {
 
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, sent = false, trash = false)), Duration.Inf)
+        emailExample, dateExample, headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusDraft/$emailIDExample")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)

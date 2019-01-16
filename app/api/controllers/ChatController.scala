@@ -25,17 +25,18 @@ class ChatController @Inject() (
   usersActions: UserRepositoryImpl)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
+  //Auxiliary function that supports GET \chats and GET /chats?isTrash=true
   /**
    * Get inbox action
    * @return When a valid user is logged, the conversations are shown as an inbox
    */
-
-  def inbox: Action[AnyContent] = tokenValidator.async { request =>
+  //TODO NEED TO BE TESTED
+  def inbox(isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
 
     implicit val req: RequestHeader = request
 
     request.userName.flatMap {
-      chatActions.getInbox(_).map {
+      chatActions.getInbox(_, isTrash.getOrElse(false)).map {
         emails =>
           Ok(Json.toJson(emails))
           val result = emails.map(email =>
@@ -54,17 +55,17 @@ class ChatController @Inject() (
    * @return Action that shows the EmailID and respective Header of all emails that belong to the chat selected
    */
 
-  def getEmails(chatID: String): Action[AnyContent] = tokenValidator.async { request =>
+  def getEmails(chatID: String, isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
     implicit val req: RequestHeader = request
 
     request.userName.flatMap {
-      chatActions.getEmails(_, chatID).map {
+      chatActions.getEmails(_, chatID, isTrash.getOrElse(false)).map {
         emails =>
           val result = emails.map(email =>
 
             EmailMinimalInfoDTO.addLink(
               email,
-              List(routes.ChatController.getEmail(chatID, email.Id).absoluteURL())))
+              List(routes.ChatController.getEmail(chatID, email.Id, isTrash).absoluteURL())))
           Ok(Json.toJson(result))
       }
     }
@@ -76,9 +77,9 @@ class ChatController @Inject() (
    * @param emailID Identification of the email
    * @return Action that shows the emailID required
    */
-  def getEmail(chatID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+  def getEmail(chatID: String, emailID: String, isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
     request.userName.flatMap {
-      chatActions.getEmail(_, chatID, emailID).map {
+      chatActions.getEmail(_, chatID, emailID, isTrash.getOrElse(false)).map {
         emails =>
           val emailsResult = JsArray(
             emails.map { email =>
