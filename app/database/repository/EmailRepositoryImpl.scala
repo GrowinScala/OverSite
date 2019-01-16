@@ -43,21 +43,20 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   /**
    * Auxiliary function that supports getEmails and getEmail
    * @param userEmail Identification of user by email
-   * @param status Possible status: "sent", "received" and "draft"
+   * @param status Possible status: "sent", "received", "draft" and "trash"
    * @return Return different queries taking into account the status
    */
+
   private def auxGetEmails(userEmail: String, status: String): Query[EmailTable, EmailRow, Seq] = {
     status match {
-      case "trash" =>
+      case EndPointTrash =>
         val queryTrashEmailIds = emailTable.filter(_.fromAddress === userEmail).filter(_.trash === true).map(_.emailID)
-        .union(toAddressTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
-        .union(ccTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
-        .union(bccTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
+          .union(toAddressTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
+          .union(ccTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
+          .union(bccTable.filter(_.username === userEmail).filter(_.trash === true).map(_.emailID))
 
         emailTable.filter(_.emailID in queryTrashEmailIds)
-          .filter(_.sent === true)
           .sortBy(_.dateOf)
-
 
       case EndPointSent =>
         emailTable.filter(_.fromAddress === userEmail)
@@ -82,14 +81,14 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   }
 
   /**
-   * Function that filter the emails "sent", "received", "draft" and "supervised"
+   * Function that filter the emails "sent", "received", "draft" and "trash"
    * @param userEmail Identification of user by email
-   * @param status Possible status: "sent", "received" and "draft"
+   * @param status Possible status: "sent", "received", "draft" and "trash"
    * @return List of emailIDs and corresponding header
    */
   def getEmails(userEmail: String, status: String): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryResult = auxGetEmails(userEmail, status)
-      .map(x => (x.emailID, x.header))
+      .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
     db.run(queryResult).map(seq => seq.map {
       case (emailId, header) =>
@@ -112,15 +111,16 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       .map(table => (table._1.chatID, table._1.fromAddress, table._2.map(_.username).getOrElse(EmptyString), table._1.header, table._1.body, table._1.dateOf))
       .result
 
-    db.run(queryResult).map(seq => seq.map{
+    db.run(queryResult).map(seq => seq.map {
       case (chatID, fromAddress, username, header, body, dateOf) =>
-        EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)})
+        EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)
+    })
   }
 
   private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
     to.getOrElse(Seq()).nonEmpty
   }
-
+  //TODO add comment
   def takeDraftMakeSent(userName: String, emailID: String): Future[Int] = {
 
     val hasToAddress = toAddressTable.filter(_.emailID === emailID).result
@@ -132,10 +132,11 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     db.run(hasToAddress).map(_.length).flatMap {
       case 1 => db.run(toSent)
-      case _ => Future {0}
+      case _ => Future { 0 }
     }
   }
 
+  //TODO add a comment
   def changeTrash(userName: String, emailID: String): Future[Int] = {
     val filteredEmailTable = emailTable.filter(_.emailID === emailID).filter(_.fromAddress === userName).map(_.trash)
     val currentEmailStatus = db.run(filteredEmailTable.result.headOption)
@@ -151,16 +152,16 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     for {
       resultEmailTable <- currentEmailStatus.map(status =>
-        filteredEmailTable.update(!status.getOrElse(false))).flatMap(db.run(_))
+        filteredEmailTable.update(!status.getOrElse(true))).flatMap(db.run(_))
 
       resultToAddressTable <- currentToStatus.map(status =>
-        filteredToAddressTable.update(!status.getOrElse(false))).flatMap(db.run(_))
+        filteredToAddressTable.update(!status.getOrElse(true))).flatMap(db.run(_))
 
       resultCCTable <- currentCCStatus.map(status =>
-        filteredCCAddressTable.update(!status.getOrElse(false))).flatMap(db.run(_))
+        filteredCCAddressTable.update(!status.getOrElse(true))).flatMap(db.run(_))
 
       resultBCCTable <- currentBCCStatus.map(status =>
-        filteredBCCAddressTable.update(!status.getOrElse(false))).flatMap(db.run(_))
+        filteredBCCAddressTable.update(!status.getOrElse(true))).flatMap(db.run(_))
 
     } yield resultEmailTable + resultToAddressTable + resultCCTable + resultBCCTable
   }

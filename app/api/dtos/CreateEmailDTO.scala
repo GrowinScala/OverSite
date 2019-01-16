@@ -2,6 +2,7 @@ package api.dtos
 
 import play.api.libs.json._
 
+//TODO header and body to option
 case class CreateEmailDTO(
 
   chatID: Option[String],

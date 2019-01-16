@@ -70,14 +70,17 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .sortBy(_.dateOf)
       .map(emailTable => (emailTable.chatID, emailTable.header))
       .result
-    db.run(queryResult).map(seq => seq.map{case (id, header) => EmailMinimalInfoDTO(id, header)})
+    db.run(queryResult).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
   }
+
+  override def getTrash(userEmail: String, isTrash: Boolean) = print("")
 
   /**
    * Query that selects the emailIDs from the EmailTable that
    * are returned by the auxiliary query "queryUserName", filters by chatID inputed,
    * by the state "Sent", and sort by the date.
    */
+  //TODO: private def queryChat(userEmail: String, chatID: String, isTrash: boolean)
   private def queryChat(userEmail: String, chatID: String) = {
     val queryUserName = queryEmail(userEmail)
     emailTable
@@ -89,11 +92,12 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
   }
 
   /** Function that selects emails through userName and chatID*/
+  //TODO: def getEmails(userEmail: String, chatID: String, isTrash: Boolean)
   def getEmails(userEmail: String, chatID: String): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryResult = queryChat(userEmail, chatID)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
-    db.run(queryResult).map(seq => seq.map{case (id, header) => EmailMinimalInfoDTO(id, header)})
+    db.run(queryResult).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
   }
 
   /** Selects an email after filtering through chatID emailID*/
@@ -107,8 +111,10 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
 
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
       .map(table => (table._1.fromAddress, table._2.map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
-      .result.map(seq => seq.map{case (fromAddress, username, header, body, dateOf) =>
-          EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)})
+      .result.map(seq => seq.map {
+        case (fromAddress, username, header, body, dateOf) =>
+          EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)
+      })
     db.run(queryResult)
   }
   /**
@@ -128,10 +134,10 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
 
   /** Auxiliary function*/
   private def queryUser(query: Query[(Rep[String], Rep[String]), (String, String), Seq]) = {
-    emailTable.filter(_.fromAddress in query.map{case (_, user) => user}).map(_.emailID)
-      .union(toAddressTable.filter(_.username in query.map{case (_, user) => user}).map(_.emailID))
-      .union(ccTable.filter(_.username in query.map{case (_, user) => user}).map(_.emailID))
-      .union(bccTable.filter(_.username in query.map{case (_, user) => user}).map(_.emailID))
+    emailTable.filter(_.fromAddress in query.map { case (_, user) => user }).map(_.emailID)
+      .union(toAddressTable.filter(_.username in query.map { case (_, user) => user }).map(_.emailID))
+      .union(ccTable.filter(_.username in query.map { case (_, user) => user }).map(_.emailID))
+      .union(bccTable.filter(_.username in query.map { case (_, user) => user }).map(_.emailID))
   }
   /**
    * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
@@ -145,12 +151,12 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
 
     val queryFromUser = queryUser(queryEmailId)
 
-    val queryChatId = emailTable.filter(_.chatID in queryEmailId.map{case (chatid, _) => chatid})
+    val queryChatId = emailTable.filter(_.chatID in queryEmailId.map { case (chatid, _) => chatid })
       .filter(_.emailID in queryFromUser)
       .sortBy(_.dateOf)
       .map(emailTable => (emailTable.chatID, emailTable.header))
       .result
-    db.run(queryChatId).map(seq => seq.map{case (id,header) => EmailMinimalInfoDTO(id, header)})
+    db.run(queryChatId).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
 
   }
 
@@ -167,7 +173,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .sortBy(_.dateOf)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
-    db.run(queryChatId).map(seq => seq.map{case (id,header) => EmailMinimalInfoDTO(id, header)})
+    db.run(queryChatId).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
   }
 
   /**
@@ -188,7 +194,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
       .map(table => (table._1.chatID, table._1.fromAddress, table._2.map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
       .result
-    db.run(queryChatId).map(seq => seq.map{case (chatID, fromAddress, username, header, body, dateOf) => EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)})
+    db.run(queryChatId).map(seq => seq.map { case (chatID, fromAddress, username, header, body, dateOf) => EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf) })
   }
 
   /**
@@ -199,4 +205,6 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     val deletePermissionTable = shareTable.filter(p => (p.fromUser === from) && (p.toID === to) && (p.chatID === chatID)).delete
     db.run(deletePermissionTable)
   }
+
+  //TODO def function T:04
 }

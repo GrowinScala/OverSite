@@ -14,4 +14,5 @@ trait ChatRepository {
   def getSharedEmails(userEmail: String, shareID: String): Future[Seq[EmailMinimalInfoDTO]]
   def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]]
   def deletePermission(from: String, to: String, chatID: String): Future[Int]
+  def getTrash(userEmail: String, isTrash: Boolean)
 }
