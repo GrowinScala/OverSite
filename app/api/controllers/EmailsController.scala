@@ -12,7 +12,7 @@ import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 import api.dtos.AuxFunctions._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 /** Class injected with end-points */
 
@@ -124,21 +124,22 @@ class EmailsController @Inject() (
       })
   }
 
-  def updateDraft(emailID: String): Action[JsValue] = tokenValidator(parse.json) { request =>
+  def updateDraft(emailID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
 
     val emailResult = request.body.validate[CreateEmailDTO]
 
     emailResult.fold(
-      errors => {
-        BadRequest(jsonErrors(errors))
-      },
+      errors =>
+        Future {
+          BadRequest(jsonErrors(errors))
+        },
       draft => {
-        request.userName.flatMap(
-          emailActions.updateDraft(_, emailID, draft)) map{
-          case 0 => (BadRequest("No email updated"))
-          case _ => (Ok(MailSentStatus))
+        request.userName.flatMap {
+          emailActions.updateDraft(_, emailID, draft) map {
+            case 0 => BadRequest("No email has been updated")
+            case _ => Ok(MailSentStatus)
+          }
         }
-      }
-    )
+      })
   }
 }
