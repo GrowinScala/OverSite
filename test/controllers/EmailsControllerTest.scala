@@ -388,12 +388,12 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   }
 
   EmailsController + GetEmailsFunction should {
-    InvalidStatusBadRequest in {
+    UndefinedStatusOk in {
       val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusUndefined)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
-      status(result.get) mustBe BAD_REQUEST
+      status(result.get) mustBe OK
     }
   }
 
@@ -412,7 +412,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   EmailsController + GetEmailFunction should {
     ValidTokenOk + AndStatus + StatusDraft in {
-      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusDraft + "/" + EmailIDUndefined)
+      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + EmailIDUndefined + OptionalStatus + StatusDraft)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -422,7 +422,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   EmailsController + GetEmailFunction should {
     ValidTokenOk + AndStatus + StatusReceived in {
-      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusReceived + "/" + EmailIDUndefined)
+      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + EmailIDUndefined + OptionalStatus + StatusReceived)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -432,17 +432,17 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   EmailsController + GetEmailFunction should {
     ValidTokenOk + AndStatus + StatusSent in {
-      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusSent + "/" + EmailIDUndefined)
+      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + EmailIDUndefined + OptionalStatus + StatusSent)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe OK
     }
   }
-
+  // /emails/:emailID
   EmailsController + GetEmailFunction should {
-    InvalidStatusBadRequest in {
-      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusUndefined + "/" + EmailIDUndefined)
+    UndefinedStatusOk in {
+      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + EmailIDUndefined + OptionalStatus + StatusUndefined)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -452,16 +452,24 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
   EmailsController + GetEmailFunction should {
     InvalidTokenForbidden in {
-      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + StatusUndefined)
+      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + EmailIDUndefined)
         .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN
     }
   }
-  /** ----------------------------------------------- */
 
-  /**  PATCH /emails/:status/:emailID  end-point */
+  EmailsController + GetEmailFunction should {
+    ValidTokenOk + CaseEmptyStatus in {
+      val fakeRequest = FakeRequest(GET, EmailsEndpointRoute + EmailIDUndefined + OptionalStatus + "")
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+  /** ----------------------------------------------- */
 
   EmailsController + ToSentFunction should {
     ValidTokenOk + AndStatus + StatusDraft + AndHasToAddress in {
@@ -472,7 +480,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         new Generator().ID,
         emailIDExample, new Generator().emailAddress, isTrash = false)), Duration.Inf)
 
-      val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + StatusDraft + "/" + emailIDExample)
+      val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + emailIDExample + EndpointPatchSendStatus)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -481,12 +489,26 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   }
 
   EmailsController + ToSentFunction should {
-    HasNoToAddressBadRequest in {
+    HasNoToAddressBadRequest + CaseSendStatus in {
 
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
         emailExample, dateExample, headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
 
-      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusDraft/$emailIDExample")
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchSendStatus")
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe BAD_REQUEST
+    }
+  }
+
+  EmailsController + MoveInOutTrashFunction should {
+    HasNoToAddressBadRequest + CaseTrashStatus in {
+
+      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
+        emailExample, dateExample, headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchTrashStatus")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -495,10 +517,78 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   }
 
   EmailsController + ToSentFunction should {
-    InvalidStatusBadRequest in {
+    UndefinedStatusOk in {
 
-      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusUndefined/$EmailIDUndefined")
+      Await.result(db.run(chatTable += ChatRow(chatIDExample, headerExample)), Duration.Inf)
+      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
+        emailExample, dateExample, headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+      Await.result(db.run(toAddressTable += ToAddressRow(new Generator().ID, emailIDExample, emailExample, isTrash = false)), Duration.Inf)
+
+      val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + emailIDExample + EndpointPatchSendStatus)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+
+  EmailsController + MoveInOutTrashFunction should {
+    UndefinedStatusOk + CaseTrashStatus in {
+
+      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
+        headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$emailIDExample$EndpointPatchTrashStatus")
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+  EmailsController + UpdateDraftFunction should {
+    CaseUpdateStatus in {
+
+      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
+        headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$emailIDExample$EndpointPatchUpdateStatus")
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
+        .withJsonBody(parse(s"""
+          {
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "efe",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
+            "$SendNowKey" : false
+          }
+        """))
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe OK
+    }
+  }
+
+  EmailsController + UpdateDraftFunction should {
+    CaseUpdateStatus + " no existing email id" in {
+
+      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
+        headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchUpdateStatus")
+        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
+        .withJsonBody(parse(s"""
+          {
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
+            "$SendNowKey" : true
+          }
+        """))
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe BAD_REQUEST
@@ -506,9 +596,41 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
   }
 
   EmailsController + ToSentFunction should {
-    InvalidTokenForbidden in {
-      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$StatusUndefined/$EmailIDUndefined")
+    InvalidTokenForbidden + CaseSendStatus in {
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchSendStatus")
         .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe FORBIDDEN
+    }
+  }
+
+  EmailsController + MoveInOutTrashFunction should {
+    InvalidTokenForbidden + CaseTrashStatus in {
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchTrashStatus")
+        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
+
+      val result = route(app, fakeRequest)
+      status(result.get) mustBe FORBIDDEN
+    }
+  }
+
+  EmailsController + UpdateDraftFunction should {
+    InvalidTokenForbidden + CaseUpdateStatus in {
+      val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchUpdateStatus")
+        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
+        .withJsonBody(parse(s"""
+          {
+            "$ChatIDKey" : "$chatIDExample",
+            "$DateOfKey" : "$dateExample",
+            "$HeaderKey" : "$headerExample",
+            "$BodyKey" : "$bodyExample",
+            "$ToKey" : ["$toAddressesJsonExample"],
+            "$BCCKey" : ["$bccJsonExample"],
+            "$CCKey" : ["$ccJsonExample"],
+            "$SendNowKey" : true
+          }
+        """))
 
       val result = route(app, fakeRequest)
       status(result.get) mustBe FORBIDDEN

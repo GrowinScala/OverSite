@@ -163,7 +163,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     val queryChatId = emailTable.filter(_.chatID in queryEmailId.map { case (chatid, _) => chatid })
       .filter(_.emailID in queryFromUser)
       .sortBy(_.dateOf)
-      .map(emailTable => (emailTable.chatID, emailTable.header))
+      .map(emailTable => (emailTable.chatID, emailTable.header)).distinctOn(_._1)
       .result
     db.run(queryChatId).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
 
