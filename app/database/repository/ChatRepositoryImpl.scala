@@ -51,11 +51,11 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @param userEmail the user identity
    * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
    */
-  private def queryEmail(userEmail: String): Query[Rep[String], String, Seq] = {
-    emailTable.filter(_.fromAddress === userEmail).map(_.emailID)
-      .union(toAddressTable.filter(_.username === userEmail).map(_.emailID))
-      .union(ccTable.filter(_.username === userEmail).map(_.emailID))
-      .union(bccTable.filter(_.username === userEmail).map(_.emailID))
+  private def queryEmail(userEmail: String, isTrash: Boolean): Query[Rep[String], String, Seq] = {
+    emailTable.filter(_.fromAddress === userEmail).filter(_.isTrash === isTrash).map(_.emailID)
+      .union(toAddressTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
+      .union(ccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
+      .union(bccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
   }
   /**
    * Queries to find the inbox messages of an user,
@@ -63,9 +63,10 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
   def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
-    val queryUserName = queryEmail(userEmail)
+    val queryUserName = queryEmail(userEmail, isTrash)
     val queryResult = emailTable
       .filter(_.emailID in queryUserName)
+      //I want that .filter(_.sent === true) just execute the filter when isTrash is false
       .filter(emailTable =>
         if (isTrash)
           emailTable.isTrash === isTrash
@@ -87,7 +88,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    */
   //TODO -> DONE: private def queryChat(userEmail: String, chatID: String, isTrash: boolean)
   private def queryChat(userEmail: String, chatID: String, isTrash: Boolean): Query[EmailTable, EmailRow, Seq] = {
-    val queryUserName = queryEmail(userEmail)
+    val queryUserName = queryEmail(userEmail, isTrash)
     emailTable
       .filter(_.emailID in queryUserName)
       .filter(_.chatID === chatID)

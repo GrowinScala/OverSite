@@ -187,18 +187,36 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   //TODO COMMENT FUNCTION
   def updateDraft(userName: String, emailID: String, draft: CreateEmailDTO): Future[Int] = {
 
+    /** Update emailTable*/
     val toSent = emailTable
       .filter(_.emailID === emailID)
       .filter(_.fromAddress === userName)
       .filter(_.sent === false)
       .filter(_.isTrash === false)
 
+    //.filter(_.chatID in queryEmailId.map { case (chatid, _) => chatid })
     for {
       action1 <- db.run(toSent.map(_.dateOf).update(draft.dateOf))
       action2 <- db.run(toSent.map(_.header).update(draft.header))
       action3 <- db.run(toSent.map(_.sent).update(draft.sendNow))
       action4 <- db.run(toSent.map(_.isTrash).update(false))
     } yield action1 + action2 + action3 + action4
-  }
 
+    /** Update toAddressTable*/
+    /** Loop that returns the toIDs of users that remain in the update */
+
+    //draft.to.getOrElse(Seq("")).map{x=>
+    //if (for{result<- db.run(toAddressTable.filter(_.emailID in toSent.map(_.emailID)).filter(_.username===x))}yield result)
+
+    //}
+    /*
+    val toAddressAux = for {
+    toUser <- draft.to.getOrElse(Seq(""))
+
+    listRemainId <- toAddressTable.filter(_.emailID in toSent.map(_.emailID)).filter(_.username === toUser).map(_.toID)
+    }yield listRemainId
+
+    val toAddressesDelete = toAddressTable.filter(_.emailID in toSent.map(_.emailID)).filter(_.toID in toAddressAux)
+*/
+  }
 }
