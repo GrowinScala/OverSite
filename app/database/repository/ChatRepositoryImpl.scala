@@ -72,9 +72,12 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
         else
           (emailTable.sent === true) && (emailTable.isTrash === isTrash))
       .sortBy(_.dateOf)
-      .map(emailTable => (emailTable.chatID, emailTable.header))
+      .map(emailTable => (emailTable.chatID, emailTable.header)).distinctOn(_._1)
       .result
-    db.run(queryResult).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
+
+    db.run(queryResult).map(seq => seq.map {
+      case (id, header) => EmailMinimalInfoDTO(id, header)
+    })
   }
 
   /**
@@ -102,18 +105,19 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     val queryResult = queryChat(userEmail, chatID, isTrash)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
-    db.run(queryResult).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
+
+    db.run(queryResult).map(seq => seq.map {
+      case (id, header) => EmailMinimalInfoDTO(id, header)
+    })
   }
 
   /** Selects an email after filtering through chatID emailID*/
   def getEmail(userEmail: String, chatID: String, emailID: String, isTrash: Boolean): Future[Seq[EmailInfoDTO]] = {
     val queryResult = queryChat(userEmail, chatID, isTrash)
       .filter(_.emailID === emailID)
-
       //Since every email with sent==true is obligated to have an ToID,
       // the following join has the same effect as joinLeft
       .joinLeft(toAddressTable).on(_.emailID === _.emailID)
-
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
       .map(table => (table._1.fromAddress, table._2.map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
       .result.map(seq => seq.map {

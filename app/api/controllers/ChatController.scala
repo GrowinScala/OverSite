@@ -43,7 +43,7 @@ class ChatController @Inject() (
 
             EmailMinimalInfoDTO.addLink(
               email,
-              List(routes.EmailsController.getEmail(EndPointReceived, email.Id).absoluteURL())))
+              List(routes.EmailsController.getEmail(email.Id, Option(EndPointReceived)).absoluteURL())))
           Ok(Json.toJson(result))
       }
     }

@@ -52,20 +52,19 @@ class EmailsController @Inject() (
    * @param status End-point information considering "draft", "received", "sent", "trashed" as allowed words
    * @return List of emails asked by the user
    */
-  def getEmails(status: String): Action[AnyContent] = tokenValidator.async { request =>
+  def getEmails(status: Option[String]): Action[AnyContent] = tokenValidator.async { request =>
 
     implicit val req: RequestHeader = request
 
-    if (PossibleEndPointStatus.contains(status)) {
-      request.userName.flatMap(emailActions.getEmails(_, status).map(emails => {
+    if (PossibleEndPointStatus.contains(status.getOrElse(""))) {
+      request.userName.flatMap(emailActions.getEmails(_, status.getOrElse("")).map(emails => {
         val result = emails.map(email =>
-
           EmailMinimalInfoDTO.addLink(
             email,
-            List(routes.EmailsController.getEmail(status, email.Id).absoluteURL())))
+            List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
         Ok(Json.toJson(result))
       }))
-    } else if (status == SatanString) {
+    } else if (status.getOrElse("") == SatanString) {
       Future.successful(BadRequest(SatanStatus))
     } else {
       Future.successful(BadRequest(InvalidEndPointStatus))
@@ -78,13 +77,13 @@ class EmailsController @Inject() (
    * @param emailID Identification of the email
    * @return Action that shows the emailID required
    */
-  def getEmail(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+  def getEmail(emailID: String, status: Option[String]): Action[AnyContent] = tokenValidator.async { request =>
 
     implicit val req: RequestHeader = request
 
-    if (PossibleEndPointStatus.contains(status)) {
+    if (PossibleEndPointStatus.contains(status.getOrElse(""))) {
       request.userName.flatMap(
-        emailActions.getEmail(_, status, emailID).map(
+        emailActions.getEmail(_, status.get, emailID).map(
           emails => {
             val resultEmailID = JsArray(
               emails.map { email =>
@@ -102,15 +101,13 @@ class EmailsController @Inject() (
    * @param status Identification of the email status
    * @param emailID Identification of the email
    */
-  def toSent(status: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+  def toSent(emailID: String): Action[AnyContent] = tokenValidator.async { request =>
 
-    if (status.equals(EndPointDraft))
-      request.userName.flatMap(
-        emailActions.takeDraftMakeSent(_, emailID).map {
-          case 0 => BadRequest
-          case _ => Ok
-        })
-    else Future.successful { BadRequest(InvalidEndPointStatus) }
+    request.userName.flatMap(
+      emailActions.takeDraftMakeSent(_, emailID).map {
+        case 0 => BadRequest
+        case _ => Ok
+      })
   }
 
   /**
@@ -127,6 +124,21 @@ class EmailsController @Inject() (
       })
   }
 
-  //TODO def moveChatInOutTrash -> T:04
-  //changeTrash
+  def updateDraft(emailID: String): Action[JsValue] = tokenValidator(parse.json) { request =>
+
+    val emailResult = request.body.validate[CreateEmailDTO]
+
+    emailResult.fold(
+      errors => {
+        BadRequest(jsonErrors(errors))
+      },
+      draft => {
+        request.userName.flatMap(
+          emailActions.updateDraft(_, emailID, draft)) map{
+          case 0 => (BadRequest("No email updated"))
+          case _ => (Ok(MailSentStatus))
+        }
+      }
+    )
+  }
 }

@@ -8,22 +8,24 @@ POST   /email                               api.controllers.EmailsController.ema
 
 
     #INBOX
+
 GET    /chats                               api.controllers.ChatController.inbox(isTrash: Option[Boolean])
 GET    /chats/:chatID/emails                api.controllers.ChatController.getEmails(chatID: String, isTrash: Option[Boolean])
-
 GET    /chats/:chatID/emails/:emailID       api.controllers.ChatController.getEmail(chatID: String, emailID: String, isTrash: Option[Boolean])
 
 
     #SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT"
 
-GET    /emails/:status                      api.controllers.EmailsController.getEmails(status: String)
-GET    /emails/:status/:emailID             api.controllers.EmailsController.getEmail(status: String, emailID: String)
+GET    /emails                      api.controllers.EmailsController.getEmails(status: Option[String])
+GET    /emails/:emailID             api.controllers.EmailsController.getEmail(emailID: String, status: Option[String])
 
 
     #PATCH ONLY AVAILABLE TO "DRAFTS"->"SENT", #"SOMETHING"<->#"TRASH"
 
-PATCH /emails/:status/:emailID              api.controllers.EmailsController.toSent(status: String, emailID: String)
-PATCH /emails/:emailID                      api.controllers.EmailsController.moveInOutTrash(emailID: String)
+PATCH /emails/:emailID/send         api.controllers.EmailsController.toSent(emailID: String)
+PATCH /emails/:emailID/trash        api.controllers.EmailsController.moveInOutTrash(emailID: String)
+PATCH /emails/:emailID/update       api.controllers.EmailsController.updateDraft(emailID: String)
+
 
     #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 

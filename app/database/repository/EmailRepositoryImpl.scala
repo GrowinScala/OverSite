@@ -58,6 +58,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       case EndPointSent =>
         emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === true)
+          .filter(_.isTrash === false)
           .sortBy(_.dateOf)
 
       case EndPointReceived =>
@@ -68,19 +69,27 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
         emailTable.filter(_.emailID in queryReceivedEmailIds)
           .filter(_.sent === true)
+          .filter(_.isTrash === false)
           .sortBy(_.dateOf)
 
       case EndPointDraft =>
         emailTable.filter(_.fromAddress === userEmail)
           .filter(_.sent === false)
+          .filter(_.isTrash === false)
+          .sortBy(_.dateOf)
+
+      case EndPointNoFilter =>
+        emailTable.filter(_.fromAddress === userEmail)
+          .filter(_.sent === true)
+          .filter(_.isTrash === false)
           .sortBy(_.dateOf)
     }
   }
 
   /**
-   * Function that filter the emails "sent", "received", "draft" and "trash"
+   * Function that filter the emails "sent", "received", "draft", "trash" and "noFilter"
    * @param userEmail Identification of user by email
-   * @param status Possible status: "sent", "received", "draft" and "trash"
+   * @param status Possible status: "sent", "received", "draft", "trash" and "noFilter"
    * @return List of emailIDs and corresponding header
    */
   def getEmails(userEmail: String, status: String): Future[Seq[EmailMinimalInfoDTO]] = {
@@ -97,7 +106,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * (joinLeft and getOrElse is used to embrace the 3 possible status, however
    * join and no getOrElse would be more appropriate for "sent" and "received")
    * @param userEmail Identification of user by email
-   * @param status Possible status: "sent", "received" and "draft"
+   * @param status Possible status: "sent", "received", "draft", "trash" or "empty"
    * @param emailID Identification the a specific email
    * @return All the details of the email selected
    */
@@ -117,13 +126,20 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
     to.getOrElse(Seq()).nonEmpty
   }
-  //TODO add comment
+
+  /**
+   * Reaches a certain email drafted and send it
+   * @param userName Identification of user by email
+   * @param emailID Identification the a specific email
+   * @return returns a Future of Int with the number of emails undrafted
+   */
   def takeDraftMakeSent(userName: String, emailID: String): Future[Int] = {
 
     val hasToAddress = toAddressTable.filter(_.emailID === emailID).result
 
     val toSent = emailTable.filter(emailTable => (emailTable.emailID === emailID) && (emailTable.fromAddress === userName))
       .filter(_.isTrash === false)
+      .filter(_.sent === false)
       .map(_.sent)
       .update(true)
 
@@ -133,7 +149,12 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     }
   }
 
-  //TODO add a comment
+  /**
+   * It changes the status of an email to trash or out of trash
+   * @param userName Identification of user by email
+   * @param emailID Identification the a specific email
+   * @return
+   */
   def changeTrash(userName: String, emailID: String): Future[Int] = {
     val filteredEmailTable = emailTable.filter(_.emailID === emailID).filter(_.fromAddress === userName).map(_.isTrash)
     val currentEmailStatus = db.run(filteredEmailTable.result.headOption)
@@ -161,6 +182,23 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
         filteredBCCAddressTable.update(!status.getOrElse(true))).flatMap(db.run(_))
 
     } yield resultEmailTable + resultToAddressTable + resultCCTable + resultBCCTable
+  }
+
+  //TODO COMMENT FUNCTION
+  def updateDraft(userName: String, emailID: String, draft: CreateEmailDTO): Future[Int] = {
+
+    val toSent = emailTable
+      .filter(_.emailID === emailID)
+      .filter(_.fromAddress === userName)
+      .filter(_.sent === false)
+      .filter(_.isTrash === false)
+
+    for {
+      action1 <- db.run(toSent.map(_.dateOf).update(draft.dateOf))
+      action2 <- db.run(toSent.map(_.header).update(draft.header))
+      action3 <- db.run(toSent.map(_.sent).update(draft.sendNow))
+      action4 <- db.run(toSent.map(_.isTrash).update(false))
+    } yield action1 + action2 + action3 + action4
   }
 
 }
