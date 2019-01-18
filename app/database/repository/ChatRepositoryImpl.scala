@@ -57,6 +57,13 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .union(ccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
       .union(bccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
   }
+
+  private def hasNotBeenSent(userEmail: String, isTrash: Boolean) = {
+    emailTable.filter(_.fromAddress === userEmail)
+      .filter(_.isTrash === isTrash)
+      .filter(_.sent === false)
+      .map(entry => (entry.chatID, entry.header, entry.dateOf))
+  }
   /**
    * Queries to find the inbox messages of an user,
    * @param userEmail user email
@@ -66,19 +73,45 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     val queryUserName = queryEmail(userEmail, isTrash)
     val queryResult = emailTable
       .filter(_.emailID in queryUserName)
-      //I want that .filter(_.sent === true) just execute the filter when isTrash is false
-      .filter(emailTable =>
-        if (isTrash)
-          emailTable.isTrash === isTrash
-        else
-          (emailTable.sent === true) && (emailTable.isTrash === isTrash))
-      .sortBy(_.dateOf)
-      .map(emailTable => (emailTable.chatID, emailTable.header)).distinctOn(_._1)
-      .result
 
-    db.run(queryResult).map(seq => seq.map {
+
+    val hasBeenSent = emailTable.filter(_.sent === true)
+
+    val emailIdsForSentEmails = for {
+      (_, s) <- queryResult join hasBeenSent on (_.emailID === _.emailID)
+    } yield (s.chatID, s.header, s.dateOf)
+
+    val emailIdsForNotYetSentEmails = hasNotBeenSent(userEmail, isTrash)
+
+    db.run(emailIdsForSentEmails.union(emailIdsForNotYetSentEmails)
+      .sortBy(_._3)
+      .map(entry => (entry._1, entry._2)).distinctOn(_._1)
+      .result.map(seq => seq.map {
+        case (chatID, header) =>
+        EmailMinimalInfoDTO(chatID, header)
+    }))
+    /*
+    val innerJoin = for {
+  (c, s) <- coffees join suppliers on (_.supID === _.id)
+} yield (c.name, s.name)
+
+
+    val result = for{
+      emailRows <- db.run(queryResult.result)
+    }yield emailRows.map(emailRow=> queryResult.filter(emailTable =>
+      if (!emailRow.sent){(emailTable.fromAddress === userEmail) && (emailTable.emailID === emailRow.emailID)}
+      else{emailTable.emailID === emailRow.emailID}).map(_.emailID))
+
+
+   val reallyFinalResult =  result.map(seq=> seq.map(query=> emailTable.filter(_.emailID in query).sortBy(_.dateOf)
+      .map(emailTable => (emailTable.chatID, emailTable.header)).distinctOn(_._1)
+      .result))
+
+    reallyFinalResult.map(seq=> seq.map(query=> db.run(query).map(seq => seq.map {
       case (id, header) => EmailMinimalInfoDTO(id, header)
-    })
+    })))
+     */
+
   }
 
   /**
