@@ -62,7 +62,7 @@ class EmailsController @Inject() (
           EmailMinimalInfoDTO.addLink(
             email,
             //List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
-        List("")))
+            List("")))
         Ok(Json.toJson(result))
       }))
     } else if (status.getOrElse("") == SatanString) {
@@ -126,7 +126,7 @@ class EmailsController @Inject() (
       })
   }
 
-/*
+  /*
   def updateDraft(emailID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
 
     val emailResult = request.body.validate[CreateEmailDTO]

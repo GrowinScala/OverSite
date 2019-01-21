@@ -48,7 +48,7 @@ create table Drafts (
 create table DraftsDestination (
     DRAFTID varchar(100) not null,
     USERNAME varchar(100) not null,
-    DESTINATION ENUM('to', 'cc', 'bcc')
+    DESTINATION ENUM('to', 'cc', 'bcc'),
     FOREIGN KEY(DRAFTID) REFERENCES Drafts(DRAFTID)
 );
 

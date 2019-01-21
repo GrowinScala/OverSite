@@ -22,7 +22,6 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
     val randomEmailID = randomUUID().toString
 
-
     val chatId = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
     chatId.flatMap(id => {
       val insertEmail = for {
@@ -68,7 +67,6 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
         emailTable.filter(_.emailID in queryReceivedEmailIds)
           .filter(_.isTrash === false)
           .sortBy(_.dateOf)
-
 
       case EndPointNoFilter =>
         emailTable.filter(_.fromAddress === userEmail)
@@ -118,7 +116,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     to.getOrElse(Seq()).nonEmpty
   }
 
-/*
+  /*
   /**
    * Reaches a certain email drafted and send it
    * @param userName Identification of user by email

@@ -18,25 +18,24 @@ case class EmailRow(
   isTrash: Boolean)
 
 /**
-  * Case class of Draft Table Row
-  */
+ * Case class of Draft Table Row
+ */
 case class DraftRow(
-                     draftID: String,
-                     chatID: String,
-                     fromAddress: String,
-                     dateOf: String,
-                     header: String,
-                     body: String,
-                     isTrash: Boolean)
+  draftID: String,
+  chatID: String,
+  fromAddress: String,
+  dateOf: String,
+  header: String,
+  body: String,
+  isTrash: Boolean)
 
 /**
-  * Case class of Draft Destinations Table Row
-  */
+ * Case class of Draft Destinations Table Row
+ */
 case class DestinationDraftRow(
-                              draftID: String,
-                              username: String,
-                              destination: Destination
-                              )
+  draftID: String,
+  username: String,
+  destination: Destination)
 
 /**
  * Case class of ToAddress Table Row
@@ -80,7 +79,7 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def * = (emailID, chatID, fromAddress, dateOf, header, body, isTrash) <> (EmailRow.tupled, EmailRow.unapply)
 }
 
-object Destination extends  Enumeration{
+object Destination extends Enumeration {
   type Destination = Value
   val ToAddress = Value("TO")
   val CC = Value("CC")
@@ -88,8 +87,7 @@ object Destination extends  Enumeration{
 
   implicit val destinationMapper = MappedColumnType.base[Destination, String](
     e => e.toString,
-    s => Destination.withName(s)
-  )
+    s => Destination.withName(s))
 }
 
 case class Sample(username: String, draftID: String, destination: Destination)
@@ -107,7 +105,6 @@ class DestinationDraftTable(tag: Tag) extends Table[Sample](tag, DraftsTable) {
 /** Class that defines the draft table, establishing draftID as primary key in the database*/
 class DraftTable(tag: Tag) extends Table[DraftRow](tag, DraftsTable) {
 
-
   def draftID = column[String](DraftIDRow, O.PrimaryKey)
   def chatID = column[String](ChatIDRow)
   def fromAddress = column[String](FromAddressRow)
@@ -119,7 +116,6 @@ class DraftTable(tag: Tag) extends Table[DraftRow](tag, DraftsTable) {
   def * = (draftID, chatID, fromAddress, dateOf, header, body, isTrash) <> (DraftRow.tupled, DraftRow.unapply)
 
 }
-
 
 /** Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key */
 class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable) {

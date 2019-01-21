@@ -506,7 +506,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     HasNoToAddressBadRequest + CaseTrashStatus in {
 
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+        emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchTrashStatus")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -521,7 +521,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
 
       Await.result(db.run(chatTable += ChatRow(chatIDExample, headerExample)), Duration.Inf)
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+        emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
       Await.result(db.run(toAddressTable += ToAddressRow(new Generator().ID, emailIDExample, emailExample, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + emailIDExample + EndpointPatchSendStatus)
@@ -536,7 +536,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     UndefinedStatusOk + CaseTrashStatus in {
 
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
-        headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+        headerExample, bodyExample,  isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$emailIDExample$EndpointPatchTrashStatus")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -549,7 +549,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     CaseUpdateStatus in {
 
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
-        headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+        headerExample, bodyExample, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$emailIDExample$EndpointPatchUpdateStatus")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -574,7 +574,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     CaseUpdateStatus + " no existing email id" in {
 
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
-        headerExample, bodyExample, sent = false, isTrash = false)), Duration.Inf)
+        headerExample, bodyExample, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$EmailIDUndefined$EndpointPatchUpdateStatus")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)

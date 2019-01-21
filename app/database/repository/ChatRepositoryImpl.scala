@@ -69,7 +69,6 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     val emailIdsForSentEmails = emailTable.filter(_.emailID in hasBeenSent(userEmail, isTrash))
       .map(entry => (entry.chatID, entry.header, entry.dateOf)).sortBy(_._3.reverse)
 
-
     val idsDistinctList = db.run(emailIdsForSentEmails.result).map(seq => seq.map(_._1).distinct)
 
     val result = idsDistinctList.map(seq =>
