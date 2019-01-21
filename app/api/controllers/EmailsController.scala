@@ -49,7 +49,7 @@ class EmailsController @Inject() (
 
   /**
    * Considers the case where the user wants to check some type of emails
-   * @param status End-point information considering "draft", "received", "sent", "trashed" as allowed words
+   * @param status End-point information considering "received", "sent", "trashed" as allowed words
    * @return List of emails asked by the user
    */
   def getEmails(status: Option[String]): Action[AnyContent] = tokenValidator.async { request =>
@@ -61,7 +61,8 @@ class EmailsController @Inject() (
         val result = emails.map(email =>
           EmailMinimalInfoDTO.addLink(
             email,
-            List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
+            //List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
+        List("")))
         Ok(Json.toJson(result))
       }))
     } else if (status.getOrElse("") == SatanString) {
@@ -96,6 +97,7 @@ class EmailsController @Inject() (
     }
   }
 
+  /*
   /**
    * Receive a target draft email and sends it if that email has a to parameter
    * @param status Identification of the email status
@@ -109,7 +111,7 @@ class EmailsController @Inject() (
         case _ => Ok
       })
   }
-
+*/
   /**
    * Change the email required to trash or take it from trash
    * @param status Identification of the email status
@@ -124,6 +126,7 @@ class EmailsController @Inject() (
       })
   }
 
+/*
   def updateDraft(emailID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
 
     val emailResult = request.body.validate[CreateEmailDTO]
@@ -142,4 +145,6 @@ class EmailsController @Inject() (
         }
       })
   }
+ */
+
 }

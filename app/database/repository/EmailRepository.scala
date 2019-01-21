@@ -9,7 +9,7 @@ trait EmailRepository {
   def insertEmail(username: String, email: CreateEmailDTO): Future[String]
   def getEmails(userEmail: String, status: String): Future[Seq[EmailMinimalInfoDTO]]
   def getEmail(userEmail: String, status: String, emailID: String): Future[Seq[EmailInfoDTO]]
-  def takeDraftMakeSent(userName: String, emailID: String): Future[Int]
+  //def takeDraftMakeSent(userName: String, emailID: String): Future[Int]
   def changeTrash(userName: String, emailID: String): Future[Int]
 
 }

@@ -21,13 +21,12 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    */
   def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
     val randomEmailID = randomUUID().toString
-    val isDraft = if (hasSenderAddress(email.to)) email.sendNow
-    else false
+
 
     val chatId = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
     chatId.flatMap(id => {
       val insertEmail = for {
-        _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isDraft, isTrash = false)
+        _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isTrash = false)
         _ <- toAddressTable ++= email.to.getOrElse(Seq()).map(ToAddressRow(randomUUID().toString, randomEmailID, _, isTrash = false))
         _ <- ccTable ++= email.CC.getOrElse(Seq()).map(CCRow(randomUUID().toString, randomEmailID, _, isTrash = false))
         _ <- bccTable ++= email.BCC.getOrElse(Seq()).map(BCCRow(randomUUID().toString, randomEmailID, _, isTrash = false))
@@ -40,7 +39,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   /**
    * Auxiliary function that supports getEmails and getEmail
    * @param userEmail Identification of user by email
-   * @param status Possible status: "sent", "received", "draft" and "trash"
+   * @param status Possible status: "sent", "received" and "trash"
    * @return Return different queries taking into account the status
    */
 
@@ -57,7 +56,6 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
       case EndPointSent =>
         emailTable.filter(_.fromAddress === userEmail)
-          .filter(_.sent === true)
           .filter(_.isTrash === false)
           .sortBy(_.dateOf)
 
@@ -68,28 +66,21 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
           .union(bccTable.filter(_.username === userEmail).map(_.emailID))
 
         emailTable.filter(_.emailID in queryReceivedEmailIds)
-          .filter(_.sent === true)
           .filter(_.isTrash === false)
           .sortBy(_.dateOf)
 
-      case EndPointDraft =>
-        emailTable.filter(_.fromAddress === userEmail)
-          .filter(_.sent === false)
-          .filter(_.isTrash === false)
-          .sortBy(_.dateOf)
 
       case EndPointNoFilter =>
         emailTable.filter(_.fromAddress === userEmail)
-          .filter(_.sent === true)
           .filter(_.isTrash === false)
           .sortBy(_.dateOf)
     }
   }
 
   /**
-   * Function that filter the emails "sent", "received", "draft", "trash" and "noFilter"
+   * Function that filter the emails "sent", "received", "trash" and "noFilter"
    * @param userEmail Identification of user by email
-   * @param status Possible status: "sent", "received", "draft", "trash" and "noFilter"
+   * @param status Possible status: "sent", "received", "trash" and "noFilter"
    * @return List of emailIDs and corresponding header
    */
   def getEmails(userEmail: String, status: String): Future[Seq[EmailMinimalInfoDTO]] = {
@@ -106,7 +97,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * (joinLeft and getOrElse is used to embrace the 3 possible status, however
    * join and no getOrElse would be more appropriate for "sent" and "received")
    * @param userEmail Identification of user by email
-   * @param status Possible status: "sent", "received", "draft", "trash" or "empty"
+   * @param status Possible status: "sent", "received", "trash" or "empty"
    * @param emailID Identification the a specific email
    * @return All the details of the email selected
    */
@@ -127,6 +118,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     to.getOrElse(Seq()).nonEmpty
   }
 
+/*
   /**
    * Reaches a certain email drafted and send it
    * @param userName Identification of user by email
@@ -148,6 +140,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       case _ => Future { 0 }
     }
   }
+  */
 
   /**
    * It changes the status of an email to trash or out of trash
@@ -183,22 +176,4 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     } yield resultEmailTable + resultToAddressTable + resultCCTable + resultBCCTable
   }
-
-  //TODO COMMENT FUNCTION
-  def updateDraft(userName: String, emailID: String, draft: CreateEmailDTO): Future[Int] = {
-
-    val toSent = emailTable
-      .filter(_.emailID === emailID)
-      .filter(_.fromAddress === userName)
-      .filter(_.sent === false)
-      .filter(_.isTrash === false)
-
-    for {
-      action1 <- db.run(toSent.map(_.dateOf).update(draft.dateOf))
-      action2 <- db.run(toSent.map(_.header).update(draft.header))
-      action3 <- db.run(toSent.map(_.sent).update(draft.sendNow))
-      action4 <- db.run(toSent.map(_.isTrash).update(false))
-    } yield action1 + action2 + action3 + action4
-  }
-
 }

@@ -43,7 +43,8 @@ class ChatController @Inject() (
 
             EmailMinimalInfoDTO.addLink(
               email,
-              List(routes.EmailsController.getEmail(email.Id, Option(EndPointReceived)).absoluteURL())))
+              //List(routes.EmailsController.getEmail(email.Id, Option(EndPointReceived)).absoluteURL())))
+          List("")))
           Ok(Json.toJson(result))
       }
     }
@@ -65,7 +66,8 @@ class ChatController @Inject() (
 
             EmailMinimalInfoDTO.addLink(
               email,
-              List(routes.ChatController.getEmail(chatID, email.Id, isTrash).absoluteURL())))
+              //List(routes.ChatController.getEmail(chatID, email.Id, isTrash).absoluteURL())))
+              List("")))
           Ok(Json.toJson(result))
       }
     }
@@ -138,7 +140,8 @@ class ChatController @Inject() (
           val result = emails.map(email =>
             EmailMinimalInfoDTO.addLink(
               email,
-              List(routes.ChatController.getSharedEmail(shareID, email.Id).absoluteURL())))
+              //List(routes.ChatController.getSharedEmail(shareID, email.Id).absoluteURL())))
+          List("")))
           Ok(Json.toJson(result))
         }))
 

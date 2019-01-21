@@ -11,8 +11,7 @@ case class CreateEmailDTO(
   body: String,
   to: Option[Seq[String]],
   BCC: Option[Seq[String]],
-  CC: Option[Seq[String]],
-  sendNow: Boolean)
+  CC: Option[Seq[String]])
 
 object CreateEmailDTO {
   implicit val emailDTO: OFormat[CreateEmailDTO] = Json.format[CreateEmailDTO]

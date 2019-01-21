@@ -39,8 +39,8 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     defaultCreation.body,
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses),
-    Option(new Generator().emailAddresses),
-    true)
+    Option(new Generator().emailAddresses)
+  )
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
 
