@@ -18,25 +18,16 @@ case class EmailRow(
   isTrash: Boolean)
 
 /**
-  * Case class of Draft Table Row
-  */
+ * Case class of Draft Table Row
+ */
 case class DraftRow(
-                     draftID: String,
-                     chatID: String,
-                     fromAddress: String,
-                     dateOf: String,
-                     header: String,
-                     body: String,
-                     isTrash: Boolean)
-
-/**
-  * Case class of Draft Destinations Table Row
-  */
-case class DestinationDraftRow(
-                              draftID: String,
-                              username: String,
-                              destination: Destination
-                              )
+  draftID: String,
+  chatID: String,
+  fromAddress: String,
+  dateOf: String,
+  header: String,
+  body: String,
+  isTrash: Boolean)
 
 /**
  * Case class of ToAddress Table Row
@@ -80,46 +71,43 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def * = (emailID, chatID, fromAddress, dateOf, header, body, isTrash) <> (EmailRow.tupled, EmailRow.unapply)
 }
 
-object Destination extends  Enumeration{
+object Destination extends Enumeration {
   type Destination = Value
-  val ToAddress = Value("TO")
-  val CC = Value("CC")
-  val BCC = Value("BCC")
+  val ToAddress = Value(ToValue)
+  val CC = Value(CCValue)
+  val BCC = Value(BCCValue)
 
   implicit val destinationMapper = MappedColumnType.base[Destination, String](
     e => e.toString,
-    s => Destination.withName(s)
-  )
+    s => Destination.withName(s))
 }
 
-case class Sample(username: String, draftID: String, destination: Destination)
+case class DestinationDraftRow(username: String, draftID: String, destination: Destination)
 
 /** Class that defines the draft table, establishing draftID as primary key in the database*/
-class DestinationDraftTable(tag: Tag) extends Table[Sample](tag, DraftsTable) {
+class DestinationDraftTable(tag: Tag) extends Table[DestinationDraftRow](tag, DraftsDestinationTable) {
 
   def username = column[String](UsernameRow)
   def draftID = column[String](DraftIDRow)
   def destination = column[Destination](DraftDestinationRow)
 
-  def * = (username, draftID, destination) <> (Sample.tupled, Sample.unapply)
+  def * = (draftID, username, destination) <> (DestinationDraftRow.tupled, DestinationDraftRow.unapply)
 }
 
 /** Class that defines the draft table, establishing draftID as primary key in the database*/
 class DraftTable(tag: Tag) extends Table[DraftRow](tag, DraftsTable) {
 
-
   def draftID = column[String](DraftIDRow, O.PrimaryKey)
   def chatID = column[String](ChatIDRow)
-  def fromAddress = column[String](FromAddressRow)
+  def username = column[String](UsernameRow)
   def dateOf = column[String](DateOfRow)
   def header = column[String](HeaderRow)
   def body = column[String](BodyRow)
   def isTrash = column[Boolean](TrashRow)
 
-  def * = (draftID, chatID, fromAddress, dateOf, header, body, isTrash) <> (DraftRow.tupled, DraftRow.unapply)
+  def * = (draftID, chatID, username, dateOf, header, body, isTrash) <> (DraftRow.tupled, DraftRow.unapply)
 
 }
-
 
 /** Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key */
 class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable) {
@@ -156,6 +144,8 @@ class BCCTable(tag: Tag) extends Table[BCCRow](tag, BCCsTable) {
 object EmailMappings {
   /** Queries of Email table and it's nested entities: */
   lazy val emailTable = TableQuery[EmailTable]
+  lazy val draftTable = TableQuery[DraftTable]
+  lazy val destinationDraftTable = TableQuery[DestinationDraftTable]
   lazy val toAddressTable = TableQuery[ToAddressTable]
   lazy val ccTable = TableQuery[CCTable]
   lazy val bccTable = TableQuery[BCCTable]

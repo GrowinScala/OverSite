@@ -4,7 +4,7 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.{ CreateEmailDTO, EmailInfoDTO, EmailMinimalInfoDTO }
-import database.mappings.EmailMappings.{ emailTable, _ }
+import database.mappings.EmailMappings.{ emailTable, toAddressTable, _ }
 import database.mappings._
 import definedStrings.ApiStrings._
 import javax.inject.Inject
@@ -22,7 +22,6 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
     val randomEmailID = randomUUID().toString
 
-
     val chatId = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
     chatId.flatMap(id => {
       val insertEmail = for {
@@ -34,6 +33,25 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
       db.run(insertEmail.transactionally)
     })
+  }
+
+  /**
+   * Inserts a draft in the database
+   * @return Generated chat ID
+   */
+  def insertDraft(username: String, email: CreateEmailDTO): Future[String] = {
+
+    val draftID = randomUUID().toString
+
+    val insertDraft = for {
+      _ <- draftTable += DraftRow(draftID, email.chatID.getOrElse(""), username, email.dateOf, email.header, email.body, isTrash = false)
+      _ <- destinationDraftTable ++= email.to.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.ToAddress))
+      _ <- destinationDraftTable ++= email.CC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.CC))
+      _ <- destinationDraftTable ++= email.BCC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.BCC))
+    } yield draftID
+
+    db.run(insertDraft.transactionally)
+
   }
 
   /**
@@ -68,7 +86,6 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
         emailTable.filter(_.emailID in queryReceivedEmailIds)
           .filter(_.isTrash === false)
           .sortBy(_.dateOf)
-
 
       case EndPointNoFilter =>
         emailTable.filter(_.fromAddress === userEmail)
@@ -118,7 +135,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     to.getOrElse(Seq()).nonEmpty
   }
 
-/*
+  /*
   /**
    * Reaches a certain email drafted and send it
    * @param userName Identification of user by email

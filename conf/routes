@@ -7,7 +7,7 @@
 POST   /email                               api.controllers.EmailsController.email
 
     #POST A DRAFT
-#POST   /draft
+POST   /draft                               api.controllers.EmailsController.draft
 
     #UPDATE A DRAFT
 #PUT    /draft/:draftID
