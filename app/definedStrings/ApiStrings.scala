@@ -4,12 +4,11 @@ object ApiStrings {
 
   /**  For end point status */
 
-  val EndPointDraft = "draft"
   val EndPointReceived = "received"
   val EndPointSent = "sent"
   val EndPointTrash = "trashed"
   val EndPointNoFilter = ""
-  val PossibleEndPointStatus = List(EndPointDraft, EndPointReceived, EndPointSent, EndPointTrash, EndPointNoFilter)
+  val PossibleEndPointStatus = List(EndPointReceived, EndPointSent, EndPointTrash, EndPointNoFilter)
 
   /**  For HTTP error code status */
   val InvalidEmailAddressStatus = "Please insert a valid e-mail address"

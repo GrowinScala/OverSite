@@ -40,8 +40,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     defaultCreation.body,
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses),
-    Option(new Generator().emailAddresses),
-    true)
+    Option(new Generator().emailAddresses)
+  )
 
   val DraftCreation = new Generator()
   val emailDraftCreation = new CreateEmailDTO(
@@ -51,8 +51,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     DraftCreation.body,
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses),
-    Option(new Generator().emailAddresses),
-    false)
+    Option(new Generator().emailAddresses)
+  )
 
   val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
 
@@ -89,8 +89,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         seqEmailRow.forall(_.body === emailCreation.body) shouldBe true
 
         seqEmailRow.forall(_.dateOf === emailCreation.dateOf) shouldBe true
-
-        seqEmailRow.forall(_.sent === emailCreation.sendNow) shouldBe true
 
         /** Verify if emailID and chatID have an UUID format **/
 
@@ -313,7 +311,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       /** getEmails for sent and received cases */
       result.map {
         case (resultEmailTable, resultSent, resultReceived, resultDrafts) =>
-          if (emailCreation.sendNow) {
 
             resultEmailTable.map(emailsRow => EmailMinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
 
@@ -321,10 +318,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               seqEmailInfo === resultEmailTable.map(row =>
                 EmailMinimalInfoDTO(row.emailID, row.header))) shouldBe true
 
-            /** getEmails for drafted cases */
-          } else {
-            resultDrafts shouldEqual resultEmailTable.map(row => EmailMinimalInfoDTO(row.emailID, row.header))
-          }
       }
     }
   }
@@ -353,63 +346,11 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
       result.map {
         case (resultEmailTable, resultSent, resultReceived, resultDrafts, resultTos) =>
-
-          if (emailCreation.sendNow) {
-
             resultSent shouldEqual resultTos
             resultReceived.forall(seqEmailInfoDTo => seqEmailInfoDTo === resultTos) shouldBe true
-          } else {
 
-            emailCreation.to match {
-
-              /** If the parameter TO exists*/
-              case Some(seq) if seq.nonEmpty =>
-
-                resultDrafts shouldEqual resultTos
-
-              /** In case there are no TO parameters in email*/
-              case _ =>
-                resultDrafts.head shouldEqual EmailInfoDTO(
-                  resultEmailTable.head.chatID,
-                  resultEmailTable.head.fromAddress,
-                  "",
-                  resultEmailTable.head.header,
-                  resultEmailTable.head.body,
-                  resultEmailTable.head.dateOf)
-            }
-          }
       }
     }
   }
-
-  /** Verify if a drafted email is inserted in database is updated to an sent email*/
-  EmailRepository + TakeDraftMakeSent should {
-    "check if the function takeDraftMakeSent is able to update the drafted email inserted" in {
-
-      val result = for {
-        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-        resultEmailID <- emailActions.getEmails(userCreation.username, StatusDraft)
-
-      } yield resultEmailID
-
-      result.map { resultEmailID =>
-
-        if (resultEmailID.nonEmpty) {
-
-          val resultEmailIDNew = for {
-            _ <- emailActions.takeDraftMakeSent(userCreation.username, resultEmailID.head.Id)
-            emailIDNew <- emailActions.getEmails(userCreation.username, StatusDraft)
-          } yield emailIDNew
-
-          if (emailCreation.to.get.nonEmpty) {
-
-            resultEmailIDNew.map(_.isEmpty) shouldEqual false
-          } else resultEmailIDNew.map(_.isEmpty) shouldEqual true
-
-        } else true shouldEqual true
-      }
-    }
-  }
-
 }
 

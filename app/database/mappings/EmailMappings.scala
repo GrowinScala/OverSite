@@ -1,8 +1,9 @@
 package database.mappings
 
-import database.mappings.EmailMappings._
-import slick.jdbc.MySQLProfile.api._
+import database.mappings.Destination.Destination
 import definedStrings.DatabaseStrings._
+import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.MySQLProfile
 
 /**
  * Case class of Email Table Row
@@ -14,8 +15,28 @@ case class EmailRow(
   dateOf: String,
   header: String,
   body: String,
-  sent: Boolean,
   isTrash: Boolean)
+
+/**
+  * Case class of Draft Table Row
+  */
+case class DraftRow(
+                     draftID: String,
+                     chatID: String,
+                     fromAddress: String,
+                     dateOf: String,
+                     header: String,
+                     body: String,
+                     isTrash: Boolean)
+
+/**
+  * Case class of Draft Destinations Table Row
+  */
+case class DestinationDraftRow(
+                              draftID: String,
+                              username: String,
+                              destination: Destination
+                              )
 
 /**
  * Case class of ToAddress Table Row
@@ -52,13 +73,53 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def dateOf = column[String](DateOfRow)
   def header = column[String](HeaderRow)
   def body = column[String](BodyRow)
-  def sent = column[Boolean](SentRow)
   def isTrash = column[Boolean](TrashRow)
 
   //def fileIdFK = foreignKey(ChatIDRow, chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
-  def * = (emailID, chatID, fromAddress, dateOf, header, body, sent, isTrash) <> (EmailRow.tupled, EmailRow.unapply)
+  def * = (emailID, chatID, fromAddress, dateOf, header, body, isTrash) <> (EmailRow.tupled, EmailRow.unapply)
 }
+
+object Destination extends  Enumeration{
+  type Destination = Value
+  val ToAddress = Value("TO")
+  val CC = Value("CC")
+  val BCC = Value("BCC")
+
+  implicit val destinationMapper = MappedColumnType.base[Destination, String](
+    e => e.toString,
+    s => Destination.withName(s)
+  )
+}
+
+case class Sample(username: String, draftID: String, destination: Destination)
+
+/** Class that defines the draft table, establishing draftID as primary key in the database*/
+class DestinationDraftTable(tag: Tag) extends Table[Sample](tag, DraftsTable) {
+
+  def username = column[String](UsernameRow)
+  def draftID = column[String](DraftIDRow)
+  def destination = column[Destination](DraftDestinationRow)
+
+  def * = (username, draftID, destination) <> (Sample.tupled, Sample.unapply)
+}
+
+/** Class that defines the draft table, establishing draftID as primary key in the database*/
+class DraftTable(tag: Tag) extends Table[DraftRow](tag, DraftsTable) {
+
+
+  def draftID = column[String](DraftIDRow, O.PrimaryKey)
+  def chatID = column[String](ChatIDRow)
+  def fromAddress = column[String](FromAddressRow)
+  def dateOf = column[String](DateOfRow)
+  def header = column[String](HeaderRow)
+  def body = column[String](BodyRow)
+  def isTrash = column[Boolean](TrashRow)
+
+  def * = (draftID, chatID, fromAddress, dateOf, header, body, isTrash) <> (DraftRow.tupled, DraftRow.unapply)
+
+}
+
 
 /** Class that defines the toAddress table,establishing toID as primary key in the database and emailID as foreign key */
 class ToAddressTable(tag: Tag) extends Table[ToAddressRow](tag, ToAddressesTable) {

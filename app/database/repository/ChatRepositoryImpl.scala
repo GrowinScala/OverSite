@@ -10,7 +10,8 @@ import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends ChatRepository {
 
@@ -51,67 +52,31 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @param userEmail the user identity
    * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
    */
-  private def queryEmail(userEmail: String, isTrash: Boolean): Query[Rep[String], String, Seq] = {
+  private def hasBeenSent(userEmail: String, isTrash: Boolean): Query[Rep[String], String, Seq] = {
     emailTable.filter(_.fromAddress === userEmail).filter(_.isTrash === isTrash).map(_.emailID)
       .union(toAddressTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
       .union(ccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
       .union(bccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
   }
 
-  private def hasNotBeenSent(userEmail: String, isTrash: Boolean) = {
-    emailTable.filter(_.fromAddress === userEmail)
-      .filter(_.isTrash === isTrash)
-      .filter(_.sent === false)
-      .map(entry => (entry.chatID, entry.header, entry.dateOf))
-  }
   /**
    * Queries to find the inbox messages of an user,
    * @param userEmail user email
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
   def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
-    val queryUserName = queryEmail(userEmail, isTrash)
-    val queryResult = emailTable
-      .filter(_.emailID in queryUserName)
+
+    val emailIdsForSentEmails = emailTable.filter(_.emailID in hasBeenSent(userEmail, isTrash))
+      .map(entry => (entry.chatID, entry.header, entry.dateOf)).sortBy(_._3.reverse)
 
 
-    val hasBeenSent = emailTable.filter(_.sent === true)
+    val idsDistinctList = db.run(emailIdsForSentEmails.result).map(seq => seq.map(_._1).distinct)
 
-    val emailIdsForSentEmails = for {
-      (_, s) <- queryResult join hasBeenSent on (_.emailID === _.emailID)
-    } yield (s.chatID, s.header, s.dateOf)
+    val result = idsDistinctList.map(seq =>
+      seq.map(chatId =>
+        db.run(emailIdsForSentEmails.filter(_._1 === chatId).sortBy(_._3.reverse).take(1).result.head)))
 
-    val emailIdsForNotYetSentEmails = hasNotBeenSent(userEmail, isTrash)
-
-    db.run(emailIdsForSentEmails.union(emailIdsForNotYetSentEmails)
-      .sortBy(_._3)
-      .map(entry => (entry._1, entry._2)).distinctOn(_._1)
-      .result.map(seq => seq.map {
-        case (chatID, header) =>
-        EmailMinimalInfoDTO(chatID, header)
-    }))
-    /*
-    val innerJoin = for {
-  (c, s) <- coffees join suppliers on (_.supID === _.id)
-} yield (c.name, s.name)
-
-
-    val result = for{
-      emailRows <- db.run(queryResult.result)
-    }yield emailRows.map(emailRow=> queryResult.filter(emailTable =>
-      if (!emailRow.sent){(emailTable.fromAddress === userEmail) && (emailTable.emailID === emailRow.emailID)}
-      else{emailTable.emailID === emailRow.emailID}).map(_.emailID))
-
-
-   val reallyFinalResult =  result.map(seq=> seq.map(query=> emailTable.filter(_.emailID in query).sortBy(_.dateOf)
-      .map(emailTable => (emailTable.chatID, emailTable.header)).distinctOn(_._1)
-      .result))
-
-    reallyFinalResult.map(seq=> seq.map(query=> db.run(query).map(seq => seq.map {
-      case (id, header) => EmailMinimalInfoDTO(id, header)
-    })))
-     */
-
+    result.map(seqTriplets => seqTriplets.map(x => Await.result(x.map { y => EmailMinimalInfoDTO(y._1, y._2) }, Duration.Inf)))
   }
 
   /**
@@ -119,22 +84,16 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * are returned by the auxiliary query "queryUserName", filters by chatID inputed,
    * by the state "Sent", and sort by the date.
    */
-  //TODO -> DONE: private def queryChat(userEmail: String, chatID: String, isTrash: boolean)
   private def queryChat(userEmail: String, chatID: String, isTrash: Boolean): Query[EmailTable, EmailRow, Seq] = {
-    val queryUserName = queryEmail(userEmail, isTrash)
+    val queryUserName = hasBeenSent(userEmail, isTrash)
     emailTable
       .filter(_.emailID in queryUserName)
       .filter(_.chatID === chatID)
-      .filter(emailTable =>
-        if (isTrash)
-          (emailTable.sent === true) && (emailTable.isTrash === isTrash)
-        else
-          emailTable.isTrash === isTrash)
+      .filter(_.isTrash === isTrash)
       .sortBy(_.dateOf)
   }
 
   /** Function that selects emails through userName and chatID*/
-  //TODO -> DONE: def getEmails(userEmail: String, chatID: String, isTrash: Boolean)
   def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
     val queryResult = queryChat(userEmail, chatID, isTrash)
       .map(emailTable => (emailTable.emailID, emailTable.header))
