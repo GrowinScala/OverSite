@@ -16,6 +16,9 @@ object ApiStrings {
   val MailSentStatus = "Mail sent"
   val InvalidEndPointStatus = "Invalid status"
   val VerifyLoginStatus = "Please verify your login details \n Try to login again"
+  val ImpossibleToSendDraft = "Not possible to send this draft"
+  val EmailUpdated = "Email updated"
+
   val SatanStatus = "BURN YOUR LOCAL CHURCH"
 
   /** For JSON field names */
@@ -42,4 +45,5 @@ object ApiStrings {
   val MessageString = "message"
   val SatanString = "satan"
   val EmptyString = ""
+  val IsTrashString = "isTrash"
 }

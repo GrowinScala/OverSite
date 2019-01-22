@@ -12,8 +12,10 @@ POST   /draft                               api.controllers.DraftsController.dra
     #UPDATE A DRAFT
 PUT    /draft/:draftID                      api.controllers.DraftsController.updateDraft(draftID: String)
 
+    #MOVE THE DRAFT TO TRASH OR REVERSE
+
     #CHANGE FROM DRAFT TO EMAIL
-#PATCH  /draft/:draftID                     api.controllers.DraftsController.toSent(draftID: String)
+PATCH  /draft/:draftID                     api.controllers.DraftsController.toSent(draftID: String)
 
     #GET DRAFTS
 GET    /drafts                              api.controllers.DraftsController.getDrafts(isTrash: Option[Boolean])
@@ -32,7 +34,7 @@ GET    /emails                      api.controllers.EmailsController.getEmails(s
 GET    /emails/:emailID             api.controllers.EmailsController.getEmail(emailID: String, status: Option[String])
 
 
-    #PATCH ONLY AVAILABLE TO "DRAFTS"->"SENT", #"SOMETHING"<->#"TRASH"
+    #PATCH ONLY AVAILABLE TO #"SOMETHING"<->#"TRASH"
 ####TODELETE
 #PATCH /emails/:emailID/send         api.controllers.EmailsController.toSent(emailID: String)
 ####TOCREATE

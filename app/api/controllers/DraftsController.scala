@@ -2,16 +2,16 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
-import api.dtos.{CreateEmailDTO, MinimalInfoDTO}
+import api.dtos.{ CreateEmailDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
 import database.repository.DraftRepositoryImpl
-import definedStrings.ApiStrings.MailSentStatus
+import definedStrings.ApiStrings.{ MailSentStatus, _ }
 import javax.inject.Inject
-import play.api.libs.json.{JsArray, JsValue, Json}
+import play.api.libs.json.{ JsArray, JsValue, Json }
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class DraftsController @Inject() (
   tokenValidator: TokenValidator,
@@ -58,10 +58,9 @@ class DraftsController @Inject() (
 
             MinimalInfoDTO.addLink(
               draft,
-              //if (isTrash.getOrElse(false))
-              //List(routes.EmailsController.getEmail(draft.Id, Option("isTrash")).absoluteURL())
-              //else List(routes.EmailsController.getEmail(draft.Id, Option("")).absoluteURL())))
-              List("")))
+              if (isTrash.getOrElse(false))
+                List(routes.DraftsController.getDraft(draft.Id, isTrash).absoluteURL())
+              else List(routes.DraftsController.getDraft(draft.Id, Option(false)).absoluteURL())))
           Ok(Json.toJson(result))
       }
     }
@@ -102,8 +101,26 @@ class DraftsController @Inject() (
         request.userName.map(
           draftActions.updateDraft(draft, _, draftID))
         Future.successful {
-          Ok("Email updated")
+          Ok(EmailUpdated)
         }
+      })
+
+  }
+
+  /**
+   * Receive a target draft email and sends it if that email has a to parameter
+   * @param status Identification of the email status
+   * @param emailID Identification of the email
+   */
+  def toSent(draftID: String, moveTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
+
+    request.userName.flatMap(username =>
+      draftActions.destinations(username, draftID).flatMap {
+        case (listTos, listBCCs, listCCs) =>
+          draftActions.hasDestination(listTos, listBCCs, listCCs).map(if (_) {
+            draftActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
+            Ok(MailSentStatus)
+          } else BadRequest(ImpossibleToSendDraft))
       })
   }
 

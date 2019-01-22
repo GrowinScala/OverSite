@@ -52,6 +52,14 @@ create table DraftsDestination (
     FOREIGN KEY(DRAFTID) REFERENCES Drafts(DRAFTID)
 );
 
+create table Destination (
+    EMAILID varchar(100) not null,
+    USERNAME varchar(100) not null,
+    DESTINATION ENUM('to', 'cc', 'bcc'),
+    TRASH boolean not null,
+    FOREIGN KEY(DRAFTID) REFERENCES Drafts(DRAFTID)
+);
+
 create table Users (
     USERNAME varchar(100) not null,
     PASSWORD varchar(100) not null,

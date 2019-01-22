@@ -3,16 +3,16 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{CreateEmailDTO, MinimalInfoDTO}
+import api.dtos.{ CreateEmailDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
-import database.repository.{EmailRepositoryImpl, UserRepositoryImpl}
+import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class injected with end-points */
 
@@ -97,21 +97,6 @@ class EmailsController @Inject() (
     }
   }
 
-  /*
-  /**
-   * Receive a target draft email and sends it if that email has a to parameter
-   * @param status Identification of the email status
-   * @param emailID Identification of the email
-   */
-  def toSent(emailID: String): Action[AnyContent] = tokenValidator.async { request =>
-
-    request.userName.flatMap(
-      emailActions.takeDraftMakeSent(_, emailID).map {
-        case 0 => BadRequest
-        case _ => Ok
-      })
-  }
-*/
   /**
    * Change the email required to trash or take it from trash
    * @param status Identification of the email status
