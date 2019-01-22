@@ -8,6 +8,8 @@ object ControllerStrings {
   val StatusReceived = "received"
   val StatusSent = "sent"
 
+  val OptionalStatus = "?status="
+
   /** For Functions */
 
   val EmailFunction = "#email"
@@ -23,6 +25,8 @@ object ControllerStrings {
   val SignInFunction = "#signIn"
   val LoginFunction = "#logIn"
   val LogoutFunction = "#logOut"
+  val MoveInOutTrashFunction = "#moveInOutTrash"
+  val UpdateDraftFunction = "#updateDraft"
 
   /** For end-points */
 
@@ -33,6 +37,9 @@ object ControllerStrings {
   val SignInEndpointRoute = "/signin"
   val LogInEndpointRoute = "/login"
   val LogOutEndpointRoute = "/logout"
+  val EndpointPatchSendStatus = "/send"
+  val EndpointPatchTrashStatus = "/trash"
+  val EndpointPatchUpdateStatus = "/update"
 
   val Emails = "/emails"
   val StatusUndefined = ":status"
@@ -88,10 +95,11 @@ object ControllerStrings {
   val MissMatchPasswordForbidden = "send a Forbidden if username and password doesn't match"
   val PasswordMatchOk = "send an Ok if username and password match"
   val AlreadyLoggedOutForbidden = "send a Forbidden if JSON header has a valid token but the user is already log out"
+  val UndefinedStatusOk = "Ok with undefined status"
 
   val AndJsonBody = " and a valid JSON body"
   val AndStatus = " and status: "
-  val AndHasToAddress = "and target email has to address"
+  val AndHasToAddress = " and target email has to address"
 
   /** For test cases */
 
@@ -115,4 +123,9 @@ object ControllerStrings {
   val CaseMissingSupervisor = " case missing supervisor parameter"
   val CaseMissingPassword = " case missing password parameter"
   val CaseMissingUsername = " case missing username parameter"
+  val CaseEmptyStatus = "case empty optionalStatus = "
+
+  val CaseUpdateStatus = " update status"
+  val CaseTrashStatus = " trash status"
+  val CaseSendStatus = " send status"
 }

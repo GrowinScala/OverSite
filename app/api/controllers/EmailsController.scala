@@ -106,7 +106,7 @@ class EmailsController @Inject() (
 
     if (PossibleEndPointStatus.contains(status.getOrElse(""))) {
       request.userName.flatMap(
-        emailActions.getEmail(_, status.get, emailID).map(
+        emailActions.getEmail(_, status.getOrElse(""), emailID).map(
           emails => {
             val resultEmailID = JsArray(
               emails.map { email =>
