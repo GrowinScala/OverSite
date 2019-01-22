@@ -16,8 +16,8 @@ PUT    /draft/:draftID                      api.controllers.DraftsController.upd
 #PATCH  /draft/:draftID                     api.controllers.DraftsController.toSent(draftID: String)
 
     #GET DRAFTS
-#GET    /drafts
-#GET    /drafts/:draftID
+GET    /drafts                              api.controllers.DraftsController.getDrafts(isTrash: Option[Boolean])
+GET    /drafts/:draftID                     api.controllers.DraftsController.getDraft(draftID: String, isTrash: Option[Boolean])
 
 
     #INBOX

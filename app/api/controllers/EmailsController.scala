@@ -2,17 +2,17 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
-import api.dtos.{ CreateEmailDTO, EmailInfoDTOSender, EmailMinimalInfoDTO }
-import api.validators.{ EmailAddressValidator, TokenValidator }
-import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
+import api.dtos.AuxFunctions._
+import api.dtos.{CreateEmailDTO, MinimalInfoDTO}
+import api.validators.TokenValidator
+import database.repository.{EmailRepositoryImpl, UserRepositoryImpl}
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
-import api.dtos.AuxFunctions._
 
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /** Class injected with end-points */
 
@@ -59,7 +59,7 @@ class EmailsController @Inject() (
     if (PossibleEndPointStatus.contains(status.getOrElse(""))) {
       request.userName.flatMap(emailActions.getEmails(_, status.getOrElse("")).map(emails => {
         val result = emails.map(email =>
-          EmailMinimalInfoDTO.addLink(
+          MinimalInfoDTO.addLink(
             email,
             //List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
             List("")))

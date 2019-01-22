@@ -2,16 +2,15 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
-import api.dtos.{CreateEmailDTO, EmailMinimalInfoDTO}
+import api.dtos.{CreateEmailDTO, MinimalInfoDTO}
 import api.validators.TokenValidator
-import database.repository.{ChatRepositoryImpl, DraftRepositoryImpl, UserRepositoryImpl}
+import database.repository.DraftRepositoryImpl
 import definedStrings.ApiStrings.MailSentStatus
 import javax.inject.Inject
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent
 import scala.concurrent.{ExecutionContext, Future}
 
 class DraftsController @Inject() (
@@ -38,16 +37,16 @@ class DraftsController @Inject() (
         request.userName.map(
           draftActions.insertDraft(_, draft))
         Future.successful {
-          Ok("Draft sent")
+          Ok(MailSentStatus)
         }
       })
   }
 
   /**
-    * Selects the drafts of an user
-    * @param isTrash Optional
-    * @return Action that shows the EmailID and respective Header of all emails that belong to the chat selected
-    */
+   * Selects the drafts of an user
+   * @param isTrash Optional boolean
+   * @return Action that shows the DraftID and respective Header of all drafts
+   */
 
   def getDrafts(isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
     implicit val req: RequestHeader = request
@@ -57,7 +56,7 @@ class DraftsController @Inject() (
         drafts =>
           val result = drafts.map(draft =>
 
-            EmailMinimalInfoDTO.addLink(
+            MinimalInfoDTO.addLink(
               draft,
               //if (isTrash.getOrElse(false))
               //List(routes.EmailsController.getEmail(draft.Id, Option("isTrash")).absoluteURL())
@@ -66,6 +65,27 @@ class DraftsController @Inject() (
           Ok(Json.toJson(result))
       }
     }
+  }
+
+  /**
+   * Selects an email after filtering through status and emailID
+   * @param status Identification of the email status
+   * @param draftID Identification of the email
+   * @return Action that shows the emailID required
+   */
+  def getDraft(draftID: String, isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
+
+    implicit val req: RequestHeader = request
+
+    request.userName.flatMap(
+      draftActions.getDraft(_, isTrash.getOrElse(false), draftID).map(
+        drafts => {
+          val resultDraftID = JsArray(
+            drafts.map { draft =>
+              Json.toJson(draft)
+            })
+          Ok(resultDraftID)
+        }))
   }
 
   def updateDraft(draftID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
@@ -85,7 +105,6 @@ class DraftsController @Inject() (
           Ok("Email updated")
         }
       })
-
   }
 
 }

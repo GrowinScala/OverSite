@@ -2,7 +2,7 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, EmailMinimalInfoDTO }
+import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable, draftTable, destinationDraftTable }
 import database.mappings._
@@ -64,7 +64,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @param userEmail user email
    * @return All the mails that have the username in "from", "to", "CC" and "BCC" categories
    */
-  def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
+  def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]] = {
 
     val emailIdsForSentEmails = emailTable.filter(_.emailID in hasBeenSent(userEmail, isTrash))
       .map(entry => (entry.chatID, entry.header, entry.dateOf)).sortBy(_._3.reverse)
@@ -75,7 +75,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       seq.map(chatId =>
         db.run(emailIdsForSentEmails.filter(_._1 === chatId).sortBy(_._3.reverse).take(1).result.head)))
 
-    result.map(seqTriplets => seqTriplets.map(x => Await.result(x.map { y => EmailMinimalInfoDTO(y._1, y._2) }, Duration.Inf)))
+    result.map(seqTriplets => seqTriplets.map(x => Await.result(x.map { y => MinimalInfoDTO(y._1, y._2) }, Duration.Inf)))
   }
 
   /**
@@ -93,13 +93,13 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
   }
 
   /** Function that selects emails through userName and chatID*/
-  def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
+  def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]] = {
     val queryResult = queryChat(userEmail, chatID, isTrash)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
 
     db.run(queryResult).map(seq => seq.map {
-      case (id, header) => EmailMinimalInfoDTO(id, header)
+      case (id, header) => MinimalInfoDTO(id, header)
     })
   }
 
@@ -145,7 +145,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @param userEmail Identification of user by email
    * @return List of Chat IDs and respective headers
    */
-  def getShares(userEmail: String): Future[Seq[EmailMinimalInfoDTO]] = {
+  def getShares(userEmail: String): Future[Seq[MinimalInfoDTO]] = {
 
     val queryEmailId = shareTable.filter(_.toID === userEmail)
       .map(shareTable => (shareTable.chatID, shareTable.fromUser))
@@ -157,12 +157,12 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .sortBy(_.dateOf)
       .map(emailTable => (emailTable.chatID, emailTable.header)).distinctOn(_._1)
       .result
-    db.run(queryChatId).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
+    db.run(queryChatId).map(seq => seq.map { case (id, header) => MinimalInfoDTO(id, header) })
 
   }
 
   /** Query to get the list of allowed emails that are linked to the chatID that correspond to shareID */
-  def getSharedEmails(userEmail: String, shareID: String): Future[Seq[EmailMinimalInfoDTO]] = {
+  def getSharedEmails(userEmail: String, shareID: String): Future[Seq[MinimalInfoDTO]] = {
     val queryShareId = shareTable.filter(_.shareID === shareID)
       .filter(_.toID === userEmail)
       .map(shareTable => (shareTable.chatID, shareTable.fromUser))
@@ -174,7 +174,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .sortBy(_.dateOf)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
-    db.run(queryChatId).map(seq => seq.map { case (id, header) => EmailMinimalInfoDTO(id, header) })
+    db.run(queryChatId).map(seq => seq.map { case (id, header) => MinimalInfoDTO(id, header) })
   }
 
   /**

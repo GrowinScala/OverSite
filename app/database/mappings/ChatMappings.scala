@@ -1,7 +1,6 @@
 package database.mappings
-import database.mappings.ChatMappings._
-import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
+import slick.jdbc.MySQLProfile.api._
 
 /** Case class of Chat Table Row: */
 case class ChatRow(

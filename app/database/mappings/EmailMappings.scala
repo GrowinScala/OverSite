@@ -3,7 +3,6 @@ package database.mappings
 import database.mappings.Destination.Destination
 import definedStrings.DatabaseStrings._
 import slick.jdbc.MySQLProfile.api._
-import slick.jdbc.MySQLProfile
 
 /**
  * Case class of Email Table Row

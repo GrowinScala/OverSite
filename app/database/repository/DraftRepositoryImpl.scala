@@ -2,8 +2,8 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
+import api.dtos.{CreateEmailDTO, DraftInfoDTO, MinimalInfoDTO}
 import database.mappings.EmailMappings.{draftTable, _}
-import api.dtos.{CreateEmailDTO, EmailMinimalInfoDTO}
 import database.mappings.{Destination, DestinationDraftRow, DraftRow}
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
@@ -13,9 +13,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends DraftRepository {
 
   /**
-    * Inserts a draft in the database
-    * @return Generated chat ID
-    */
+   * Inserts a draft in the database
+   * @return Generated chat ID
+   */
   def insertDraft(username: String, draft: CreateEmailDTO): Future[String] = {
 
     val draftID = randomUUID().toString
@@ -31,7 +31,7 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   }
 
   /** Function that selects drafts through userName*/
-  def getDrafts(userEmail: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
+  def getDrafts(userEmail: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]] = {
 
     val queryDrafts = draftTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).sortBy(_.dateOf.reverse)
 
@@ -40,7 +40,7 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       .result
 
     db.run(queryResult).map(seq => seq.map {
-      case (id, header) => EmailMinimalInfoDTO(id, header)
+      case (id, header) => MinimalInfoDTO(id, header)
     })
   }
 
@@ -54,13 +54,47 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     db.run(updateDraft.transactionally).flatten
   }
 
+  /**
+   * Function that filter the emails, according to their status and emailID
+   * (joinLeft and getOrElse is used to embrace the 3 possible status, however
+   * join and no getOrElse would be more appropriate for "sent" and "received")
+   * @param userEmail Identification of user by email
+   * @param status Possible status: "sent", "received", "trash" or "empty"
+   * @param emailID Identification the a specific email
+   * @return All the details of the email selected
+   */
+  def getDraft(userEmail: String, isTrash: Boolean, draftID: String): Future[Seq[DraftInfoDTO]] = {
 
+    val queryResult = draftTable
+      .filter(_.username === userEmail)
+      .filter(_.draftID === draftID)
+      .filter(_.isTrash === isTrash)
+
+    val queryDestinationResult = destinationDraftTable
+      .filter(_.draftID in queryResult.map(_.draftID))
+
+    for {
+      toSeq <- db.run(queryDestinationResult
+        .filter(_.destination === Destination.ToAddress).map(_.username).result)
+
+      ccSeq <- db.run(queryDestinationResult
+        .filter(_.destination === Destination.CC).map(_.username).result)
+
+      bccSeq <- db.run(queryDestinationResult
+        .filter(_.destination === Destination.BCC).map(_.username).result)
+
+      draft <- db.run(queryResult
+        .map(table => (table.draftID, table.username, table.header, table.body, table.dateOf))
+        .result)
+
+    } yield draft.map(draftRow =>
+      DraftInfoDTO(draftRow._1, draftRow._2, toSeq, ccSeq, bccSeq, draftRow._3, draftRow._4, draftRow._5))
+  }
 
   /*
   def takeDraftMakeSent(username: String, draftID : String): Future[Int] = {
 
   }*/
-
 
   /*
   /**

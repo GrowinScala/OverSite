@@ -3,16 +3,16 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{ CreateShareDTO, EmailMinimalInfoDTO }
+import api.dtos.{CreateShareDTO, MinimalInfoDTO}
 import api.validators.TokenValidator
-import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepositoryImpl }
+import database.repository.{ChatRepositoryImpl, UserRepositoryImpl}
+import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
-import definedStrings.ApiStrings._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /** Class injected with end-points*/
 
@@ -41,7 +41,7 @@ class ChatController @Inject() (
           Ok(Json.toJson(emails))
           val result = emails.map(email =>
 
-            EmailMinimalInfoDTO.addLink(
+            MinimalInfoDTO.addLink(
               email,
               List(routes.EmailsController.getEmail(email.Id, Option(EndPointReceived)).absoluteURL())))
           Ok(Json.toJson(result))
@@ -63,7 +63,7 @@ class ChatController @Inject() (
         emails =>
           val result = emails.map(email =>
 
-            EmailMinimalInfoDTO.addLink(
+            MinimalInfoDTO.addLink(
               email,
               if (isTrash.getOrElse(false))
                 List(routes.EmailsController.getEmail(email.Id, Option("isTrash")).absoluteURL())
@@ -138,7 +138,7 @@ class ChatController @Inject() (
         emails => {
 
           val result = emails.map(email =>
-            EmailMinimalInfoDTO.addLink(
+            MinimalInfoDTO.addLink(
               email,
               List(routes.EmailsController.getEmail(email.Id, Option("")).absoluteURL())))
           Ok(Json.toJson(result))

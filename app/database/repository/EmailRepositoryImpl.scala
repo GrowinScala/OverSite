@@ -3,7 +3,7 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, EmailInfoDTO, EmailMinimalInfoDTO }
+import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO }
 import database.mappings.EmailMappings.{ emailTable, toAddressTable, _ }
 import database.mappings._
 import definedStrings.ApiStrings._
@@ -81,13 +81,13 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @param status Possible status: "sent", "received", "trash" and "noFilter"
    * @return List of emailIDs and corresponding header
    */
-  def getEmails(userEmail: String, status: String): Future[Seq[EmailMinimalInfoDTO]] = {
+  def getEmails(userEmail: String, status: String): Future[Seq[MinimalInfoDTO]] = {
     val queryResult = auxGetEmails(userEmail, status)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
     db.run(queryResult).map(seq => seq.map {
       case (emailId, header) =>
-        EmailMinimalInfoDTO(emailId, header)
+        MinimalInfoDTO(emailId, header)
     })
   }
   /**

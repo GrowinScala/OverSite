@@ -1,7 +1,6 @@
 package database.mappings
-import database.mappings.UserMappings.userTable
-import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
+import slick.jdbc.MySQLProfile.api._
 
 /**  Case class of Login Table Row */
 case class LoginRow(

@@ -2,7 +2,7 @@ package repository
 
 import java.util.UUID
 
-import api.dtos.{ CreateEmailDTO, CreateUserDTO, EmailInfoDTO, EmailMinimalInfoDTO }
+import api.dtos.{ CreateEmailDTO, CreateUserDTO, EmailInfoDTO, MinimalInfoDTO }
 import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
 import database.mappings.UserMappings.{ loginTable, userTable }
@@ -312,11 +312,11 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       result.map {
         case (resultEmailTable, resultSent, resultReceived, resultDrafts) =>
 
-            resultEmailTable.map(emailsRow => EmailMinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
+            resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
 
             resultReceived.forall(seqEmailInfo =>
               seqEmailInfo === resultEmailTable.map(row =>
-                EmailMinimalInfoDTO(row.emailID, row.header))) shouldBe true
+                MinimalInfoDTO(row.emailID, row.header))) shouldBe true
 
       }
     }
