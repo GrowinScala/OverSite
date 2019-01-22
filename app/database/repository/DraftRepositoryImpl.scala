@@ -2,31 +2,20 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import database.mappings.EmailMappings._
-import api.dtos.CreateEmailDTO
-import database.mappings.{ Destination, DestinationDraftRow, DraftRow }
+import database.mappings.EmailMappings.{draftTable, _}
+import api.dtos.{CreateEmailDTO, EmailMinimalInfoDTO}
+import database.mappings.{Destination, DestinationDraftRow, DraftRow}
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends DraftRepository {
 
-  def updateDraft(draft: CreateEmailDTO, username: String, draftID: String): Future[String] = {
-
-    val updateDraft = for {
-      _ <- destinationDraftTable.filter(_.draftID === draftID).delete
-      _ <- draftTable.filter(_.draftID === draftID).delete
-    } yield insertDraft(username, draft)
-
-    db.run(updateDraft.transactionally).flatten
-
-  }
-
   /**
-   * Inserts a draft in the database
-   * @return Generated chat ID
-   */
+    * Inserts a draft in the database
+    * @return Generated chat ID
+    */
   def insertDraft(username: String, draft: CreateEmailDTO): Future[String] = {
 
     val draftID = randomUUID().toString
@@ -39,8 +28,33 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     } yield draftID
 
     db.run(insertDraft.transactionally)
-
   }
+
+  /** Function that selects drafts through userName*/
+  def getDrafts(userEmail: String, isTrash: Boolean): Future[Seq[EmailMinimalInfoDTO]] = {
+
+    val queryDrafts = draftTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).sortBy(_.dateOf.reverse)
+
+    val queryResult = queryDrafts
+      .map(draftTable => (draftTable.draftID, draftTable.header))
+      .result
+
+    db.run(queryResult).map(seq => seq.map {
+      case (id, header) => EmailMinimalInfoDTO(id, header)
+    })
+  }
+
+  def updateDraft(draft: CreateEmailDTO, username: String, draftID: String): Future[String] = {
+
+    val updateDraft = for {
+      _ <- destinationDraftTable.filter(_.draftID === draftID).delete
+      _ <- draftTable.filter(_.draftID === draftID).delete
+    } yield insertDraft(username, draft)
+
+    db.run(updateDraft.transactionally).flatten
+  }
+
+
 
   /*
   def takeDraftMakeSent(username: String, draftID : String): Future[Int] = {

@@ -4,8 +4,8 @@ import java.util.UUID.randomUUID
 
 import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, EmailMinimalInfoDTO }
 import database.mappings.ChatMappings._
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
-import database.mappings.{ ChatRow, EmailRow, EmailTable, ShareRow }
+import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable, draftTable, destinationDraftTable }
+import database.mappings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.DatabaseStrings._
