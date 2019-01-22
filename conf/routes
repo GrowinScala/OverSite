@@ -10,7 +10,7 @@ POST   /email                               api.controllers.EmailsController.ema
 POST   /draft                               api.controllers.EmailsController.draft
 
     #UPDATE A DRAFT
-#PUT    /draft/:draftID
+#PUT    /draft/:draftID                    api.controllers.EmailsController.updateDraft(draftID: String)
 
     #CHANGE FROM DRAFT TO EMAIL
 #PATCH  /draft/:draftID
@@ -24,8 +24,6 @@ POST   /draft                               api.controllers.EmailsController.dra
 
 GET    /chats                               api.controllers.ChatController.inbox(isTrash: Option[Boolean])
 GET    /chats/:chatID/emails                api.controllers.ChatController.getEmails(chatID: String, isTrash: Option[Boolean])
-####REDUNDANT####
-#GET    /chats/:chatID/emails/:emailID       api.controllers.ChatController.getEmail(chatID: String, emailID: String, isTrash: Option[Boolean])
 
 
     #SEE THE EMAILS THAT ARE INCLUDED IN THE CATEGORIES: "SENT", "RECEIVED", "DRAFT"
@@ -40,6 +38,9 @@ GET    /emails/:emailID             api.controllers.EmailsController.getEmail(em
 ####TOCREATE
 PATCH /emails/:emailID              api.controllers.EmailsController.moveInOutTrash(emailID: String)
 
+####TOCREATE
+#PATCH /drafts/:draftID              api.controllers.EmailsController.moveInOutTrash(draftID: String)
+
 
     #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 
@@ -48,8 +49,6 @@ POST   /shares                              api.controllers.ChatController.super
     #GET PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 GET    /shares                              api.controllers.ChatController.getShares
 GET    /shares/:shareID/emails              api.controllers.ChatController.getSharedEmails(shareID: String)
-####REDUNDANT####
-#GET    /shares/:shareID/emails/:emailID     api.controllers.ChatController.getSharedEmail(shareID: String, emailID: String)
 
 
     #DELETE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
