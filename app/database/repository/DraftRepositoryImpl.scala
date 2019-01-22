@@ -2,20 +2,22 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import database.mappings.EmailMappings.{draftTable, _}
-import api.dtos.{CreateEmailDTO, EmailMinimalInfoDTO}
-import database.mappings.{Destination, DestinationDraftRow, DraftRow}
+import database.mappings.DraftMappings._
+import api.dtos.{ CreateEmailDTO, EmailMinimalInfoDTO }
+import database.mappings.{ Destination, DestinationDraftRow, DraftRow }
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.ApiStrings._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
-class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends DraftRepository {
+class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database, emailActions: EmailRepositoryImpl)
+  extends DraftRepository {
 
   /**
-    * Inserts a draft in the database
-    * @return Generated chat ID
-    */
+   * Inserts a draft in the database
+   * @return Generated chat ID
+   */
   def insertDraft(username: String, draft: CreateEmailDTO): Future[String] = {
 
     val draftID = randomUUID().toString
@@ -47,42 +49,60 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   def updateDraft(draft: CreateEmailDTO, username: String, draftID: String): Future[String] = {
 
     val updateDraft = for {
-      _ <- destinationDraftTable.filter(_.draftID === draftID).delete
-      _ <- draftTable.filter(_.draftID === draftID).delete
+      _ <- destinationDraftTable.filter(_.draftID === draftID).filter(_.username === username).delete
+      _ <- draftTable.filter(_.draftID === draftID).filter(_.username === username).delete
     } yield insertDraft(username, draft)
 
     db.run(updateDraft.transactionally).flatten
   }
 
-
-
-  /*
-  def takeDraftMakeSent(username: String, draftID : String): Future[Int] = {
-
-  }*/
-
-
-  /*
   /**
-   * Reaches a certain email drafted and send it
-   * @param userName Identification of user by email
+   * Reaches a certain draft and turns it into an email,if it has some To, CC or BCC
+   * @param username Identification of user by email
    * @param draftID Identification the a specific email
-   * @return returns a Future of Int with the number of drafts turn to emails
+   * @return returns a Future of String, that is the emailID from the new inserted email
    */
-  def takeDraftMakeSent(userName: String, emailID: String): Future[Int] = {
+  def takeDraftMakeSent(username: String, draftID: String, listCCs: Seq[String], listBCCs: Seq[String], listTos: Seq[String]): Future[String] = {
 
-    val hasToAddress = toAddressTable.filter(_.emailID === emailID).result
+    val email = for {
+      email <- draftTable.filter(_.draftID === draftID)
+        .map(entry => (entry.chatID, entry.dateOf, entry.header, entry.body)).result.headOption
 
-    val toSent = emailTable.filter(emailTable => (emailTable.emailID === emailID) && (emailTable.fromAddress === userName))
-      .filter(_.isTrash === false)
-      .filter(_.sent === false)
-      .map(_.sent)
-      .update(true)
+      _ <- destinationDraftTable.filter(_.draftID === draftID).delete
+      _ <- draftTable.filter(_.username === username).filter(_.draftID === draftID).delete
 
-    db.run(hasToAddress).map(_.length).flatMap {
-      case 1 => db.run(toSent)
-      case _ => Future { 0 }
+    } yield email.map {
+      case (chatId, dateOf, header, body) =>
+        CreateEmailDTO(Option(chatId), dateOf, header, body, Option(listTos), Option(listBCCs), Option(listCCs))
+
     }
+    db.run(email.transactionally).flatMap(emailDTO => emailActions.insertEmail(username, emailDTO.getOrElse(
+      //Won´t insert in db because empty string is not a valid Date
+      CreateEmailDTO(Option(EmptyString), EmptyString, EmptyString, EmptyString, Option(Seq(EmptyString)),
+        Option(Seq(EmptyString)), Option(Seq(EmptyString))))))
   }
-  */
+
+  def destinations(username: String, draftID: String): Future[(Seq[String], Seq[String], Seq[String])] = {
+
+    val auxQuery = destinationDraftTable.filter(_.draftID === draftID)
+
+    for {
+      listCCs <- db.run(auxQuery
+        .filter(_.destination === Destination.CC).map(_.username).result)
+
+      listBCCs <- db.run(auxQuery
+        .filter(_.destination === Destination.BCC).map(_.username).result)
+
+      listTos <- db.run(auxQuery
+        .filter(_.destination === Destination.ToAddress).map(_.username).result)
+    } yield (listTos, listBCCs, listCCs)
+
+  }
+
+  def hasDestination(listTos: Seq[String], listBCCs: Seq[String], listCCs: Seq[String]): Future[Boolean] = {
+    if (listCCs.size + listBCCs.size + listTos.size > 0)
+      Future.successful(true)
+    else
+      Future.successful(false)
+  }
 }

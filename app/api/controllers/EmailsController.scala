@@ -97,21 +97,6 @@ class EmailsController @Inject() (
     }
   }
 
-  /*
-  /**
-   * Receive a target draft email and sends it if that email has a to parameter
-   * @param status Identification of the email status
-   * @param emailID Identification of the email
-   */
-  def toSent(emailID: String): Action[AnyContent] = tokenValidator.async { request =>
-
-    request.userName.flatMap(
-      emailActions.takeDraftMakeSent(_, emailID).map {
-        case 0 => BadRequest
-        case _ => Ok
-      })
-  }
-*/
   /**
    * Change the email required to trash or take it from trash
    * @param status Identification of the email status
