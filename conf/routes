@@ -7,13 +7,13 @@
 POST   /email                               api.controllers.EmailsController.email
 
     #POST A DRAFT
-POST   /draft                               api.controllers.EmailsController.draft
+POST   /draft                               api.controllers.DraftsController.draft
 
     #UPDATE A DRAFT
-#PUT    /draft/:draftID                    api.controllers.EmailsController.updateDraft(draftID: String)
+PUT    /draft/:draftID                      api.controllers.DraftsController.updateDraft(draftID: String)
 
     #CHANGE FROM DRAFT TO EMAIL
-#PATCH  /draft/:draftID
+#PATCH  /draft/:draftID                     api.controllers.DraftsController.toSent(draftID: String)
 
     #GET DRAFTS
 #GET    /drafts

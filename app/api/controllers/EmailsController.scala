@@ -48,28 +48,6 @@ class EmailsController @Inject() (
   }
 
   /**
-   * Aims to send an email from an user to an userID
-   * @return inserts the email information to the database
-   */
-  def draft: Action[JsValue] = tokenValidator(parse.json).async { request =>
-    val draftResult = request.body.validate[CreateEmailDTO]
-
-    draftResult.fold(
-      errors => {
-        Future {
-          BadRequest(jsonErrors(errors))
-        }
-      },
-      draft => {
-        request.userName.map(
-          emailActions.insertDraft(_, draft))
-        Future.successful {
-          Ok(MailSentStatus)
-        }
-      })
-  }
-
-  /**
    * Considers the case where the user wants to check some type of emails
    * @param status End-point information considering "received", "sent", "trashed" as allowed words
    * @return List of emails asked by the user

@@ -36,25 +36,6 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   }
 
   /**
-   * Inserts a draft in the database
-   * @return Generated chat ID
-   */
-  def insertDraft(username: String, email: CreateEmailDTO): Future[String] = {
-
-    val draftID = randomUUID().toString
-
-    val insertDraft = for {
-      _ <- draftTable += DraftRow(draftID, email.chatID.getOrElse(""), username, email.dateOf, email.header, email.body, isTrash = false)
-      _ <- destinationDraftTable ++= email.to.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.ToAddress))
-      _ <- destinationDraftTable ++= email.CC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.CC))
-      _ <- destinationDraftTable ++= email.BCC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.BCC))
-    } yield draftID
-
-    db.run(insertDraft.transactionally)
-
-  }
-
-  /**
    * Auxiliary function that supports getEmails and getEmail
    * @param userEmail Identification of user by email
    * @param status Possible status: "sent", "received" and "trash"
@@ -134,30 +115,6 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
     to.getOrElse(Seq()).nonEmpty
   }
-
-  /*
-  /**
-   * Reaches a certain email drafted and send it
-   * @param userName Identification of user by email
-   * @param emailID Identification the a specific email
-   * @return returns a Future of Int with the number of emails undrafted
-   */
-  def takeDraftMakeSent(userName: String, emailID: String): Future[Int] = {
-
-    val hasToAddress = toAddressTable.filter(_.emailID === emailID).result
-
-    val toSent = emailTable.filter(emailTable => (emailTable.emailID === emailID) && (emailTable.fromAddress === userName))
-      .filter(_.isTrash === false)
-      .filter(_.sent === false)
-      .map(_.sent)
-      .update(true)
-
-    db.run(hasToAddress).map(_.length).flatMap {
-      case 1 => db.run(toSent)
-      case _ => Future { 0 }
-    }
-  }
-  */
 
   /**
    * It changes the status of an email to trash or out of trash
