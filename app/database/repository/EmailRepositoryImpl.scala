@@ -3,15 +3,14 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO }
-import database.mappings.EmailMappings.{ emailTable, _ }
-import database.mappings.EmailMappings._
+import api.dtos.{CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO}
+import database.mappings.EmailMappings.{emailTable, _}
 import database.mappings._
 import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**  Class that receives a db path */
 class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepositoryImpl) extends EmailRepository {
@@ -21,9 +20,11 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @return Generated chat ID
    */
   def insertEmail(username: String, email: CreateEmailDTO): Future[String] = {
+
     val randomEmailID = randomUUID().toString
 
     val chatId = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
+
     chatId.flatMap(id => {
       val insertEmail = for {
         _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isTrash = false)
@@ -52,8 +53,15 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   private def auxGetEmails(userEmail: String, status: String): Query[EmailTable, EmailRow, Seq] = {
     status match {
       case EndPointTrash =>
-        val queryTrashEmailIds = emailTable.filter(_.fromAddress === userEmail).filter(_.isTrash === true).map(_.emailID)
-          .union(destinationEmailTable.filter(_.username === userEmail).filter(_.isTrash === true).map(_.emailID))
+        val queryTrashEmailIds = emailTable
+          .filter(_.fromAddress === userEmail)
+          .filter(_.isTrash === true)
+          .map(_.emailID)
+          .union(destinationEmailTable
+            .filter(_.username === userEmail)
+            .filter(_.isTrash === true)
+            .map(_.emailID)
+          )
 
         emailTable.filter(_.emailID in queryTrashEmailIds)
           .sortBy(_.dateOf)
@@ -64,15 +72,26 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
           .sortBy(_.dateOf)
 
       case EndPointReceived =>
-        val queryReceivedEmailIds = destinationEmailTable.filter(_.username === userEmail).map(_.emailID)
+        val queryReceivedEmailIds = destinationEmailTable
+          .filter(_.username === userEmail)
+          .map(_.emailID)
 
         emailTable.filter(_.emailID in queryReceivedEmailIds)
           .filter(_.isTrash === false)
           .sortBy(_.dateOf)
 
       case EndPointNoFilter =>
-        emailTable.filter(_.fromAddress === userEmail)
+        val queryTrashEmailIds = emailTable
+          .filter(_.fromAddress === userEmail)
           .filter(_.isTrash === false)
+          .map(_.emailID)
+          .union(destinationEmailTable
+            .filter(_.username === userEmail)
+            .filter(_.isTrash === false)
+            .map(_.emailID)
+          )
+
+        emailTable.filter(_.emailID in queryTrashEmailIds)
           .sortBy(_.dateOf)
     }
   }
@@ -87,10 +106,11 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     val queryResult = auxGetEmails(userEmail, status)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
-    db.run(queryResult).map(seq => seq.map {
-      case (emailId, header) =>
-        MinimalInfoDTO(emailId, header)
-    })
+
+    db.run(queryResult)
+      .map(seq => seq.map {
+        case (emailID, header) => MinimalInfoDTO(emailID, header)
+      })
   }
   /**
    * Function that filter the emails, according to their status and emailID
@@ -103,20 +123,23 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    */
   def getEmail(userEmail: String, status: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
 
-    val seqTos = db.run(destinationEmailTable.filter(_.emailID === emailID).filter(_.destination === Destination.ToAddress).map(_.username).result)
+    val queryTos = db.run(destinationEmailTable
+      .filter(_.emailID === emailID)
+      .filter(_.destination === Destination.ToAddress)
+      .map(_.username)
+      .result)
 
-    val queryResult = seqTos.map(x => auxGetEmails(userEmail, status)
+    val queryResult = queryTos.map(seqTos =>
+      auxGetEmails(userEmail, status)
       .filter(_.emailID === emailID)
       .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
       .result.map(seq => seq.map {
         case (chatID, fromAddress, header, body, dateOf) =>
-          EmailInfoDTO(chatID, fromAddress, x, header, body, dateOf)
-      }))
-    queryResult.flatMap(db.run(_))
-  }
+          EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
+      })
+    )
 
-  private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {
-    to.getOrElse(Seq()).nonEmpty
+    queryResult.flatMap(db.run(_))
   }
 
   /**
@@ -126,37 +149,30 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @return
    */
   def changeTrash(userName: String, emailID: String): Future[Int] = {
-    val filteredEmailTable = emailTable.filter(_.emailID === emailID).filter(_.fromAddress === userName).map(_.isTrash)
+
+    val filteredEmailTable = emailTable
+      .filter(_.emailID === emailID)
+      .filter(_.fromAddress === userName)
+      .map(_.isTrash)
+
     val currentEmailStatus = db.run(filteredEmailTable.result.headOption)
 
-    val filteredToAddressTable = destinationEmailTable.filter(_.destination === Destination.ToAddress)
-      .filter(_.emailID === emailID).filter(_.username === userName).map(_.isTrash)
+    val filteredDestinationTable = destinationEmailTable
+      .filter(_.emailID === emailID)
+      .filter(_.username === userName)
+      .map(_.isTrash)
 
-    val currentToStatus = db.run(filteredToAddressTable.result.headOption)
-
-    val filteredCCAddressTable = destinationEmailTable.filter(_.destination === Destination.CC)
-      .filter(_.emailID === emailID).filter(_.username === userName).map(_.isTrash)
-
-    val currentCCStatus = db.run(filteredCCAddressTable.result.headOption)
-
-    val filteredBCCAddressTable = destinationEmailTable.filter(_.destination === Destination.BCC)
-      .filter(_.emailID === emailID).filter(_.username === userName).map(_.isTrash)
-
-    val currentBCCStatus = db.run(filteredBCCAddressTable.result.headOption)
+    val currentDestinationStatus = db.run(filteredDestinationTable.result.headOption)
 
     for {
       resultEmailTable <- currentEmailStatus.map(status =>
-        filteredEmailTable.update(!status.getOrElse(true))).flatMap(db.run(_))
+        filteredEmailTable.update(!status.getOrElse(true)))
+        .flatMap(db.run(_))
 
-      resultToAddressTable <- currentToStatus.map(status =>
-        filteredToAddressTable.update(!status.getOrElse(true))).flatMap(db.run(_))
+      resultDestinationTable <- currentDestinationStatus.map(status =>
+        filteredDestinationTable.update(!status.getOrElse(true)))
+        .flatMap(db.run(_))
 
-      resultCCTable <- currentCCStatus.map(status =>
-        filteredCCAddressTable.update(!status.getOrElse(true))).flatMap(db.run(_))
-
-      resultBCCTable <- currentBCCStatus.map(status =>
-        filteredBCCAddressTable.update(!status.getOrElse(true))).flatMap(db.run(_))
-
-    } yield resultEmailTable + resultToAddressTable + resultCCTable + resultBCCTable
+    } yield resultEmailTable + resultDestinationTable
   }
 }
