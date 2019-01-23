@@ -57,10 +57,10 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .filter(_.fromAddress === userEmail)
       .filter(_.isTrash === isTrash)
       .map(_.emailID)
-    .union(destinationEmailTable
-      .filter(_.username === userEmail)
-      .filter(_.isTrash === isTrash)
-      .map(_.emailID))
+      .union(destinationEmailTable
+        .filter(_.username === userEmail)
+        .filter(_.isTrash === isTrash)
+        .map(_.emailID))
   }
 
   /**
@@ -79,17 +79,21 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .map(seq => seq.map(_._1).distinct)
 
     val result = idsDistinctList.map(seq =>
-      seq.map(chatId =>
+      Future.sequence(seq.map(chatId =>
         db.run(emailIdsForSentEmails
           .filter(_._1 === chatId)
           .sortBy(_._3.reverse)
           .take(1)
           .result
-          .head)
-      )
-    )
+          .headOption))))
 
-    result.map(seqTriplets => seqTriplets.map(x => Await.result(x.map { y => MinimalInfoDTO(y._1, y._2) }, Duration.Inf)))
+     result.flatMap(futureSeqTriplets => futureSeqTriplets.map(seq => seq.map { optionTripletStrings =>
+      val tripletStrings = optionTripletStrings.getOrElse((EmptyString,EmptyString,EmptyString))
+       tripletStrings match {
+         case (chatID,header,_) =>
+      MinimalInfoDTO(chatID, header)}
+     }))
+
   }
 
   /**

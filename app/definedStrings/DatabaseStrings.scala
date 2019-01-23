@@ -46,4 +46,5 @@ object DatabaseStrings {
 
   /** For regular strings */
   val NoneString = "none"
+  val EmptyString = ""
 }
