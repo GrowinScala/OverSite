@@ -6,7 +6,7 @@ case class EmailInfoDTOSenderWithLinks(
   emailID: String,
   chatID: String,
   fromAddress: String,
-  username: String,
+  username: Seq[String],
   header: String,
   body: String,
   dateOf: String,

@@ -337,13 +337,13 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
             emailRow.emailID).head)).map(seqEmailInfoDto =>
           seqEmailInfoDto))
         resultDrafts <- emailActions.getEmail(userCreation.username, StatusDraft, resultEmailTable.map(_.emailID).head)
-        resultTos <- Future.successful(emailCreation.to.get.map(to => EmailInfoDTO(
+        resultTos <- Future.successful(EmailInfoDTO(
           resultEmailTable.head.chatID,
           resultEmailTable.head.fromAddress,
-          to,
+          emailCreation.to.getOrElse(Seq("")),
           resultEmailTable.head.header,
           resultEmailTable.head.body,
-          resultEmailTable.head.dateOf)))
+          resultEmailTable.head.dateOf))
       } yield (resultEmailTable, resultSent, resultReceived, resultDrafts, resultTos)
 
       result.map {

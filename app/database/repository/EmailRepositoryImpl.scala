@@ -28,13 +28,13 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       val insertEmail = for {
         _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isTrash = false)
 
-        _ <- destinationEmailTable ++= email.to.getOrElse(Seq())
+        _ <- destinationEmailTable ++= email.to.getOrElse(Seq("")).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.ToAddress, isTrash = false))
 
-        _ <- destinationEmailTable ++= email.CC.getOrElse(Seq())
+        _ <- destinationEmailTable ++= email.CC.getOrElse(Seq("")).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.CC, isTrash = false))
 
-        _ <- destinationEmailTable ++= email.BCC.getOrElse(Seq())
+        _ <- destinationEmailTable ++= email.BCC.getOrElse(Seq("")).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.BCC, isTrash = false))
       } yield id
 
@@ -102,16 +102,17 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @return All the details of the email selected
    */
   def getEmail(userEmail: String, status: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
-    val queryResult = auxGetEmails(userEmail, status)
-      .filter(_.emailID === emailID)
-      .joinLeft(destinationEmailTable.filter(_.destination === Destination.ToAddress)).on(_.emailID === _.emailID)
-      .map(table => (table._1.chatID, table._1.fromAddress, table._2.map(_.username).getOrElse(EmptyString), table._1.header, table._1.body, table._1.dateOf))
-      .result
 
-    db.run(queryResult).map(seq => seq.map {
-      case (chatID, fromAddress, username, header, body, dateOf) =>
-        EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)
-    })
+    val seqTos = db.run(destinationEmailTable.filter(_.emailID === emailID).filter(_.destination === Destination.ToAddress).map(_.username).result)
+
+    val queryResult = seqTos.map(x => auxGetEmails(userEmail, status)
+      .filter(_.emailID === emailID)
+      .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
+      .result.map(seq => seq.map {
+        case (chatID, fromAddress, header, body, dateOf) =>
+          EmailInfoDTO(chatID, fromAddress, x, header, body, dateOf)
+      }))
+    queryResult.flatMap(db.run(_))
   }
 
   private def hasSenderAddress(to: Option[Seq[String]]): Boolean = {

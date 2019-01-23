@@ -54,13 +54,14 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    */
   private def hasBeenSent(userEmail: String, isTrash: Boolean): Query[Rep[String], String, Seq] = {
 
-    emailTable.filter(_.fromAddress === userEmail).filter(_.isTrash === isTrash).map(_.emailID)
-      .union(destinationEmailTable.filter(_.destination === Destination.ToAddress).filter(_.username === userEmail)
-        .filter(_.isTrash === isTrash).map(_.emailID))
-      .union(destinationEmailTable.filter(_.destination === Destination.CC).filter(_.username === userEmail)
-        .filter(_.isTrash === isTrash).map(_.emailID))
-      .union(destinationEmailTable.filter(_.destination === Destination.BCC).filter(_.username === userEmail)
-        .filter(_.isTrash === isTrash).map(_.emailID))
+    emailTable
+      .filter(_.fromAddress === userEmail)
+      .filter(_.isTrash === isTrash)
+      .map(_.emailID)
+    .union(destinationEmailTable
+      .filter(_.username === userEmail)
+      .filter(_.isTrash === isTrash)
+      .map(_.emailID))
   }
 
   /**
@@ -70,14 +71,24 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    */
   def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]] = {
 
-    val emailIdsForSentEmails = emailTable.filter(_.emailID in hasBeenSent(userEmail, isTrash))
-      .map(entry => (entry.chatID, entry.header, entry.dateOf)).sortBy(_._3.reverse)
+    val emailIdsForSentEmails = emailTable
+      .filter(_.emailID in hasBeenSent(userEmail, isTrash))
+      .map(entry => (entry.chatID, entry.header, entry.dateOf))
+      .sortBy(_._3.reverse)
 
-    val idsDistinctList = db.run(emailIdsForSentEmails.result).map(seq => seq.map(_._1).distinct)
+    val idsDistinctList = db.run(emailIdsForSentEmails.result)
+      .map(seq => seq.map(_._1).distinct)
 
     val result = idsDistinctList.map(seq =>
       seq.map(chatId =>
-        db.run(emailIdsForSentEmails.filter(_._1 === chatId).sortBy(_._3.reverse).take(1).result.head)))
+        db.run(emailIdsForSentEmails
+          .filter(_._1 === chatId)
+          .sortBy(_._3.reverse)
+          .take(1)
+          .result
+          .head)
+      )
+    )
 
     result.map(seqTriplets => seqTriplets.map(x => Await.result(x.map { y => MinimalInfoDTO(y._1, y._2) }, Duration.Inf)))
   }
@@ -109,18 +120,20 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
 
   /** Selects an email after filtering through chatID emailID*/
   def getEmail(userEmail: String, chatID: String, emailID: String, isTrash: Boolean): Future[Seq[EmailInfoDTO]] = {
-    val queryResult = queryChat(userEmail, chatID, isTrash)
+
+    val seqTos = db.run(destinationEmailTable.filter(_.emailID === emailID).filter(_.destination === Destination.ToAddress).map(_.username).result)
+    val queryResult = seqTos.map(x => queryChat(userEmail, chatID, isTrash)
       .filter(_.emailID === emailID)
       //Since every email with sent==true is obligated to have an ToID,
       // the following join has the same effect as joinLeft
-      .joinLeft(destinationEmailTable.filter(_.destination === Destination.ToAddress)).on(_.emailID === _.emailID)
+      //.joinLeft(destinationEmailTable.filter(_.destination === Destination.ToAddress)).on(_.emailID === _.emailID)
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
-      .map(table => (table._1.fromAddress, table._2.map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
+      .map(table => (table.fromAddress, table.header, table.body, table.dateOf))
       .result.map(seq => seq.map {
-        case (fromAddress, username, header, body, dateOf) =>
-          EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)
-      })
-    db.run(queryResult)
+        case (fromAddress, header, body, dateOf) =>
+          EmailInfoDTO(chatID, fromAddress, x, header, body, dateOf)
+      }))
+    queryResult.flatMap(db.run(_))
   }
   /**
    *  Authorize an user to have access to a conversation
@@ -194,17 +207,18 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
 
     val queryFromUser = queryUser(queryShareId)
 
-    val queryChatId = emailTable.filter(_.chatID in queryShareId.map(x => x._1))
+    val seqTos = db.run(destinationEmailTable.filter(_.emailID === emailID).filter(_.destination === Destination.ToAddress).map(_.username).result)
+
+    val queryChatId = seqTos.map(x => emailTable.filter(_.chatID in queryShareId.map(x => x._1))
       .filter(_.emailID in queryFromUser)
       .filter(_.emailID === emailID)
-      .joinLeft(destinationEmailTable.filter(_.destination === Destination.ToAddress)).on(_.emailID === _.emailID)
-      .map(table => (table._1.chatID, table._1.fromAddress, table._2
-        .map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
-      .result
-    db.run(queryChatId).map(seq => seq.map {
-      case (chatID, fromAddress, username, header, body, dateOf) =>
-        EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)
-    })
+      .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
+      .result.map(seq => seq.map {
+        case (chatID, fromAddress, header, body, dateOf) =>
+          EmailInfoDTO(chatID, fromAddress, x, header, body, dateOf)
+      }))
+
+    queryChatId.flatMap(db.run(_))
   }
 
   /**
