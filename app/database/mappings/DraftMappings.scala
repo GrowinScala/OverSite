@@ -15,25 +15,19 @@ case class DraftRow(
   header: String,
   body: String,
   isTrash: Boolean)
-object Destination extends Enumeration {
-  type Destination = Value
-  val ToAddress = Value(ToValue)
-  val CC = Value(CCValue)
-  val BCC = Value(BCCValue)
 
-  implicit val destinationMapper = MappedColumnType.base[Destination, String](
-    e => e.toString,
-    s => Destination.withName(s))
-}
-
-case class DestinationDraftRow(username: String, draftID: String, destination: Destination)
+/** Case class of DestinationDraft Table Row*/
+case class DestinationDraftRow(
+username: String,
+draftID: String,
+destination: Destination)
 
 /** Class that defines the draft table, establishing draftID as primary key in the database*/
 class DestinationDraftTable(tag: Tag) extends Table[DestinationDraftRow](tag, DraftsDestinationTable) {
 
   def username = column[String](UsernameRow)
   def draftID = column[String](DraftIDRow)
-  def destination = column[Destination](DraftDestinationRow)
+  def destination = column[Destination](DestinationRow)
 
   def * = (draftID, username, destination) <> (DestinationDraftRow.tupled, DestinationDraftRow.unapply)
 }

@@ -2,8 +2,8 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
-import api.dtos.{ CreateEmailDTO, EmailInfoDTOSender, EmailMinimalInfoDTO }
-import api.validators.{ EmailAddressValidator, TokenValidator }
+import api.dtos.{ CreateEmailDTO, EmailMinimalInfoDTO }
+import api.validators.TokenValidator
 import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
 import javax.inject._
@@ -12,7 +12,7 @@ import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 import api.dtos.AuxFunctions._
 
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future }
 
 /** Class injected with end-points */
 

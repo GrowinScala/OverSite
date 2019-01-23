@@ -1,14 +1,15 @@
 package controllers
 
-import database.mappings.ChatMappings.chatTable
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
+import database.mappings.ChatMappings.{chatTable, shareTable}
+import database.mappings.DraftMappings.destinationDraftTable
+import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
-import database.mappings.{ LoginRow, UserRow }
+import database.mappings.{LoginRow, UserRow}
 import definedStrings.testStrings.ControllerStrings._
 import definedStrings.AlgorithmStrings._
 import encryption.EncryptString
 import generators.Generator
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
@@ -20,7 +21,7 @@ import play.api.test.Helpers._
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 
 class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
@@ -38,7 +39,7 @@ class UsersControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   private val wrongPasswordExample = new Generator().password
   private val tokenExample = new Generator().token
 
-  private val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+  private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 
   override def beforeAll(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)

@@ -1,9 +1,10 @@
 package repository
 
 import api.dtos.CreateUserDTO
-import database.mappings.ChatMappings.chatTable
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
-import database.mappings.UserMappings.{ loginTable, userTable }
+import database.mappings.ChatMappings.{chatTable, shareTable}
+import database.mappings.DraftMappings.destinationDraftTable
+import database.mappings.EmailMappings._
+import database.mappings.UserMappings.{loginTable, userTable}
 import database.repository.UserRepositoryImpl
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.RepositoryStrings._
@@ -17,7 +18,7 @@ import slick.jdbc.H2Profile.api._
 import org.scalatest.Matchers
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 
 class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
@@ -32,7 +33,7 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   val userCreationWrongPassword = new CreateUserDTO(userCreation.username, new Generator().password)
   val userCreationWrongUser = new CreateUserDTO(new Generator().username, userCreation.password)
 
-  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+  private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 
   override def beforeAll(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)

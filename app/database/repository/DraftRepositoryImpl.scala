@@ -49,7 +49,7 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   def updateDraft(draft: CreateEmailDTO, username: String, draftID: String): Future[String] = {
 
     val updateDraft = for {
-      _ <- destinationDraftTable.filter(_.draftID === draftID).filter(_.username === username).delete
+      _ <- destinationDraftTable.filter(_.draftID === draftID).delete
       _ <- draftTable.filter(_.draftID === draftID).filter(_.username === username).delete
     } yield insertDraft(username, draft)
 
@@ -62,7 +62,7 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @param draftID Identification the a specific email
    * @return returns a Future of String, that is the emailID from the new inserted email
    */
-  def takeDraftMakeSent(username: String, draftID: String, listCCs: Seq[String], listBCCs: Seq[String], listTos: Seq[String]): Future[String] = {
+  def takeDraftMakeSent(username: String, draftID: String, listTos: Seq[String], listBCCs: Seq[String], listCCs: Seq[String]): Future[String] = {
 
     val email = for {
       email <- draftTable.filter(_.draftID === draftID)
