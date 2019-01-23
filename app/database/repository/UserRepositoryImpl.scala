@@ -19,19 +19,28 @@ class UserRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @return The number of insertions into database
    */
   def insertUser(user: CreateUserDTO): Future[Int] = {
+
     val encrypt = new EncryptString(user.password, MD5Algorithm)
+
     val insertTableEmail = userTable += UserRow(user.username, encrypt.result.toString)
+
     db.run(insertTableEmail)
   }
 
   /** Logins an user, once this provides a matching username and password */
   def loginUser(user: CreateUserDTO): Future[Seq[CreateUserDTO]] = {
+
     val encrypt = new EncryptString(user.password, MD5Algorithm)
+
     val realUser = userTable.filter(_.username === user.username)
-      .filter(_.password === encrypt.result.toString).result
+      .filter(_.password === encrypt.result.toString)
+      .result
+
     db.run(realUser).map(users =>
       users.map(userRow =>
-        CreateUserDTO(userRow.username, userRow.password)))
+        CreateUserDTO(userRow.username, userRow.password)
+      )
+    )
   }
 
   /**
@@ -40,21 +49,20 @@ class UserRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    */
   def insertLogin(user: CreateUserDTO): Future[String] = {
     val token = randomUUID().toString
-    val active = true
 
     for {
-      _ <- db.run(loginTable += LoginRow(user.username, token, validate1Hour, active))
+      _ <- db.run(loginTable += LoginRow(user.username, token, validate2Hours, active = true))
     } yield token
 
   }
 
   /** Patches the ACTIVE column to false */
   def insertLogout(token: String): Future[Int] = {
-    val notActive = false
+
     val insertTableLogin = loginTable
       .filter(_.token === token)
       .map(_.active)
-      .update(notActive)
+      .update(false)
 
     db.run(insertTableLogin)
 
@@ -64,9 +72,9 @@ class UserRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * Validates the token for 1 hour
    * @return Current server time plus 1 hour
    */
-  private def validate1Hour: Long = {
+  private def validate2Hours: Long = {
     val currentTime = System.currentTimeMillis()
-    val valid1Hour = currentTime + 3600000
-    valid1Hour
+    val valid2Hours = currentTime + 7200000
+    valid2Hours
   }
 }

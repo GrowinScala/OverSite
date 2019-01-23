@@ -25,7 +25,7 @@ object DatabaseStrings {
   val UsernameRow = "username"
   val ShareIDRow = "shareID"
   val FromUserRow = "fromUser"
-  val ToIDRow = "toID"
+  val ToUserRow = "toUser"
   val EmailIDRow = "emailID"
   val DraftIDRow = "draftID"
   val DestinationRow = "destination"
@@ -47,4 +47,5 @@ object DatabaseStrings {
   /** For regular strings */
   val NoneString = "none"
   val EmptyString = ""
+  val TripletEmptyString = (EmptyString,EmptyString,EmptyString)
 }
