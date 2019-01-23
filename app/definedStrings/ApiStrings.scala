@@ -10,6 +10,10 @@ object ApiStrings {
   val EndPointNoFilter = ""
   val PossibleEndPointStatus = List(EndPointReceived, EndPointSent, EndPointTrash, EndPointNoFilter)
 
+  val StatusDraft = "draft"
+  val StatusTrash = "trash"
+  val StatusSend = "send"
+
   /**  For HTTP error code status */
   val InvalidEmailAddressStatus = "Please insert a valid e-mail address"
   val PasswordMissMatchStatus = "Username and password doesn´t match"
@@ -17,6 +21,7 @@ object ApiStrings {
   val InvalidEndPointStatus = "Invalid status"
   val VerifyLoginStatus = "Please verify your login details \n Try to login again"
   val ImpossibleToSendDraft = "Not possible to send this draft"
+  val ImpossibleStatusDraft = "Not possible to execute the intended action"
   val EmailUpdated = "Email updated"
 
   val SatanStatus = "BURN YOUR LOCAL CHURCH"

@@ -9,13 +9,13 @@ POST   /email                               api.controllers.EmailsController.ema
     #POST A DRAFT
 POST   /draft                               api.controllers.DraftsController.draft
 
-    #UPDATE A DRAFT
+    #REPLACE A DRAFT
 PUT    /draft/:draftID                      api.controllers.DraftsController.updateDraft(draftID: String)
 
     #MOVE THE DRAFT TO TRASH OR REVERSE
 
     #CHANGE FROM DRAFT TO EMAIL
-PATCH  /draft/:draftID                     api.controllers.DraftsController.toSent(draftID: String)
+PATCH  /draft/:draftID                     api.controllers.DraftsController.toSentOrDraft(draftID: String, status: Option[String])
 
     #GET DRAFTS
 GET    /drafts                              api.controllers.DraftsController.getDrafts(isTrash: Option[Boolean])

@@ -2,7 +2,7 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
-import api.dtos.{ CreateEmailDTO, MinimalInfoDTO }
+import api.dtos.{ CreateEmailDTO, DraftStatusDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
 import database.repository.DraftRepositoryImpl
 import definedStrings.ApiStrings.{ MailSentStatus, _ }
@@ -51,19 +51,17 @@ class DraftsController @Inject() (
   def getDrafts(isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
     implicit val req: RequestHeader = request
 
-    request.userName.flatMap {
+    request.userName.flatMap(
       draftActions.getDrafts(_, isTrash.getOrElse(false)).map {
         drafts =>
           val result = drafts.map(draft =>
-
             MinimalInfoDTO.addLink(
               draft,
               if (isTrash.getOrElse(false))
                 List(routes.DraftsController.getDraft(draft.Id, isTrash).absoluteURL())
               else List(routes.DraftsController.getDraft(draft.Id, Option(false)).absoluteURL())))
           Ok(Json.toJson(result))
-      }
-    }
+      })
   }
 
   /**
@@ -79,10 +77,7 @@ class DraftsController @Inject() (
     request.userName.flatMap(
       draftActions.getDraft(_, isTrash.getOrElse(false), draftID).map(
         drafts => {
-          val resultDraftID = JsArray(
-            drafts.map { draft =>
-              Json.toJson(draft)
-            })
+          val resultDraftID = JsArray(drafts.map(Json.toJson(_)))
           Ok(resultDraftID)
         }))
   }
@@ -98,8 +93,7 @@ class DraftsController @Inject() (
         }
       },
       draft => {
-        request.userName.map(
-          draftActions.updateDraft(draft, _, draftID))
+        request.userName.map(draftActions.updateDraft(draft, _, draftID))
         Future.successful {
           Ok(EmailUpdated)
         }
@@ -112,16 +106,45 @@ class DraftsController @Inject() (
    * @param status Identification of the email status
    * @param emailID Identification of the email
    */
-  def toSent(draftID: String, moveTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
+  def toSentOrDraft(draftID: String, status: Option[String]): Action[JsValue] = tokenValidator(parse.json).async { request =>
 
-    request.userName.flatMap(username =>
-      draftActions.destinations(username, draftID).flatMap {
-        case (listTos, listBCCs, listCCs) =>
-          draftActions.hasDestination(listTos, listBCCs, listCCs).map(if (_) {
-            draftActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
-            Ok(MailSentStatus)
-          } else BadRequest(ImpossibleToSendDraft))
+    val draftStatusResult = request.body.validate[DraftStatusDTO]
+
+    draftStatusResult.fold(
+      errors => {
+        Future {
+          BadRequest(jsonErrors(errors))
+        }
+      },
+      draft => draft.status match {
+
+        case StatusSend => request.userName.flatMap(username =>
+          draftActions.destinations(username, draftID).flatMap {
+            case (listTos, listBCCs, listCCs) => draftActions.hasDestination(listTos, listBCCs, listCCs).map(
+              if (_) {
+                draftActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
+                Ok(MailSentStatus)
+              } else
+                BadRequest(ImpossibleToSendDraft))
+          })
+
+        case StatusTrash =>
+          request.userName.map(
+            draftActions.moveInOutTrash(_, draftID, trash = true))
+          Future.successful {
+            Ok(EmailUpdated)
+          }
+
+        case StatusDraft =>
+          request.userName.map(
+            draftActions.moveInOutTrash(_, draftID, trash = false))
+          Future.successful {
+            Ok(EmailUpdated)
+          }
+
+        case _ => Future.successful {
+          BadRequest(ImpossibleStatusDraft)
+        }
       })
   }
-
 }

@@ -47,11 +47,11 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   }
 
   def updateDraft(draft: CreateEmailDTO, username: String, draftID: String): Future[String] = {
-      val updateDraft = for {
-        _ <- destinationDraftTable.filter(_.draftID === draftID).delete
-        _ <- draftTable.filter(_.draftID === draftID).filter(_.username === username).delete
-      } yield insertDraft(username, draft)
-      db.run(updateDraft.transactionally).flatten
+    val updateDraft = for {
+      _ <- destinationDraftTable.filter(_.draftID === draftID).delete
+      _ <- draftTable.filter(_.draftID === draftID).filter(_.username === username).delete
+    } yield insertDraft(username, draft)
+    db.run(updateDraft.transactionally).flatten
   }
 
   /**
@@ -139,5 +139,15 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       Future.successful(true)
     else
       Future.successful(false)
+  }
+
+  def moveInOutTrash(userEmail: String, draftID: String, trash: Boolean): Future[Int] = {
+
+    val draftFilter = draftTable
+      .filter(_.username === userEmail)
+      .filter(_.draftID === draftID)
+      .map(_.isTrash)
+
+    db.run(draftFilter.update(trash))
   }
 }
