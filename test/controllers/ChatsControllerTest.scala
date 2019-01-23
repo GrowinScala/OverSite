@@ -3,6 +3,7 @@ package controllers
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
+import database.mappings.DraftMappings._
 import database.mappings.{ LoginRow, UserRow }
 import database.repository.{ ChatRepository, ChatRepositoryImpl }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
@@ -33,7 +34,7 @@ class ChatsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeA
   private val chatIDExample = testGenerator.ID
   private val emailExample = testGenerator.emailAddress
 
-  private val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
+  private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 
   override def beforeEach(): Unit = {
 

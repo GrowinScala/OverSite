@@ -1,20 +1,21 @@
 package repository
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, CreateUserDTO }
+import api.dtos.{CreateEmailDTO, CreateShareDTO, CreateUserDTO}
 import database.mappings.ChatMappings._
+import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
-import database.repository.{ ChatRepositoryImpl, EmailRepositoryImpl }
+import database.repository.{ChatRepositoryImpl, EmailRepositoryImpl}
 import definedStrings.testStrings.RepositoryStrings._
 import generators.Generator
-import org.scalatest.{ Matchers, _ }
+import org.scalatest.{Matchers, _}
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 
 class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
@@ -42,7 +43,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     Option(new Generator().emailAddresses)
   )
 
-  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable, shareTable)
+  private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 
   override def beforeAll(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)

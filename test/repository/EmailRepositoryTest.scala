@@ -2,11 +2,13 @@ package repository
 
 import java.util.UUID
 
-import api.dtos.{ CreateEmailDTO, CreateUserDTO, EmailInfoDTO, MinimalInfoDTO }
-import database.mappings.ChatMappings.chatTable
-import database.mappings.EmailMappings.{ bccTable, ccTable, emailTable, toAddressTable }
-import database.mappings.UserMappings.{ loginTable, userTable }
-import database.repository.{ ChatRepositoryImpl, EmailRepositoryImpl }
+import api.dtos.{CreateEmailDTO, CreateUserDTO, EmailInfoDTO, MinimalInfoDTO}
+import database.mappings.ChatMappings.{chatTable, shareTable}
+import database.mappings.Destination
+import database.mappings.DraftMappings.destinationDraftTable
+import database.mappings.EmailMappings._
+import database.mappings.UserMappings.{loginTable, userTable}
+import database.repository.{ChatRepositoryImpl, EmailRepositoryImpl}
 import definedStrings.testStrings.RepositoryStrings._
 import generators._
 import org.scalatest._
@@ -17,7 +19,7 @@ import slick.jdbc.H2Profile.api._
 import org.scalatest.Matchers
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
 
 class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
@@ -54,7 +56,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     Option(new Generator().emailAddresses)
   )
 
-  val tables = Seq(chatTable, userTable, emailTable, toAddressTable, ccTable, bccTable, loginTable)
+  private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 
   override def beforeAll(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)
@@ -140,7 +142,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-        resultToAddressTable <- db.run(toAddressTable.result)
+        resultToAddressTable <- db.run(destinationEmailTable.filter(_.destination === Destination.ToAddress).result)
         resultEmailTable <- db.run(emailTable.result)
       } yield (resultToAddressTable, resultEmailTable)
 
@@ -159,7 +161,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               /** Verify if the sequence of toID have an UUID format **/
               Try[Boolean] {
                 tosTable.map(
-                  toRow => UUID.fromString(toRow.toID))
+                  toRow => UUID.fromString(toRow.emailID))
                 true
               }.getOrElse(false) shouldEqual true
 
@@ -197,7 +199,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
 
-        resultBCCtable <- db.run(bccTable.result)
+        resultBCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.BCC).result)
         resultEmailTable <- db.run(emailTable.result)
       } yield (resultBCCtable, resultEmailTable)
 
@@ -216,7 +218,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
               /** Verify if sequence of bccIDs have an UUID format **/
               Try[Boolean] {
-                bccsTable.map(row => UUID.fromString(row.BCCID))
+                bccsTable.map(row => UUID.fromString(row.emailID))
                 true
               }.getOrElse(false) shouldEqual true
 
@@ -250,7 +252,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       val result = for {
 
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-        resultCCtable <- db.run(ccTable.result)
+        resultCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.CC).result)
         resultEmailTable <- db.run(emailTable.result)
 
       } yield (resultCCtable, resultEmailTable)
@@ -270,7 +272,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
               /** Verify if sequence of ccIDs have an UUID format **/
               Try[Boolean] {
-                ccsTable.map(row => UUID.fromString(row.CCID))
+                ccsTable.map(row => UUID.fromString(row.emailID))
                 true
               }.getOrElse(false) shouldEqual true
 

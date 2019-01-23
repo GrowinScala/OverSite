@@ -53,10 +53,14 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
    * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
    */
   private def hasBeenSent(userEmail: String, isTrash: Boolean): Query[Rep[String], String, Seq] = {
+
     emailTable.filter(_.fromAddress === userEmail).filter(_.isTrash === isTrash).map(_.emailID)
-      .union(toAddressTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
-      .union(ccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
-      .union(bccTable.filter(_.username === userEmail).filter(_.isTrash === isTrash).map(_.emailID))
+      .union(destinationEmailTable.filter(_.destination === Destination.ToAddress).filter(_.username === userEmail)
+        .filter(_.isTrash === isTrash).map(_.emailID))
+      .union(destinationEmailTable.filter(_.destination === Destination.CC).filter(_.username === userEmail)
+        .filter(_.isTrash === isTrash).map(_.emailID))
+      .union(destinationEmailTable.filter(_.destination === Destination.BCC).filter(_.username === userEmail)
+        .filter(_.isTrash === isTrash).map(_.emailID))
   }
 
   /**
@@ -109,7 +113,7 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .filter(_.emailID === emailID)
       //Since every email with sent==true is obligated to have an ToID,
       // the following join has the same effect as joinLeft
-      .joinLeft(toAddressTable).on(_.emailID === _.emailID)
+      .joinLeft(destinationEmailTable.filter(_.destination === Destination.ToAddress)).on(_.emailID === _.emailID)
       //Order of the following map: fromAddress, username(from toAddress table), header, body,  dateOf
       .map(table => (table._1.fromAddress, table._2.map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
       .result.map(seq => seq.map {
@@ -136,10 +140,11 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
   /** Auxiliary function*/
   private def queryUser(query: Query[(Rep[String], Rep[String]), (String, String), Seq]) = {
     emailTable.filter(_.fromAddress in query.map { case (_, user) => user }).map(_.emailID)
-      .union(toAddressTable.filter(_.username in query.map { case (_, user) => user }).map(_.emailID))
-      .union(ccTable.filter(_.username in query.map { case (_, user) => user }).map(_.emailID))
-      .union(bccTable.filter(_.username in query.map { case (_, user) => user }).map(_.emailID))
+      .union(destinationEmailTable.filter(_.username in query.map {
+        case (_, user) => user
+      }).map(_.emailID))
   }
+
   /**
    * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
    * @param userEmail Identification of user by email
@@ -192,10 +197,14 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     val queryChatId = emailTable.filter(_.chatID in queryShareId.map(x => x._1))
       .filter(_.emailID in queryFromUser)
       .filter(_.emailID === emailID)
-      .joinLeft(toAddressTable).on(_.emailID === _.emailID)
-      .map(table => (table._1.chatID, table._1.fromAddress, table._2.map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
+      .joinLeft(destinationEmailTable.filter(_.destination === Destination.ToAddress)).on(_.emailID === _.emailID)
+      .map(table => (table._1.chatID, table._1.fromAddress, table._2
+        .map(_.username).getOrElse(NoneString), table._1.header, table._1.body, table._1.dateOf))
       .result
-    db.run(queryChatId).map(seq => seq.map { case (chatID, fromAddress, username, header, body, dateOf) => EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf) })
+    db.run(queryChatId).map(seq => seq.map {
+      case (chatID, fromAddress, username, header, body, dateOf) =>
+        EmailInfoDTO(chatID, fromAddress, username, header, body, dateOf)
+    })
   }
 
   /**
@@ -207,5 +216,4 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     db.run(deletePermissionTable)
   }
 
-  //TODO def function T:04
 }

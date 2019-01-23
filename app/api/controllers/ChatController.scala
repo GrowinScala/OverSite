@@ -7,6 +7,7 @@ import api.dtos.{ CreateShareDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
 import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
+import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
