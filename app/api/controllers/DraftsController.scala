@@ -106,7 +106,7 @@ class DraftsController @Inject() (
    * @param status Identification of the email status
    * @param emailID Identification of the email
    */
-  def toSentOrDraft(draftID: String, status: Option[String]): Action[JsValue] = tokenValidator(parse.json).async { request =>
+  def toSentOrDraft(draftID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
 
     val draftStatusResult = request.body.validate[DraftStatusDTO]
 
