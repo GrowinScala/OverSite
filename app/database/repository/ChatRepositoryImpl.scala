@@ -9,9 +9,8 @@ import database.mappings._
 import definedStrings.DatabaseStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
-import database.repository.EmailRepositoryImpl
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends ChatRepository {
 
@@ -85,9 +84,9 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
       .map(seq => seq.map(_._1).distinct)
 
     val result = idsDistinctList.map(seq =>
-      Future.sequence(seq.map(chatId =>
+      Future.sequence(seq.map(chatID =>
         db.run(emailIdsForSentEmails
-          .filter(_._1 === chatId)
+          .filter(_._1 === chatID)
           .sortBy(_._3.reverse)
           .take(1)
           .result
@@ -142,31 +141,39 @@ class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionCont
     queryResult.flatMap(db.run(_))
   }
 
-  def changeTrash(username: String, chatID: String, moveToTrash: Boolean) = {
-    implicit val chatActions = new ChatRepositoryImpl()
-    val emailActions = new EmailRepositoryImpl()
+  /**
+   * Function that moves all the mails from a certain chatID to trash or vice versa
+   * @param username Identification of the username
+   * @param chatID Identification of the chat
+   * @param moveToTrash Identification of the sense of movement
+   * @return
+   */
+  def changeTrash(username: String, chatID: String, moveToTrash: Boolean): Future[Int] = {
 
-    val resultEmailTable = emailTable
+    val resultEmailTable = db.run(emailTable
       .filter(_.chatID === chatID)
-      .map(_.emailID)
+      .map(_.emailID).result)
 
-    val filteredEmailTable = emailTable
-      .filter(_.emailID in resultEmailTable)
-      .filter(_.fromAddress === username)
-      .filter(_.isTrash === !moveToTrash)
-      .map(_.emailID)
+    for {
+      emailResult <- resultEmailTable
 
-    val filteredDestinationTable = destinationEmailTable
-      .filter(_.emailID in resultEmailTable)
-      .filter(_.username === username)
-      .filter(_.isTrash === !moveToTrash)
-      .map(_.emailID)
+      updateEmailResult <- db.run(
+        emailTable
+          .filter(_.emailID inSet emailResult)
+          .filter(_.fromAddress === username)
+          .filter(_.isTrash === !moveToTrash)
+          .map(_.isTrash)
+          .update(moveToTrash))
 
-    //println(Await.result(db.run(filteredEmailTable.size.result), Duration.Inf).toString)
-    //println(Await.result(db.run(filteredDestinationTable.size.result), Duration.Inf).toString)
-    db.run(filteredEmailTable.result).flatMap(seqID => Future.sequence(seqID.map(ID => emailActions.changeTrash(username, ID))))
-    db.run(filteredDestinationTable.result).flatMap(seqID => Future.sequence(seqID.map(ID => emailActions.changeTrash(username, ID))))
+      updateDestinationResult <- db.run(
+        destinationEmailTable
+          .filter(_.emailID inSet emailResult)
+          .filter(_.username === username)
+          .filter(_.isTrash === !moveToTrash)
+          .map(_.isTrash)
+          .update(moveToTrash))
 
+    } yield updateEmailResult + updateDestinationResult
   }
 
   /**

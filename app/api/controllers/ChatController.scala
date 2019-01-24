@@ -3,17 +3,16 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, MinimalInfoDTO, TrashInfoDTO }
+import api.dtos.{CreateShareDTO, MinimalInfoDTO, TrashInfoDTO}
 import api.validators.TokenValidator
-import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
+import database.repository.{ChatRepositoryImpl, UserRepositoryImpl}
 import definedStrings.ApiStrings._
-import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /** Class injected with end-points*/
 
@@ -67,8 +66,8 @@ class ChatController @Inject() (
             MinimalInfoDTO.addLink(
               email,
               if (isTrash.getOrElse(false))
-                List(routes.EmailsController.getEmail(email.Id, Option("isTrash")).absoluteURL())
-              else List(routes.EmailsController.getEmail(email.Id, Option("")).absoluteURL())))
+                List(routes.EmailsController.getEmail(email.Id, Option(IsTrashString)).absoluteURL())
+              else List(routes.EmailsController.getEmail(email.Id, Option(EmptyString)).absoluteURL())))
           Ok(Json.toJson(result))
       }
     }
@@ -93,6 +92,11 @@ class ChatController @Inject() (
     }
   }
 
+  /**
+   * Function that moves all the mails from a certain chatID to trash or vice versa
+   * @param chatID Identification of the chat
+   * @return Action that update the trash boolean status of each emailID involved
+   */
   def moveInOutTrash(chatID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
 
     val toTrashResult = request.body.validate[TrashInfoDTO]
@@ -104,10 +108,10 @@ class ChatController @Inject() (
         }
       },
       move => {
-        request.userName.map(
+        request.userName.flatMap(
           chatActions.changeTrash(_, chatID, move.toTrash))
         Future.successful {
-          Ok(MailSentStatus)
+          Ok
         }
       })
   }

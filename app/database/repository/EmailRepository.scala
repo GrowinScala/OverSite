@@ -9,6 +9,6 @@ trait EmailRepository {
   def insertEmail(username: String, email: CreateEmailDTO): Future[String]
   def getEmails(userEmail: String, status: String): Future[Seq[MinimalInfoDTO]]
   def getEmail(userEmail: String, status: String, emailID: String): Future[Seq[EmailInfoDTO]]
-  def changeTrash(userName: String, emailID: String): Future[Int]
+  def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int]
 
 }

@@ -3,14 +3,14 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO }
-import database.mappings.EmailMappings.{ emailTable, _ }
+import api.dtos.{CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO}
+import database.mappings.EmailMappings.{emailTable, _}
 import database.mappings._
 import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**  Class that receives a db path */
 class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepositoryImpl) extends EmailRepository {
@@ -29,13 +29,13 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       val insertEmail = for {
         _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isTrash = false)
 
-        _ <- destinationEmailTable ++= email.to.getOrElse(Seq("")).distinct
+        _ <- destinationEmailTable ++= email.to.getOrElse(Seq(EmptyString)).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.ToAddress, isTrash = false))
 
-        _ <- destinationEmailTable ++= email.CC.getOrElse(Seq("")).distinct
+        _ <- destinationEmailTable ++= email.CC.getOrElse(Seq(EmptyString)).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.CC, isTrash = false))
 
-        _ <- destinationEmailTable ++= email.BCC.getOrElse(Seq("")).distinct
+        _ <- destinationEmailTable ++= email.BCC.getOrElse(Seq(EmptyString)).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.BCC, isTrash = false))
       } yield id
 
@@ -134,7 +134,9 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
         .result.map(seq => seq.map {
           case (chatID, fromAddress, header, body, dateOf) =>
             EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
-        }))
+        }
+      )
+    )
 
     queryResult.flatMap(db.run(_))
   }
@@ -145,31 +147,25 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
    * @param emailID Identification the a specific email
    * @return
    */
-  def changeTrash(userName: String, emailID: String): Future[Int] = {
+  def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
 
-    val filteredEmailTable = emailTable
+    val emailQuery = emailTable
       .filter(_.emailID === emailID)
       .filter(_.fromAddress === userName)
+      .filter(_.isTrash === !moveToTrash)
       .map(_.isTrash)
+      .update(moveToTrash)
 
-    val currentEmailStatus = db.run(filteredEmailTable.result.headOption)
-
-    val filteredDestinationTable = destinationEmailTable
+    val destinationQuery = destinationEmailTable
       .filter(_.emailID === emailID)
       .filter(_.username === userName)
+      .filter(_.isTrash === !moveToTrash)
       .map(_.isTrash)
-
-    val currentDestinationStatus = db.run(filteredDestinationTable.result.headOption)
+      .update(moveToTrash)
 
     for {
-      resultEmailTable <- currentEmailStatus.map(status =>
-        filteredEmailTable.update(!status.getOrElse(true)))
-        .flatMap(db.run(_))
-
-      resultDestinationTable <- currentDestinationStatus.map(status =>
-        filteredDestinationTable.update(!status.getOrElse(true)))
-        .flatMap(db.run(_))
-
-    } yield resultEmailTable + resultDestinationTable
+      updateEmailResult <- db.run(emailQuery)
+      updateDestinationResult <- db.run(destinationQuery)
+    } yield updateEmailResult + updateDestinationResult
   }
 }
