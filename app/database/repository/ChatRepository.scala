@@ -5,6 +5,7 @@ import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
 import scala.concurrent.Future
 
 trait ChatRepository {
+
   def insertChat(email: CreateEmailDTO, chatID: String): Future[String]
   def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]]
   def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]]
@@ -15,4 +16,5 @@ trait ChatRepository {
   def getSharedEmails(userEmail: String, shareID: String): Future[Seq[MinimalInfoDTO]]
   def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]]
   def deletePermission(from: String, to: String, chatID: String): Future[Int]
+
 }
