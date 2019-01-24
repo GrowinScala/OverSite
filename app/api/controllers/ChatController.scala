@@ -5,13 +5,12 @@ import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
 import api.dtos.{ CreateShareDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
-import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
-import definedStrings.ApiStrings._
-import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
+import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepository, UserRepositoryImpl }
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
+import definedStrings.ApiStrings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -22,8 +21,8 @@ class ChatController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   implicit val db: Database,
-  chatActions: ChatRepositoryImpl,
-  usersActions: UserRepositoryImpl)(implicit exec: ExecutionContext)
+  chatActions: ChatRepository,
+  usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
   //Auxiliary function that supports GET \chats and GET /chats?isTrash=true

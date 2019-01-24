@@ -2,14 +2,14 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{CreateEmailDTO, DraftInfoDTO, MinimalInfoDTO}
+import api.dtos.{ CreateEmailDTO, DraftInfoDTO, MinimalInfoDTO }
 import database.mappings.DraftMappings._
-import database.mappings.{Destination, DestinationDraftRow, DraftRow}
+import database.mappings.{ Destination, DestinationDraftRow, DraftRow }
 import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database, emailActions: EmailRepositoryImpl)
   extends DraftRepository {
@@ -66,8 +66,6 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
     })
   }
 
-
-
   /**
    * Function that filter the emails, according to their draftID, if it is trash or not and userEmail
    * @param userEmail Identification of user by email
@@ -99,7 +97,8 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
         .map(table => (table.draftID, table.username, table.header, table.body, table.dateOf))
         .result)
 
-    } yield draft.map{ case (draftID, username, header, body, dateOf) =>
+    } yield draft.map {
+      case (draftID, username, header, body, dateOf) =>
         DraftInfoDTO(draftID, username, toSeq, ccSeq, bccSeq, header, body, dateOf)
     }
   }
@@ -135,8 +134,7 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     //Won´t insert in db because empty string is not a valid Date
     db.run(email.transactionally).flatMap(emailDTO =>
-      emailActions.insertEmail(username, emailDTO.getOrElse(CreateEmailDTO(Option(EmptyString), EmptyString, EmptyString, EmptyString, Option(Seq(EmptyString)), Option(Seq(EmptyString)), Option(Seq(EmptyString)))))
-    )
+      emailActions.insertEmail(username, emailDTO.getOrElse(CreateEmailDTO(Option(EmptyString), EmptyString, EmptyString, EmptyString, Option(Seq(EmptyString)), Option(Seq(EmptyString)), Option(Seq(EmptyString))))))
 
   }
 
@@ -164,7 +162,7 @@ class DraftRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   }
 
   def hasDestination(listTos: Seq[String], listBCCs: Seq[String], listCCs: Seq[String]): Future[Boolean] = {
-    Future.successful{listCCs.size + listBCCs.size + listTos.size > 0}
+    Future.successful { listCCs.size + listBCCs.size + listTos.size > 0 }
   }
 
   def moveInOutTrash(userEmail: String, draftID: String, trash: Boolean): Future[Int] = {

@@ -4,6 +4,7 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.{CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO}
+import database.mappings.ChatMappings.chatTable
 import database.mappings.EmailMappings.{emailTable, _}
 import database.mappings._
 import definedStrings.ApiStrings._
@@ -13,7 +14,44 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 /**  Class that receives a db path */
-class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepositoryImpl) extends EmailRepository {
+class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends EmailRepository {
+
+  /**
+    * Insert a chat into database
+    * @param email email passed on json body
+    * @param chatID chatID
+    * @return
+    */
+  private def insertChatActions(email: CreateEmailDTO, chatID: String): Future[String] = {
+
+    val randomChatID = randomUUID().toString
+
+    existChatID(chatID).flatMap {
+      case true => Future { chatID }
+      case false =>
+        for {
+          _ <- db.run(chatTable += ChatRow(randomChatID, email.header))
+        } yield randomChatID
+    }
+
+  }
+
+  /**
+    * Aims to find an chatID already exists in the database
+    * @param chatID Reference to an email conversation
+    * @return True or False depending if the chatID exists or not
+    */
+  private def existChatID(chatID: String): Future[Boolean] = {
+
+    val tableSearch = chatTable
+      .filter(_.chatID === chatID)
+      .result
+
+    db.run(tableSearch).map(_.length).map {
+      case 1 => true
+      case _ => false
+    }
+  }
 
   /**
    * Inserts an email in the database
@@ -23,7 +61,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     val randomEmailID = randomUUID().toString
 
-    val chatId = chatActions.insertChat(email, email.chatID.getOrElse(randomUUID().toString))
+    val chatId = insertChatActions(email, email.chatID.getOrElse(randomUUID().toString))
 
     chatId.flatMap(id => {
       val insertEmail = for {
@@ -60,8 +98,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
           .union(destinationEmailTable
             .filter(_.username === userEmail)
             .filter(_.isTrash === true)
-            .map(_.emailID)
-          )
+            .map(_.emailID))
 
         emailTable.filter(_.emailID in queryTrashEmailIds)
           .sortBy(_.dateOf)
@@ -88,8 +125,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
           .union(destinationEmailTable
             .filter(_.username === userEmail)
             .filter(_.isTrash === false)
-            .map(_.emailID)
-          )
+            .map(_.emailID))
 
         emailTable.filter(_.emailID in queryTrashEmailIds)
           .sortBy(_.dateOf)
@@ -131,13 +167,12 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     val queryResult = queryTos.map(seqTos =>
       auxGetEmails(userEmail, status)
-      .filter(_.emailID === emailID)
-      .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
-      .result.map(seq => seq.map {
-        case (chatID, fromAddress, header, body, dateOf) =>
-          EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
-      })
-    )
+        .filter(_.emailID === emailID)
+        .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
+        .result.map(seq => seq.map {
+          case (chatID, fromAddress, header, body, dateOf) =>
+            EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
+        }))
 
     queryResult.flatMap(db.run(_))
   }

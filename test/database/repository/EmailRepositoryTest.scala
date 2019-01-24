@@ -2,12 +2,12 @@ package database.repository
 
 import java.util.UUID
 
-import api.dtos.{CreateEmailDTO, CreateUserDTO, EmailInfoDTO, MinimalInfoDTO}
-import database.mappings.ChatMappings.{chatTable, shareTable}
+import api.dtos.{ CreateEmailDTO, CreateUserDTO, EmailInfoDTO, MinimalInfoDTO }
+import database.mappings.ChatMappings.{ chatTable, shareTable }
 import database.mappings.Destination
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
-import database.mappings.UserMappings.{loginTable, userTable}
+import database.mappings.UserMappings.{ loginTable, userTable }
 import definedStrings.testStrings.RepositoryStrings._
 import generators._
 import org.scalatest._
@@ -18,7 +18,7 @@ import slick.jdbc.H2Profile.api._
 import org.scalatest.Matchers
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.util.Try
 
 class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
@@ -41,8 +41,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     defaultCreation.body,
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses),
-    Option(new Generator().emailAddresses)
-  )
+    Option(new Generator().emailAddresses))
 
   val DraftCreation = new Generator()
   val emailDraftCreation = new CreateEmailDTO(
@@ -52,8 +51,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     DraftCreation.body,
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses),
-    Option(new Generator().emailAddresses)
-  )
+    Option(new Generator().emailAddresses))
 
   private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 
@@ -313,11 +311,11 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       result.map {
         case (resultEmailTable, resultSent, resultReceived, resultDrafts) =>
 
-            resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
+          resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
 
-            resultReceived.forall(seqEmailInfo =>
-              seqEmailInfo === resultEmailTable.map(row =>
-                MinimalInfoDTO(row.emailID, row.header))) shouldBe true
+          resultReceived.forall(seqEmailInfo =>
+            seqEmailInfo === resultEmailTable.map(row =>
+              MinimalInfoDTO(row.emailID, row.header))) shouldBe true
 
       }
     }
@@ -347,8 +345,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
       result.map {
         case (resultEmailTable, resultSent, resultReceived, resultDrafts, resultTos) =>
-            resultSent shouldEqual resultTos
-            resultReceived.forall(seqEmailInfoDTo => seqEmailInfoDTo === resultTos) shouldBe true
+          resultSent shouldEqual resultTos
+          resultReceived.forall(seqEmailInfoDTo => seqEmailInfoDTo === resultTos) shouldBe true
 
       }
     }
