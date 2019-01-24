@@ -47,5 +47,5 @@ object DatabaseStrings {
   /** For regular strings */
   val NoneString = "none"
   val EmptyString = ""
-  val TripletEmptyString = (EmptyString,EmptyString,EmptyString)
+  val TripletEmptyString = (EmptyString, EmptyString, EmptyString)
 }

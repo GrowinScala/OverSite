@@ -3,14 +3,14 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO}
-import database.mappings.EmailMappings.{emailTable, _}
+import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO }
+import database.mappings.EmailMappings.{ emailTable, _ }
 import database.mappings._
 import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**  Class that receives a db path */
 class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database, chatActions: ChatRepositoryImpl) extends EmailRepository {
@@ -60,8 +60,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
           .union(destinationEmailTable
             .filter(_.username === userEmail)
             .filter(_.isTrash === true)
-            .map(_.emailID)
-          )
+            .map(_.emailID))
 
         emailTable.filter(_.emailID in queryTrashEmailIds)
           .sortBy(_.dateOf)
@@ -88,8 +87,7 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
           .union(destinationEmailTable
             .filter(_.username === userEmail)
             .filter(_.isTrash === false)
-            .map(_.emailID)
-          )
+            .map(_.emailID))
 
         emailTable.filter(_.emailID in queryTrashEmailIds)
           .sortBy(_.dateOf)
@@ -131,13 +129,12 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
 
     val queryResult = queryTos.map(seqTos =>
       auxGetEmails(userEmail, status)
-      .filter(_.emailID === emailID)
-      .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
-      .result.map(seq => seq.map {
-        case (chatID, fromAddress, header, body, dateOf) =>
-          EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
-      })
-    )
+        .filter(_.emailID === emailID)
+        .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
+        .result.map(seq => seq.map {
+          case (chatID, fromAddress, header, body, dateOf) =>
+            EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
+        }))
 
     queryResult.flatMap(db.run(_))
   }

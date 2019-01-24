@@ -110,26 +110,4 @@ class EmailsController @Inject() (
         case _ => Ok
       })
   }
-
-  /*
-  def updateDraft(emailID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
-
-    val emailResult = request.body.validate[CreateEmailDTO]
-
-    emailResult.fold(
-      errors =>
-        Future {
-          BadRequest(jsonErrors(errors))
-        },
-      draft => {
-        request.userName.flatMap {
-          emailActions.updateDraft(_, emailID, draft) map {
-            case 0 => BadRequest("No email has been updated")
-            case _ => Ok(MailSentStatus)
-          }
-        }
-      })
-  }
- */
-
 }

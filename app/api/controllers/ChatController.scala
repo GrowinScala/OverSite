@@ -3,7 +3,7 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{ CreateShareDTO, MinimalInfoDTO }
+import api.dtos.{ CreateEmailDTO, CreateShareDTO, MinimalInfoDTO, TrashInfoDTO }
 import api.validators.TokenValidator
 import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
@@ -91,6 +91,25 @@ class ChatController @Inject() (
           Ok(emailsResult)
       }
     }
+  }
+
+  def moveInOutTrash(chatID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
+
+    val toTrashResult = request.body.validate[TrashInfoDTO]
+
+    toTrashResult.fold(
+      errors => {
+        Future {
+          BadRequest(jsonErrors(errors))
+        }
+      },
+      move => {
+        request.userName.map(
+          chatActions.changeTrash(_, chatID, move.toTrash))
+        Future.successful {
+          Ok(MailSentStatus)
+        }
+      })
   }
 
   /**
