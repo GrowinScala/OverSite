@@ -10,7 +10,7 @@ import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.ControllerStrings._
 import encryption.EncryptString
 import generators.Generator
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
@@ -18,13 +18,13 @@ import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json.parse
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{route, status, _}
+import play.api.test.Helpers.{ route, status, _ }
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 
-class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+class EmailsControllerActionTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
@@ -479,8 +479,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
         emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
 
       Await.result(db.run(
-        destinationEmailTable += DestinationEmailRow(new Generator().ID,emailExample,Destination.ToAddress,isTrash = false )
-      ), Duration.Inf)
+        destinationEmailTable += DestinationEmailRow(new Generator().ID, emailExample, Destination.ToAddress, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + emailIDExample + EndpointPatchSendStatus)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -525,8 +524,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
         emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
       Await.result(db.run(
-        destinationEmailTable += DestinationEmailRow(new Generator().ID,emailExample,Destination.ToAddress,isTrash = false )
-      ), Duration.Inf)
+        destinationEmailTable += DestinationEmailRow(new Generator().ID, emailExample, Destination.ToAddress, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, EmailsEndpointRoute + emailIDExample + EndpointPatchSendStatus)
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -540,7 +538,7 @@ class EmailsControllerTest extends PlaySpec with GuiceOneAppPerSuite with Before
     UndefinedStatusOk + CaseTrashStatus in {
 
       Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
-        headerExample, bodyExample,  isTrash = false)), Duration.Inf)
+        headerExample, bodyExample, isTrash = false)), Duration.Inf)
 
       val fakeRequest = FakeRequest(PATCH, s"$EmailsEndpointRoute$emailIDExample$EndpointPatchTrashStatus")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)

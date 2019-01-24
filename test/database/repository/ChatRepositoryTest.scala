@@ -1,20 +1,20 @@
 package database.repository
 
-import api.dtos.{CreateEmailDTO, CreateShareDTO, CreateUserDTO}
+import api.dtos.{ CreateEmailDTO, CreateShareDTO, CreateUserDTO }
 import database.mappings.ChatMappings._
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import definedStrings.testStrings.RepositoryStrings._
 import generators.Generator
-import org.scalatest.{Matchers, _}
+import org.scalatest.{ Matchers, _ }
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 
 class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
@@ -39,8 +39,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     defaultCreation.body,
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses),
-    Option(new Generator().emailAddresses)
-  )
+    Option(new Generator().emailAddresses))
 
   private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 

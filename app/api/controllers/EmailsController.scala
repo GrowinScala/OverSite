@@ -5,7 +5,7 @@ import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
 import api.dtos.{ CreateEmailDTO, MinimalInfoDTO, TrashInfoDTO }
 import api.validators.TokenValidator
-import database.repository.{ EmailRepositoryImpl, UserRepositoryImpl }
+import database.repository.{ EmailRepository, EmailRepositoryImpl, UserRepository, UserRepositoryImpl }
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
