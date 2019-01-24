@@ -1,4 +1,4 @@
-package repository
+package database.repository
 
 import java.util.UUID
 
@@ -8,7 +8,6 @@ import database.mappings.Destination
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings.{loginTable, userTable}
-import database.repository.{ChatRepositoryImpl, EmailRepositoryImpl}
 import definedStrings.testStrings.RepositoryStrings._
 import generators._
 import org.scalatest._

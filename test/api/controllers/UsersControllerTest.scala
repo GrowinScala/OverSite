@@ -1,4 +1,4 @@
-package controllers
+package api.controllers
 
 import database.mappings.ChatMappings.{chatTable, shareTable}
 import database.mappings.DraftMappings.destinationDraftTable

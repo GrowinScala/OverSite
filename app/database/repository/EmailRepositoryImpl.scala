@@ -29,13 +29,13 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
       val insertEmail = for {
         _ <- emailTable += EmailRow(randomEmailID, id, username, email.dateOf, email.header, email.body, isTrash = false)
 
-        _ <- destinationEmailTable ++= email.to.getOrElse(Seq("")).distinct
+        _ <- destinationEmailTable ++= email.to.getOrElse(Seq(EmptyString)).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.ToAddress, isTrash = false))
 
-        _ <- destinationEmailTable ++= email.CC.getOrElse(Seq("")).distinct
+        _ <- destinationEmailTable ++= email.CC.getOrElse(Seq(EmptyString)).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.CC, isTrash = false))
 
-        _ <- destinationEmailTable ++= email.BCC.getOrElse(Seq("")).distinct
+        _ <- destinationEmailTable ++= email.BCC.getOrElse(Seq(EmptyString)).distinct
           .map(DestinationEmailRow(randomEmailID, _, Destination.BCC, isTrash = false))
       } yield id
 

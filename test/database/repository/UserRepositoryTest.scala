@@ -1,11 +1,10 @@
-package repository
+package database.repository
 
 import api.dtos.CreateUserDTO
 import database.mappings.ChatMappings.{chatTable, shareTable}
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings.{loginTable, userTable}
-import database.repository.UserRepositoryImpl
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.RepositoryStrings._
 import encryption.EncryptString

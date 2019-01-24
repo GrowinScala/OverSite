@@ -1,4 +1,4 @@
-package controllers
+package api.controllers
 
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._

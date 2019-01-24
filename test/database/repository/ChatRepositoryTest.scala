@@ -1,11 +1,10 @@
-package repository
+package database.repository
 
 import api.dtos.{CreateEmailDTO, CreateShareDTO, CreateUserDTO}
 import database.mappings.ChatMappings._
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
-import database.repository.{ChatRepositoryImpl, EmailRepositoryImpl}
 import definedStrings.testStrings.RepositoryStrings._
 import generators.Generator
 import org.scalatest.{Matchers, _}
