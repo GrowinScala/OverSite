@@ -6,7 +6,6 @@ import database.mappings.UserMappings._
 import database.mappings.DraftMappings._
 import database.mappings.{ LoginRow, UserRow }
 import database.properties.TestDBProperties
-import database.repository.{ ChatRepository, ChatRepositoryImpl }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -27,6 +26,7 @@ class ChatsControllerActionTest extends PlaySpec with GuiceOneAppPerSuite with B
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
+
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = TestDBProperties.db
 

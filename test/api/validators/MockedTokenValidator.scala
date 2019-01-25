@@ -1,5 +1,6 @@
 package api.validators
 
+import definedStrings.ApiStrings._
 import scala.concurrent.Future
 
 /** Mocked Token Validator to be used in Testing */
@@ -21,6 +22,6 @@ class MockedTokenValidator extends TokenValidator {
    * @return Username associated to token
    */
   def getUserByToken(token: String): Future[String] = {
-    Future.successful("blah")
+    Future.successful(EmptyString)
   }
 }

@@ -9,8 +9,7 @@ import scala.concurrent.ExecutionContext
 class Module extends AbstractModule {
   override def configure(): Unit = {
     implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-    //implicit val dbclass: dbClass = testDb
-    //bind(classOf[dbClass]).toInstance(testDb)
+
     bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl(TestDBProperties))
     bind(classOf[UserRepository]).toInstance(new UserRepositoryImpl(TestDBProperties))
     bind(classOf[EmailRepository]).toInstance(new EmailRepositoryImpl(TestDBProperties))

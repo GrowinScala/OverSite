@@ -12,8 +12,7 @@ class Module extends AbstractModule {
   override def configure(): Unit = {
 
     implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-    //implicit val dbclass: dbClass = prodDb
-    //bind(classOf[dbClass]).toInstance(prodDb)
+
     bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl(ProdDBProperties))
     bind(classOf[UserRepository]).toInstance(new UserRepositoryImpl(ProdDBProperties))
     bind(classOf[EmailRepository]).toInstance(new EmailRepositoryImpl(ProdDBProperties))
