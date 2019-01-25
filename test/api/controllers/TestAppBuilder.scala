@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import api.validators.{ MockedTokenValidator, TokenValidator }
 import database.repository._
+import database.repository.fake.{ FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
 import javax.inject.Singleton
 import play.api.Mode
 import play.api.inject.guice.GuiceApplicationBuilder

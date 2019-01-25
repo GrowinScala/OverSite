@@ -1,15 +1,16 @@
 package api.controllers
 
 import api.validators.TokenValidator
-import database.repository.{ChatRepository, _}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import database.repository.{ ChatRepository, _ }
+import database.repository.fake.{ FakeChatRepositoryImpl, FakeUserRepositoryImpl }
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.mvc.{Result, Results}
+import play.api.mvc.{ Result, Results }
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 

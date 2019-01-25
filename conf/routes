@@ -33,14 +33,8 @@ GET    /emails/:emailID             api.controllers.EmailsController.getEmail(em
 
 
     #PATCH ONLY AVAILABLE TO #"SOMETHING"<->#"TRASH"
-####TODELETE
-#PATCH /emails/:emailID/send         api.controllers.EmailsController.toSent(emailID: String)
-####TOCREATE
 PATCH /emails/:emailID              api.controllers.EmailsController.moveInOutTrash(emailID: String)
-
-####TOCREATE
-#PATCH /drafts/:draftID              api.controllers.EmailsController.moveInOutTrash(draftID: String)
-
+PATCH /chats/:chatID                api.controllers.ChatController.moveInOutTrash(chatID: String)
 
     #GIVE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 

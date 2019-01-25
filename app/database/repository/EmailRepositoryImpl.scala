@@ -187,32 +187,26 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
    * @param emailID Identification the a specific email
    * @return
    */
-  def changeTrash(userName: String, emailID: String): Future[Int] = {
+  def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
 
-    val filteredEmailTable = emailTable
+    val emailQuery = emailTable
       .filter(_.emailID === emailID)
       .filter(_.fromAddress === userName)
+      .filter(_.isTrash === !moveToTrash)
       .map(_.isTrash)
+      .update(moveToTrash)
 
-    val currentEmailStatus = db.run(filteredEmailTable.result.headOption)
-
-    val filteredDestinationTable = destinationEmailTable
+    val destinationQuery = destinationEmailTable
       .filter(_.emailID === emailID)
       .filter(_.username === userName)
+      .filter(_.isTrash === !moveToTrash)
       .map(_.isTrash)
-
-    val currentDestinationStatus = db.run(filteredDestinationTable.result.headOption)
+      .update(moveToTrash)
 
     for {
-      resultEmailTable <- currentEmailStatus.map(status =>
-        filteredEmailTable.update(!status.getOrElse(true)))
-        .flatMap(db.run(_))
-
-      resultDestinationTable <- currentDestinationStatus.map(status =>
-        filteredDestinationTable.update(!status.getOrElse(true)))
-        .flatMap(db.run(_))
-
-    } yield resultEmailTable + resultDestinationTable
+      updateEmailResult <- db.run(emailQuery)
+      updateDestinationResult <- db.run(destinationQuery)
+    } yield updateEmailResult + updateDestinationResult
   }
 
   /*Draft repositories*/

@@ -16,6 +16,7 @@ object RepositoryStrings {
   val InsertChatFunction = " #insertChat"
   val GetInboxFunction = " #getInbox"
   val InsertPermissionFunction = " #insertPermission"
+  val ChangeTrashFunction = "#changeTrash"
   val GetSharesFunction = " #getShares"
   val GetSharedEmailFunction = " #getSharedEmail"
   val DeletePermissionFunction = " #deletePermission"

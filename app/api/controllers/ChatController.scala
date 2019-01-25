@@ -3,10 +3,12 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{ CreateShareDTO, MinimalInfoDTO }
+import api.dtos.{ CreateShareDTO, MinimalInfoDTO, TrashInfoDTO }
 import api.validators.TokenValidator
 import database.properties.DBProperties
 import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepository, UserRepositoryImpl }
+import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
+import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
@@ -70,8 +72,8 @@ import scala.concurrent.{ ExecutionContext, Future }
             MinimalInfoDTO.addLink(
               email,
               if (isTrash.getOrElse(false))
-                List(routes.EmailsController.getEmail(email.Id, Option("isTrash")).absoluteURL())
-              else List(routes.EmailsController.getEmail(email.Id, Option("")).absoluteURL())))
+                List(routes.EmailsController.getEmail(email.Id, Option(IsTrashString)).absoluteURL())
+              else List(routes.EmailsController.getEmail(email.Id, Option(EmptyString)).absoluteURL())))
           Ok(Json.toJson(result))
       }
     }
@@ -94,6 +96,30 @@ import scala.concurrent.{ ExecutionContext, Future }
           Ok(emailsResult)
       }
     }
+  }
+
+  /**
+   * Function that moves all the mails from a certain chatID to trash or vice versa
+   * @param chatID Identification of the chat
+   * @return Action that update the trash boolean status of each emailID involved
+   */
+  def moveInOutTrash(chatID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
+
+    val toTrashResult = request.body.validate[TrashInfoDTO]
+
+    toTrashResult.fold(
+      errors => {
+        Future {
+          BadRequest(jsonErrors(errors))
+        }
+      },
+      move => {
+        request.userName.flatMap(
+          chatActions.changeTrash(_, chatID, move.toTrash))
+        Future.successful {
+          Ok
+        }
+      })
   }
 
   /**

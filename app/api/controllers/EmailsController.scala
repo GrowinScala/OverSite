@@ -3,7 +3,7 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{ CreateEmailDTO, MinimalInfoDTO }
+import api.dtos.{ CreateEmailDTO, MinimalInfoDTO, TrashInfoDTO }
 import api.validators.TokenValidator
 import database.properties.DBProperties
 import database.repository.{ EmailRepository, EmailRepositoryImpl, UserRepository, UserRepositoryImpl }
@@ -103,37 +103,23 @@ import scala.concurrent.{ ExecutionContext, Future }
 
   /**
    * Change the email required to trash or take it from trash
-   * @param status Identification of the email status
    * @param emailID Identification of the email
    */
-  def moveInOutTrash(emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+  def moveInOutTrash(emailID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
+    val toTrashResult = request.body.validate[TrashInfoDTO]
 
-    request.userName.flatMap(
-      emailActions.changeTrash(_, emailID).map {
-        case 0 => BadRequest
-        case _ => Ok
-      })
-  }
-
-  /*
-  def updateDraft(emailID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
-
-    val emailResult = request.body.validate[CreateEmailDTO]
-
-    emailResult.fold(
-      errors =>
+    toTrashResult.fold(
+      errors => {
         Future {
           BadRequest(jsonErrors(errors))
-        },
-      draft => {
-        request.userName.flatMap {
-          emailActions.updateDraft(_, emailID, draft) map {
-            case 0 => BadRequest("No email has been updated")
-            case _ => Ok(MailSentStatus)
-          }
+        }
+      },
+      move => {
+        request.userName.flatMap(
+          emailActions.changeTrash(_, emailID, move.toTrash))
+        Future.successful {
+          Ok
         }
       })
   }
- */
-
 }

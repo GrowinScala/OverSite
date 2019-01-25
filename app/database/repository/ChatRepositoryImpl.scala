@@ -2,6 +2,7 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
+import api.dtos._
 import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
@@ -86,9 +87,9 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
       .map(seq => seq.map(_._1).distinct)
 
     val result = idsDistinctList.map(seq =>
-      Future.sequence(seq.map(chatId =>
+      Future.sequence(seq.map(chatID =>
         db.run(emailIdsForSentEmails
-          .filter(_._1 === chatId)
+          .filter(_._1 === chatID)
           .sortBy(_._3.reverse)
           .take(1)
           .result
@@ -142,6 +143,42 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
 
     queryResult.flatMap(db.run(_))
   }
+
+  /**
+   * Function that moves all the mails from a certain chatID to trash or vice versa
+   * @param username Identification of the username
+   * @param chatID Identification of the chat
+   * @param moveToTrash Identification of the sense of movement
+   * @return
+   */
+  def changeTrash(username: String, chatID: String, moveToTrash: Boolean): Future[Int] = {
+
+    val resultEmailTable = db.run(emailTable
+      .filter(_.chatID === chatID)
+      .map(_.emailID).result)
+
+    for {
+      emailResult <- resultEmailTable
+
+      updateEmailResult <- db.run(
+        emailTable
+          .filter(_.emailID inSet emailResult)
+          .filter(_.fromAddress === username)
+          .filter(_.isTrash === !moveToTrash)
+          .map(_.isTrash)
+          .update(moveToTrash))
+
+      updateDestinationResult <- db.run(
+        destinationEmailTable
+          .filter(_.emailID inSet emailResult)
+          .filter(_.username === username)
+          .filter(_.isTrash === !moveToTrash)
+          .map(_.isTrash)
+          .update(moveToTrash))
+
+    } yield updateEmailResult + updateDestinationResult
+  }
+
   /**
    * Authorize an user to have access to a conversation
    * @param from User that concedes permission

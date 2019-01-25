@@ -1,6 +1,7 @@
-package database.repository
+package database.repository.fake
 
 import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
+import database.repository.ChatRepository
 import definedStrings.testStrings.RepositoryStrings.EmptyString
 
 import scala.concurrent.Future
@@ -20,6 +21,10 @@ class FakeChatRepositoryImpl extends ChatRepository {
   }
   def getEmail(userEmail: String, chatID: String, emailID: String, isTrash: Boolean): Future[Seq[EmailInfoDTO]] = {
     Future.successful(Seq(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString)))
+  }
+
+  def changeTrash(username: String, chatID: String, moveToTrash: Boolean): Future[Int] = {
+    Future.successful(0)
   }
 
   def insertPermission(from: String, share: CreateShareDTO): Future[String] = {

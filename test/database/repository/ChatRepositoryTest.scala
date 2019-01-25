@@ -2,7 +2,8 @@ package database.repository
 
 import api.dtos.{ CreateEmailDTO, CreateShareDTO, CreateUserDTO }
 import database.mappings.ChatMappings._
-import database.mappings.DraftMappings.destinationDraftTable
+import database.mappings.Destination
+import database.mappings.DraftMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.properties.TestDBProperties
@@ -15,7 +16,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
@@ -136,7 +137,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
 
   /* Verify if a the function getEmails selects no emails through wrong userName and chatID */
   ChatRepository + GetEmailsFunction should {
-    "check if the email is returned properly when chatID and wrong username are provided" in {
+    "check if the email is not returned when chatID and wrong username are provided" in {
       val result = for {
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultGet <- chatActions.getEmails(userCreationWrongUser.username, resultChatID, isTrash = false)
@@ -155,20 +156,21 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         resultEmailTable <- db.run(emailTable.result)
         //.head is being used since there are some entries from other tests that are not being deleted properly
         resultGet <- chatActions.getEmail(userCreation.username, resultChatID, resultEmailTable.map(_.emailID).head, isTrash = false)
-      } yield (resultGet, resultEmailTable, resultChatID)
+      } yield resultGet
 
-      result.map {
-        case (resultGet, resultEmailTable, resultChatID) =>
-          /** Verify if resultGet is not empty */
-          resultGet.nonEmpty shouldBe true
-          /** Verify if the parameters of getEmail return match */
-          resultGet.forall(_.fromAddress === userCreation.username) shouldBe true
+      result.map { resultGet =>
 
-          /** Verify the "Tos" of resultGet and the ones provided in the emailCreation */
-          resultGet.map(_.username).toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
-          resultGet.forall(_.header === emailCreation.header) shouldBe true
-          resultGet.forall(_.body === emailCreation.body) shouldBe true
-          resultGet.forall(_.dateOf === emailCreation.dateOf) shouldBe true
+        /** Verify if resultGet is not empty */
+        resultGet.nonEmpty shouldBe true
+
+        /** Verify if the parameters of getEmail return match */
+        resultGet.forall(_.fromAddress === userCreation.username) shouldBe true
+
+        /** Verify the "Tos" of resultGet and the ones provided in the emailCreation */
+        resultGet.flatMap(_.username).toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
+        resultGet.forall(_.header === emailCreation.header) shouldBe true
+        resultGet.forall(_.body === emailCreation.body) shouldBe true
+        resultGet.forall(_.dateOf === emailCreation.dateOf) shouldBe true
       }
     }
   }
@@ -224,6 +226,101 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
 
       /** Verify if resultGet is empty */
       result.map(_.isEmpty shouldBe true)
+    }
+  }
+
+  /* Verify if a the function changeTrash changes a mail to trash correctly */
+  ChatRepository + ChangeTrashFunction should {
+    "check if the changes to trash status are proceeded correctly" in {
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- chatActions.changeTrash(userCreation.username, resultChatID, moveToTrash = true)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield resultEmailTable
+
+      result.map(_.forall(_.isTrash === true) shouldBe true)
+    }
+  }
+
+  /* Verify if a the function changeTrash changes the trash email back to inbox correctly */
+  ChatRepository + ChangeTrashFunction should {
+    "check if the changes to non trash status are proceeded correctly" in {
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- chatActions.changeTrash(userCreation.username, resultChatID, moveToTrash = true)
+        _ <- chatActions.changeTrash(userCreation.username, resultChatID, moveToTrash = false)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield resultEmailTable
+
+      result.map(_.forall(_.isTrash === false) shouldBe true)
+    }
+  }
+
+  /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
+  ChatRepository + ChangeTrashFunction should {
+    "check if the changes to trash are proceeded correctly for toAddresses" in {
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- Future.sequence { emailCreation.to.getOrElse(Seq("")).map(chatActions.changeTrash(_, resultChatID, moveToTrash = true)) }
+        resultDestinationTable <- db.run(destinationEmailTable.filter(_.destination === Destination.ToAddress).result)
+      } yield resultDestinationTable
+
+      result.map(_.forall(_.isTrash === true) shouldBe true)
+    }
+  }
+
+  /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
+  ChatRepository + ChangeTrashFunction should {
+    "check if the changes to trash for toAddresses have no effect for CC and BCC" in {
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- Future.sequence {
+          emailCreation.to.getOrElse(Seq("")).map(recipient =>
+            chatActions.changeTrash(recipient, resultChatID, moveToTrash = true))
+        }
+        resultDestinationTable <- db.run(destinationEmailTable.filterNot(_.destination === Destination.ToAddress).result)
+      } yield resultDestinationTable
+
+      result.map(_.forall(_.isTrash === false) shouldBe true)
+    }
+  }
+
+  /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
+  ChatRepository + ChangeTrashFunction should {
+    "check if the changes to trash for toAddresses doesnt work for wrong username" in {
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- chatActions.changeTrash(new Generator().emailAddress, resultChatID, moveToTrash = true)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield resultEmailTable
+
+      result.map(_.forall(_.isTrash === false) shouldBe true)
+    }
+  }
+
+  /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
+  ChatRepository + ChangeTrashFunction should {
+    "check if the changes to trash for toAddresses doesnt work for wrong chatID" in {
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- chatActions.changeTrash(userCreation.username, new Generator().ID, moveToTrash = true)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield resultEmailTable
+
+      result.map(_.forall(_.isTrash === false) shouldBe true)
+    }
+  }
+
+  /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
+  ChatRepository + ChangeTrashFunction should {
+    "check if the changes to trash for toAddresses doesnt work for wrong moveToTrash boolean" in {
+      val result = for {
+        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- chatActions.changeTrash(userCreation.username, resultChatID, moveToTrash = false)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield resultEmailTable
+
+      result.map(_.forall(_.isTrash === false) shouldBe true)
     }
   }
 
@@ -356,7 +453,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
           returnShare.forall(_.chatID === resultChatID) shouldBe true
           returnShare.forall(_.fromAddress === userCreation.username) shouldBe true
           returnShare.forall(_.fromAddress === userCreation.username) shouldBe true
-          returnShare.map(_.username).toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
+          returnShare.flatMap(_.username).toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
           returnShare.forall(_.header === emailCreation.header) shouldBe true
           returnShare.forall(_.body === emailCreation.body) shouldBe true
           returnShare.forall(_.dateOf === emailCreation.dateOf) shouldBe true
