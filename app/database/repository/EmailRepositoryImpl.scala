@@ -86,6 +86,34 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
   }
 
   /**
+   * It changes the status of an email to trash or out of trash
+   * @param userName Identification of user by email
+   * @param emailID Identification the a specific email
+   * @return
+   */
+  def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
+
+    val emailQuery = emailTable
+      .filter(_.emailID === emailID)
+      .filter(_.fromAddress === userName)
+      .filter(_.isTrash === !moveToTrash)
+      .map(_.isTrash)
+      .update(moveToTrash)
+
+    val destinationQuery = destinationEmailTable
+      .filter(_.emailID === emailID)
+      .filter(_.username === userName)
+      .filter(_.isTrash === !moveToTrash)
+      .map(_.isTrash)
+      .update(moveToTrash)
+
+    for {
+      updateEmailResult <- db.run(emailQuery)
+      updateDestinationResult <- db.run(destinationQuery)
+    } yield updateEmailResult + updateDestinationResult
+  }
+
+  /**
    * Auxiliary function that supports getEmails and getEmail
    * @param userEmail Identification of user by email
    * @param status Possible status: "sent", "received" and "trash"
@@ -179,34 +207,6 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
         }))
 
     queryResult.flatMap(db.run(_))
-  }
-
-  /**
-   * It changes the status of an email to trash or out of trash
-   * @param userName Identification of user by email
-   * @param emailID Identification the a specific email
-   * @return
-   */
-  def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
-
-    val emailQuery = emailTable
-      .filter(_.emailID === emailID)
-      .filter(_.fromAddress === userName)
-      .filter(_.isTrash === !moveToTrash)
-      .map(_.isTrash)
-      .update(moveToTrash)
-
-    val destinationQuery = destinationEmailTable
-      .filter(_.emailID === emailID)
-      .filter(_.username === userName)
-      .filter(_.isTrash === !moveToTrash)
-      .map(_.isTrash)
-      .update(moveToTrash)
-
-    for {
-      updateEmailResult <- db.run(emailQuery)
-      updateDestinationResult <- db.run(destinationQuery)
-    } yield updateEmailResult + updateDestinationResult
   }
 
   /*Draft repositories*/
