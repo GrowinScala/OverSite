@@ -1,6 +1,7 @@
-package database.repository
+package database.repository.fake
 
 import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
+import database.repository.ChatRepository
 import definedStrings.testStrings.RepositoryStrings.EmptyString
 
 import scala.concurrent.Future

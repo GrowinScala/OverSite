@@ -68,7 +68,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in database correctly*/
-  EmailRepository + InsertEmailFunction should {
+  "EmailsController" + " #insertEmail" should {
     "check if the intended email is inserted in the email table in database" in {
 
       val result = for {
@@ -106,7 +106,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in chatTable correctly*/
-  EmailRepository + InsertEmailFunction should {
+  "EmailsController" + " #insertEmail" should {
     "check if the chat parameters are inserted in the chat table in database" in {
 
       val result = for {
@@ -134,7 +134,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in the toAddress table correctly */
-  EmailRepository + InsertEmailFunction should {
+  "EmailsController" + " #insertEmail" should {
     "check if the to is inserted in the toAddress table in database" in {
 
       val result = for {
@@ -189,7 +189,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in BCC table correctly*/
-  EmailRepository + InsertEmailFunction should {
+  "EmailsController" + " #insertEmail" should {
     "check if the BCC is inserted in the BCC table in database" in {
 
       val result = for {
@@ -243,7 +243,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in CC table correctly*/
-  EmailRepository + InsertEmailFunction should {
+  "EmailsController" + " #insertEmail" should {
     "check if the CC parameters are inserted in the CC table in database when necessary" in {
 
       val result = for {
@@ -296,15 +296,15 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     }
   }
   /** Verify the function getEmails */
-  EmailRepository + GetEmailsFunction should {
+  "EmailsController" + "#getEmails" should {
     "check if the function getEmails is able to reach the inserted email" in {
 
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
-        resultSent <- emailActions.getEmails(userCreation.username, StatusSent)
-        resultDrafts <- emailActions.getEmails(userCreation.username, StatusDraft)
-        resultReceived <- Future.sequence(emailCreation.to.get.map(emailActions.getEmails(_, StatusReceived)))
+        resultSent <- emailActions.getEmails(userCreation.username, "sent")
+        resultDrafts <- emailActions.getEmails(userCreation.username, "draft")
+        resultReceived <- Future.sequence(emailCreation.to.get.map(emailActions.getEmails(_, "received")))
       } yield (resultEmailTable, resultSent, resultReceived, resultDrafts)
 
       /** getEmails for sent and received cases */
@@ -322,18 +322,18 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function getEmail **/
-  EmailRepository + GetOneEmailFunction should {
+  "EmailsController" + " #getOneEmail" should {
     "check if the function getEmail is able to reach the email inserted" in {
 
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
-        resultSent <- emailActions.getEmail(userCreation.username, StatusSent, resultEmailTable.map(_.emailID).head)
+        resultSent <- emailActions.getEmail(userCreation.username, "sent", resultEmailTable.map(_.emailID).head)
         resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
-          emailActions.getEmail(to, StatusReceived, resultEmailTable.map(emailRow =>
+          emailActions.getEmail(to, "received", resultEmailTable.map(emailRow =>
             emailRow.emailID).head)).map(seqEmailInfoDto =>
           seqEmailInfoDto))
-        resultDrafts <- emailActions.getEmail(userCreation.username, StatusDraft, resultEmailTable.map(_.emailID).head)
+        resultDrafts <- emailActions.getEmail(userCreation.username, "draft", resultEmailTable.map(_.emailID).head)
         resultTos <- Future.successful(EmailInfoDTO(
           resultEmailTable.head.chatID,
           resultEmailTable.head.fromAddress,

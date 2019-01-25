@@ -1,6 +1,7 @@
-package database.repository
+package database.repository.fake
 
 import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO }
+import database.repository.EmailRepository
 import definedStrings.testStrings.RepositoryStrings.EmptyString
 
 import scala.concurrent.Future

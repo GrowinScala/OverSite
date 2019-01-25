@@ -22,6 +22,7 @@ import ActorSystem._
 import akka.actor.ActorDSL._
 import akka.actor.ActorSystem
 import com.google.inject.AbstractModule
+import database.repository.fake.{ FakeChatRepositoryImpl, FakeDraftRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }

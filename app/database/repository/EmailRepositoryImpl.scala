@@ -3,25 +3,25 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO}
+import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO }
 import database.mappings.ChatMappings.chatTable
-import database.mappings.EmailMappings.{emailTable, _}
+import database.mappings.EmailMappings.{ emailTable, _ }
 import database.mappings._
 import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**  Class that receives a db path */
 class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends EmailRepository {
 
   /**
-    * Insert a chat into database
-    * @param email email passed on json body
-    * @param chatID chatID
-    * @return
-    */
+   * Insert a chat into database
+   * @param email email passed on json body
+   * @param chatID chatID
+   * @return
+   */
   private def insertChatActions(email: CreateEmailDTO, chatID: String): Future[String] = {
 
     val randomChatID = randomUUID().toString
@@ -37,10 +37,10 @@ class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionCon
   }
 
   /**
-    * Aims to find an chatID already exists in the database
-    * @param chatID Reference to an email conversation
-    * @return True or False depending if the chatID exists or not
-    */
+   * Aims to find an chatID already exists in the database
+   * @param chatID Reference to an email conversation
+   * @return True or False depending if the chatID exists or not
+   */
   private def existChatID(chatID: String): Future[Boolean] = {
 
     val tableSearch = chatTable

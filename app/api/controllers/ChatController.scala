@@ -3,10 +3,10 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{CreateShareDTO, MinimalInfoDTO, TrashInfoDTO}
+import api.dtos.{ CreateShareDTO, MinimalInfoDTO, TrashInfoDTO }
 import api.validators.TokenValidator
 import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepository, UserRepositoryImpl }
-import database.repository.{ChatRepositoryImpl, UserRepositoryImpl}
+import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
@@ -14,7 +14,7 @@ import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.ApiStrings._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class injected with end-points*/
 

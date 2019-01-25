@@ -33,6 +33,7 @@ object ControllerStrings {
   val EmailEndpointRoute = "/email"
   val EmailsEndpointRoute = "/emails/"
   val ChatsEndpointRoute = "/chats"
+  val WithOptionTrue = "?isTrash=true"
   val SharesEndpointRoute = "/shares"
   val SignInEndpointRoute = "/signin"
   val LogInEndpointRoute = "/login"
@@ -69,6 +70,7 @@ object ControllerStrings {
   val BCCKey = "BCC"
   val CCKey = "CC"
   val SendNowKey = "sendNow"
+  val TrueKey = "true"
 
   val WrongUsernameKey = "NOTusername"
   val WrongPasswordKey = "NOTpassword"
@@ -81,6 +83,7 @@ object ControllerStrings {
   val WrongBCCKey = "NOTBCC"
   val WrongCCKey = "NOTCC"
   val WrongSendNowKey = "NOTsendNow"
+  val ToTrashKey = "toTrash"
 
   /** For error messages */
 
@@ -88,6 +91,7 @@ object ControllerStrings {
   val ValidJSONBodyOk = "send an OK if JSON body has an valid format:"
   val InvalidTokenForbidden = "send a Forbidden if JSON header has an invalid token"
   val ValidTokenOk = "send a OK if JSON header has a valid token"
+  val ValidTokenOkWithOption = "send a OK if JSON header has a valid token and a valid body"
   val InvalidStatusBadRequest = "send a BadRequest if end-point has an invalid status"
   val HasNoToAddressBadRequest = "send a BadRequest if target email has no to address"
   val InvalidEmailAddress = "send a BadRequest if username is not a valid email address"

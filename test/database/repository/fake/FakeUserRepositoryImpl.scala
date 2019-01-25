@@ -1,6 +1,7 @@
-package database.repository
+package database.repository.fake
 
 import api.dtos.CreateUserDTO
+import database.repository.UserRepository
 import definedStrings.testStrings.RepositoryStrings.EmptyString
 
 import scala.concurrent.Future
