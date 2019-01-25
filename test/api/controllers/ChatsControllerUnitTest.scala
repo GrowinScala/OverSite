@@ -2,57 +2,61 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, CreateUserDTO }
 import api.validators.TokenValidator
-import database.mappings.ChatMappings._
-import database.mappings.DraftMappings.destinationDraftTable
-import database.mappings.EmailMappings._
-import database.mappings.UserMappings._
-import database.repository._
-import definedStrings.testStrings.RepositoryStrings._
-import generators.Generator
-import javax.inject.Inject
-import org.scalatest.{ Matchers, _ }
+import database.repository.{ ChatRepository, _ }
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{ ControllerComponents, Result, Results }
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import slick.jdbc.H2Profile.api._
-import ActorSystem._
-import akka.actor.ActorDSL._
-import akka.actor.ActorSystem
-import com.google.inject.AbstractModule
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{ ExecutionContext, Future }
 
-class ChatsControllerUnitTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
+class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 
-  val fakeChatActions = new FakeChatRepositoryImpl
-  val fakeEmailActions = new FakeEmailRepositoryImpl
-  val fakeDraftActions = new FakeDraftRepositoryImpl
-  val fakeUserActions = new FakeUserRepositoryImpl
+  val chatActions: ChatRepository = new FakeChatRepositoryImpl()
+  val userActions: UserRepository = new FakeUserRepositoryImpl()
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
+
+  import play.api.inject.bind
+  import play.api.inject.guice.GuiceApplicationBuilder
+
+  val appBuilder2 = new GuiceApplicationBuilder()
+    .load(
+      new play.api.inject.BuiltinModule,
+      new play.api.i18n.I18nModule,
+      new play.api.mvc.CookiesModule,
+      bind(classOf[ChatRepository]).toInstance(new FakeChatRepositoryImpl()),
+      bind(classOf[UserRepository]).toInstance(new FakeUserRepositoryImpl()),
+      bind(classOf[EmailRepository]).toInstance(new FakeEmailRepositoryImpl())).injector()
+
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = injector.instanceOf[Database]
   lazy implicit val mat = injector.instanceOf[Materializer]
   lazy val cc = injector.instanceOf[ControllerComponents]
   val actorSystem = injector.instanceOf[ActorSystem]
 
-  val chatActions: ChatRepository = new ChatRepositoryImpl()
-  val userActions: UserRepository = new UserRepositoryImpl()
-  val tokenValidator = new TokenValidator()
+  //lazy implicit val user = injector.instanceOf[UserRepository]
+  //lazy implicit val chat = injector.instanceOf[ChatRepository]
 
-  import play.api.inject.bind
-  appBuilder.overrides(bind[UserRepository].toInstance(userActions))
-    .overrides(bind[ChatRepository].toInstance(chatActions))
-    .build()
+  val tokenValidator = injector.instanceOf[TokenValidator]
 
-  val chatController = new ChatController(tokenValidator, cc,
-    actorSystem, db, chatActions, userActions)
-
-  chatController.getEmail("", "", Option(true))
+  "Example Page#index" should {
+    "should be valid" in {
+      val controller = new ChatController(
+        cc,
+        actorSystem, chatActions, userActions)
+      val result: Future[Result] = controller.getEmail("", "", Option(true)).apply(FakeRequest())
+      val bodyText: String = contentAsString(result)
+      bodyText mustBe "ok"
+    }
+  }
 
 }

@@ -7,6 +7,7 @@ import api.dtos.{ CreateEmailDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
 import database.repository.{ EmailRepository, EmailRepositoryImpl, UserRepository, UserRepositoryImpl }
 import definedStrings.ApiStrings._
+import definedStrings.DatabaseStrings.OversiteDB
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
@@ -16,15 +17,14 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class injected with end-points */
 
-class EmailsController @Inject() (
-  tokenValidator: TokenValidator,
+@Singleton class EmailsController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  implicit val db: Database,
-  emailActions: EmailRepositoryImpl,
-  usersActions: UserRepositoryImpl)(implicit exec: ExecutionContext)
+  emailActions: EmailRepository,
+  usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
+  val tokenValidator = new TokenValidator()
   /**
    * Aims to send an email from an user to an userID
    * @return inserts the email information to the database

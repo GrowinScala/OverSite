@@ -4,22 +4,22 @@ import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.{ CreateEmailDTO, DraftStatusDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
-import database.repository.DraftRepositoryImpl
+import database.repository.EmailRepository
 import definedStrings.ApiStrings.{ MailSentStatus, _ }
-import javax.inject.Inject
+import definedStrings.DatabaseStrings.OversiteDB
+import javax.inject.{ Inject, Singleton }
 import play.api.libs.json.{ JsArray, JsValue, Json }
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class DraftsController @Inject() (
-  tokenValidator: TokenValidator,
+@Singleton class DraftsController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  implicit val db: Database,
-  draftActions: DraftRepositoryImpl)(implicit exec: ExecutionContext) extends AbstractController(cc) {
+  emailActions: EmailRepository)(implicit exec: ExecutionContext) extends AbstractController(cc) {
 
+  val tokenValidator = new TokenValidator()
   /**
    * Aims to send an email from an user to an userID
    * @return inserts the email information to the database
@@ -35,7 +35,7 @@ class DraftsController @Inject() (
       },
       draft => {
         request.userName.map(
-          draftActions.insertDraft(_, draft))
+          emailActions.insertDraft(_, draft))
         Future.successful {
           Ok(MailSentStatus)
         }
@@ -52,7 +52,7 @@ class DraftsController @Inject() (
     implicit val req: RequestHeader = request
 
     request.userName.flatMap(
-      draftActions.getDrafts(_, isTrash.getOrElse(false)).map {
+      emailActions.getDrafts(_, isTrash.getOrElse(false)).map {
         drafts =>
           val result = drafts.map(draft =>
             MinimalInfoDTO.addLink(
@@ -75,7 +75,7 @@ class DraftsController @Inject() (
     implicit val req: RequestHeader = request
 
     request.userName.flatMap(
-      draftActions.getDraft(_, isTrash.getOrElse(false), draftID).map(
+      emailActions.getDraft(_, isTrash.getOrElse(false), draftID).map(
         drafts => {
           val resultDraftID = JsArray(drafts.map(Json.toJson(_)))
           Ok(resultDraftID)
@@ -93,7 +93,7 @@ class DraftsController @Inject() (
         }
       },
       draft => {
-        request.userName.map(draftActions.updateDraft(draft, _, draftID))
+        request.userName.map(emailActions.updateDraft(draft, _, draftID))
         Future.successful {
           Ok(EmailUpdated)
         }
@@ -119,10 +119,10 @@ class DraftsController @Inject() (
       draft => draft.status match {
 
         case StatusSend => request.userName.flatMap(username =>
-          draftActions.destinations(username, draftID).flatMap {
-            case (listTos, listBCCs, listCCs) => draftActions.hasDestination(listTos, listBCCs, listCCs).map(
+          emailActions.destinations(username, draftID).flatMap {
+            case (listTos, listBCCs, listCCs) => emailActions.hasDestination(listTos, listBCCs, listCCs).map(
               if (_) {
-                draftActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
+                emailActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
                 Ok(MailSentStatus)
               } else
                 BadRequest(ImpossibleToSendDraft))
@@ -130,14 +130,14 @@ class DraftsController @Inject() (
 
         case StatusTrash =>
           request.userName.map(
-            draftActions.moveInOutTrash(_, draftID, trash = true))
+            emailActions.moveInOutTrash(_, draftID, trash = true))
           Future.successful {
             Ok(EmailUpdated)
           }
 
         case StatusDraft =>
           request.userName.map(
-            draftActions.moveInOutTrash(_, draftID, trash = false))
+            emailActions.moveInOutTrash(_, draftID, trash = false))
           Future.successful {
             Ok(EmailUpdated)
           }

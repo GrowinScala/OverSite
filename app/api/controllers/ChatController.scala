@@ -11,20 +11,20 @@ import play.api.libs.json._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
 import definedStrings.ApiStrings._
+import definedStrings.DatabaseStrings.OversiteDB
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class injected with end-points*/
 
-class ChatController @Inject() (
-  tokenValidator: TokenValidator,
+@Singleton class ChatController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  implicit val db: Database,
   chatActions: ChatRepository,
   usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
+  val tokenValidator = new TokenValidator()
   //Auxiliary function that supports GET \chats and GET /chats?isTrash=true
   /**
    * Get inbox action

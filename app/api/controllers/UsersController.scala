@@ -12,20 +12,20 @@ import play.api.mvc._
 import regex.RegexPatterns.emailAddressPattern
 import slick.jdbc.MySQLProfile.api._
 import api.JsonObjects._
+import definedStrings.DatabaseStrings.OversiteDB
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class that is injected with end-points */
 
-class UsersController @Inject() (
+@Singleton class UsersController @Inject() (
   cc: ControllerComponents,
   actorSystem: ActorSystem,
-  tokenValidator: TokenValidator,
-  implicit val db: Database,
   userActions: UserRepository)(implicit exec: ExecutionContext)
 
   extends AbstractController(cc) {
 
+  val tokenValidator = new TokenValidator()
   /**
    * Sign in action
    * @return When a valid user is inserted, it is added in the database, otherwise an error message is sent

@@ -1,15 +1,12 @@
+
 import com.google.inject.AbstractModule
 import database.repository._
-import definedStrings.DatabaseStrings.OversiteDB
-import play.api.Mode
-import play.api.inject.Injector
-import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.MySQLProfile.api._
+import play.api.inject.guice.GuiceApplicationBuilder
 
 import scala.concurrent.ExecutionContext
 
-/** Outline the database to be used implicitly */
-class Module extends AbstractModule {
+class ControllersUnitTestModule extends AbstractModule {
   override def configure(): Unit = {
     implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
     implicit val db: Database = Database.forURL(
@@ -17,8 +14,8 @@ class Module extends AbstractModule {
       driver = "org.h2.Driver")
 
     bind(classOf[Database]).toInstance(db)
-    bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl())
-    bind(classOf[UserRepository]).toInstance(new UserRepositoryImpl())
-    bind(classOf[EmailRepository]).toInstance(new EmailRepositoryImpl())
+    bind(classOf[ChatRepository]).toInstance(new FakeChatRepositoryImpl())
+    bind(classOf[UserRepository]).toInstance(new FakeUserRepositoryImpl())
+    bind(classOf[EmailRepository]).toInstance(new FakeEmailRepositoryImpl())
   }
 }

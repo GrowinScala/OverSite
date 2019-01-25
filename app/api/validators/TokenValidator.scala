@@ -1,13 +1,14 @@
 package api.validators
-import akka.stream.Materializer
+import akka.actor.ActorSystem
+import akka.stream.{ ActorMaterializer, Materializer }
 import database.mappings.UserMappings.loginTable
-import javax.inject.Inject
+import javax.inject.{ Inject, Singleton }
 import play.api.mvc
 import play.api.mvc.Results._
 import play.api.mvc._
 import slick.jdbc.MySQLProfile.api._
-
 import definedStrings.ApiStrings._
+import definedStrings.DatabaseStrings.OversiteDB
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ ExecutionContext, Future }
@@ -23,9 +24,12 @@ case class AuthRequest[A](
 }
 
 /** Class responsible to validate the token */
-class TokenValidator @Inject() (implicit mat: Materializer, db: Database) extends ActionBuilder[AuthRequest, AnyContent] {
+class TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
   override protected def executionContext: ExecutionContext = global
+  implicit val actorSystem: ActorSystem = ActorSystem()
+  implicit val materializer: Materializer = ActorMaterializer()
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()
+  implicit val db: Database = Database.forConfig(OversiteDB)
 
   override def invokeBlock[A](request: Request[A], block: AuthRequest[A] => Future[Result]): Future[Result] = {
 

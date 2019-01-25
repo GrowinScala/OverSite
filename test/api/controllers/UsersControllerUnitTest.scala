@@ -4,7 +4,7 @@ import database.mappings.ChatMappings._
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
-import database.repository.{ FakeChatRepositoryImpl, FakeDraftRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
+import database.repository.{ FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
 import definedStrings.testStrings.RepositoryStrings._
 import generators.Generator
 import org.scalatest.{ Matchers, _ }
@@ -20,7 +20,6 @@ class UsersControllerUnitTest extends AsyncWordSpec with BeforeAndAfterAll with 
 
   val fakeChatActions = new FakeChatRepositoryImpl
   val fakeEmailActions = new FakeEmailRepositoryImpl
-  val fakeDraftActions = new FakeDraftRepositoryImpl
   val fakeUserActions = new FakeUserRepositoryImpl
 
 }
