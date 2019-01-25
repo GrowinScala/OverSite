@@ -5,6 +5,7 @@ import database.mappings.ChatMappings.{ chatTable, shareTable }
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings.{ loginTable, userTable }
+import database.properties.TestDBProperties
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.RepositoryStrings._
 import encryption.EncryptString
@@ -24,9 +25,9 @@ class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = injector.instanceOf[Database]
+  lazy implicit val db: Database = TestDBProperties.db
 
-  val userActions = new UserRepositoryImpl()
+  val userActions = injector.instanceOf[UserRepository]
   val userGenerator = new Generator()
   val userCreation = CreateUserDTO(userGenerator.username, userGenerator.password)
   val userCreationWrongPassword = new CreateUserDTO(userCreation.username, new Generator().password)

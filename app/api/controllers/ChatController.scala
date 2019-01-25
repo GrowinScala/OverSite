@@ -5,6 +5,7 @@ import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
 import api.dtos.{ CreateShareDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
+import database.properties.DBProperties
 import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepository, UserRepositoryImpl }
 import javax.inject._
 import play.api.libs.json._
@@ -18,13 +19,16 @@ import scala.concurrent.{ ExecutionContext, Future }
 /** Class injected with end-points*/
 
 @Singleton class ChatController @Inject() (
+  //dbclass: dbClass,
+  tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   chatActions: ChatRepository,
   usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
-  val tokenValidator = new TokenValidator()
+  //val tokenValidator: TokenValidator = new TokenValidator(dbclass.db)
+
   //Auxiliary function that supports GET \chats and GET /chats?isTrash=true
   /**
    * Get inbox action

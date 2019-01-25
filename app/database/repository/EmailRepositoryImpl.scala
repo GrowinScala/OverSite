@@ -8,6 +8,7 @@ import database.mappings.ChatMappings.chatTable
 import database.mappings.DraftMappings.{ destinationDraftTable, draftTable }
 import database.mappings.EmailMappings.{ emailTable, _ }
 import database.mappings._
+import database.properties.DBProperties
 import definedStrings.ApiStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
@@ -15,7 +16,9 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**  Class that receives a db path */
-class EmailRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends EmailRepository {
+class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends EmailRepository {
+
+  val db = dbClass.db
 
   /**
    * Insert a chat into database

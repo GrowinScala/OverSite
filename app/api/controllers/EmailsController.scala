@@ -5,6 +5,7 @@ import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
 import api.dtos.{ CreateEmailDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
+import database.properties.DBProperties
 import database.repository.{ EmailRepository, EmailRepositoryImpl, UserRepository, UserRepositoryImpl }
 import definedStrings.ApiStrings._
 import definedStrings.DatabaseStrings.OversiteDB
@@ -18,13 +19,16 @@ import scala.concurrent.{ ExecutionContext, Future }
 /** Class injected with end-points */
 
 @Singleton class EmailsController @Inject() (
+  //dbclass: dbClass,
+  tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   emailActions: EmailRepository,
   usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
-  val tokenValidator = new TokenValidator()
+  //val tokenValidator: TokenValidator = new TokenValidator(dbclass.db)
+
   /**
    * Aims to send an email from an user to an userID
    * @return inserts the email information to the database

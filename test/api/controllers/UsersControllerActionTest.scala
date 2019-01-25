@@ -5,6 +5,7 @@ import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
+import database.properties.TestDBProperties
 import definedStrings.testStrings.ControllerStrings._
 import definedStrings.AlgorithmStrings._
 import encryption.EncryptString
@@ -28,7 +29,7 @@ class UsersControllerActionTest extends PlaySpec with GuiceOneAppPerSuite with B
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = injector.instanceOf[Database]
+  lazy implicit val db: Database = TestDBProperties.db
 
   private val testGenerator = new Generator()
   private val chatIDExample = testGenerator.ID

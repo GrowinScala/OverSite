@@ -5,6 +5,7 @@ import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.mappings._
+import database.properties.TestDBProperties
 import database.repository.ChatRepositoryImpl
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.ControllerStrings._
@@ -29,8 +30,7 @@ class EmailsControllerActionTest extends PlaySpec with GuiceOneAppPerSuite with 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = injector.instanceOf[Database]
-  lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
+  lazy implicit val db: Database = TestDBProperties.db
 
   private val testGenerator = new Generator()
   private val chatIDExample = testGenerator.ID

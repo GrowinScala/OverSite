@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.{ CreateEmailDTO, DraftStatusDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
+import database.properties.DBProperties
 import database.repository.EmailRepository
 import definedStrings.ApiStrings.{ MailSentStatus, _ }
 import definedStrings.DatabaseStrings.OversiteDB
@@ -15,11 +16,14 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton class DraftsController @Inject() (
+  //dbclass: dbClass,
+  tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   emailActions: EmailRepository)(implicit exec: ExecutionContext) extends AbstractController(cc) {
 
-  val tokenValidator = new TokenValidator()
+  //val tokenValidator: TokenValidator = new TokenValidator(dbclass.db)
+
   /**
    * Aims to send an email from an user to an userID
    * @return inserts the email information to the database

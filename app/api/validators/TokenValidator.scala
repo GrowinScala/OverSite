@@ -2,6 +2,7 @@ package api.validators
 import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
 import database.mappings.UserMappings.loginTable
+import database.properties.DBProperties
 import javax.inject.{ Inject, Singleton }
 import play.api.mvc
 import play.api.mvc.Results._
@@ -23,13 +24,11 @@ case class AuthRequest[A](
       super.newWrapper(newRequest))
 }
 
-/** Class responsible to validate the token */
-class TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
+trait TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
   override protected def executionContext: ExecutionContext = global
   implicit val actorSystem: ActorSystem = ActorSystem()
   implicit val materializer: Materializer = ActorMaterializer()
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()
-  implicit val db: Database = Database.forConfig(OversiteDB)
 
   override def invokeBlock[A](request: Request[A], block: AuthRequest[A] => Future[Result]): Future[Result] = {
 
@@ -40,9 +39,19 @@ class TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
         block(AuthRequest(userName, request))
 
       case false =>
-        Future { Forbidden(VerifyLoginStatus) }
+        Future {
+          Forbidden(VerifyLoginStatus)
+        }
     }
   }
+
+  def validateToken(token: String): Future[Boolean]
+
+  def getUserByToken(token: String): Future[String]
+}
+
+/** Class responsible to validate the token */
+class ProdTokenValidator(db: Database) extends TokenValidator {
 
   /**
    * Validates the userName and token inserted by the user
@@ -66,5 +75,4 @@ class TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
     val getUser = loginTable.filter(x => x.token === token).map(_.username).result
     db.run(getUser).map(_.head)
   }
-
 }

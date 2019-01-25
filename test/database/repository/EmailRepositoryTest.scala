@@ -8,6 +8,7 @@ import database.mappings.Destination
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings.{ loginTable, userTable }
+import database.properties.TestDBProperties
 import definedStrings.testStrings.RepositoryStrings._
 import generators._
 import org.scalatest._
@@ -25,10 +26,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
   lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = injector.instanceOf[Database]
+  lazy implicit val db: Database = TestDBProperties.db
 
-  lazy implicit val rep: ChatRepositoryImpl = new ChatRepositoryImpl()
-  val emailActions = new EmailRepositoryImpl()
+  val emailActions = injector.instanceOf[EmailRepository]
 
   val userGenerator = new Generator()
   val userCreation = new CreateUserDTO(userGenerator.username, userGenerator.password)

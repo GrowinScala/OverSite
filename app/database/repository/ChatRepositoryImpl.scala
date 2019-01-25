@@ -6,14 +6,16 @@ import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
+import database.properties.DBProperties
 import definedStrings.DatabaseStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ChatRepositoryImpl @Inject() (implicit val executionContext: ExecutionContext, db: Database) extends ChatRepository {
+class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
 
+  val db = dbClass.db
   /**
    * Aims to find an chatID already exists in the database
    * @param chatID Reference to an email conversation
