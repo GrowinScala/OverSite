@@ -156,7 +156,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   }
 
   "DraftsController #draft" should {
-    "send a BadRequest if JSON header has a invalid body: case dateOF" in {
+    "send a BadRequest if JSON body has an invalid format: case dateOF" in {
       val controller = new DraftsController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
@@ -177,7 +177,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   }
 
   "DraftsController #draft" should {
-    "send a BadRequest if JSON header has a invalid body: case header" in {
+    "send a BadRequest if JSON body has an invalid format: case header" in {
       val controller = new DraftsController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
@@ -198,7 +198,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   }
 
   "DraftsController #draft" should {
-    "send a BadRequest if JSON header has a invalid body: case body" in {
+    "send a BadRequest if JSON body has an invalid format: case body" in {
       val controller = new DraftsController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
@@ -444,7 +444,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   }
 
   "ChatController #updateDraft" should {
-    "send a BadRequest if JSON header has a invalid body: case dateOf" in {
+    "send a BadRequest if JSON body has an invalid format: case dateOf" in {
       val controller = new DraftsController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
@@ -466,7 +466,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   }
 
   "ChatController #updateDraft" should {
-    "send a BadRequest if JSON header has a invalid body: case header" in {
+    "send a BadRequest if JSON body has an invalid format: case header" in {
       val controller = new DraftsController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
@@ -488,7 +488,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   }
 
   "ChatController #updateDraft" should {
-    "send a BadRequest if JSON header has a invalid body: case body" in {
+    "send a BadRequest if JSON body has an invalid format: case body" in {
       val controller = new DraftsController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,

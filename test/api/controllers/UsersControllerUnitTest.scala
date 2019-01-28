@@ -3,7 +3,7 @@ package api.controllers
 import akka.stream.Materializer
 import api.validators.TokenValidator
 import database.repository._
-import database.repository.fake.FakeUserRepositoryImpl
+import database.repository.fake.{ FakeUserRepositoryImpl, FakeUserRepositoryImplWithWrongLoginAndLogout }
 import definedStrings.ApiStrings._
 import definedStrings.testStrings.ControllerStrings.{ LocalHost, TokenKey }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
@@ -24,13 +24,13 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   val usersActions: UserRepository = new FakeUserRepositoryImpl()
 
   "UsersController #signIn" should {
-    "send a Ok if JSON header has a valid token" in {
+    "send a Ok if JSON body has a valid format" in {
       val controller = new UsersController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         usersActions)
-      val result = controller.signIn.apply(FakeRequest(POST, "/draft")
+      val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "pluis@growin.pt",
@@ -46,7 +46,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.ccWithValidToken,
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         usersActions)
-      val result = controller.signIn.apply(FakeRequest(POST, "/draft")
+      val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "pluis.growin.pt",
@@ -58,34 +58,142 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   }
 
   "UsersController #signIn" should {
-    "send a BadRequest if JSON header has a invalid body: case username" in {
+    "send a BadRequest if JSON body has an invalid format: case username" in {
       val controller = new UsersController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         usersActions)
-      val result = controller.signIn.apply(FakeRequest(POST, "/draft")
+      val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
-          "NOTusername" -> "pluis.growin.pt",
+          "NOTusername" -> "pluis@growin.pt",
           "password" -> ""))))
       status(result) mustBe BAD_REQUEST
     }
   }
 
   "UsersController #signIn" should {
-    "send a BadRequest if JSON header has a invalid body: case password" in {
+    "send a BadRequest if JSON body has an invalid format: case password" in {
       val controller = new UsersController(
         UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
         UnitControllerTestsAppBuilder.ccWithValidToken,
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         usersActions)
-      val result = controller.signIn.apply(FakeRequest(POST, "/draft")
+      val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
-          "username" -> "pluis.growin.pt",
+          "username" -> "pluis@growin.pt",
           "NOTpassword" -> ""))))
       status(result) mustBe BAD_REQUEST
+    }
+  }
+
+  "UsersController #logIn" should {
+    "send a BadRequest if JSON body has an invalid format: case username" in {
+      val controller = new UsersController(
+        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithValidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        usersActions)
+      val result = controller.logIn.apply(FakeRequest(POST, "/login")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withBody(Json.toJson(Json.obj(
+          "NOTusername" -> "pluis@growin.pt",
+          "password" -> ""))))
+      status(result) mustBe BAD_REQUEST
+    }
+  }
+
+  "UsersController #logIn" should {
+    "send a BadRequest if JSON body has an invalid format: case password" in {
+      val controller = new UsersController(
+        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithValidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        usersActions)
+      val result = controller.logIn.apply(FakeRequest(POST, "/login")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withBody(Json.toJson(Json.obj(
+          "username" -> "pluis@growin.pt",
+          "NOTpassword" -> ""))))
+      status(result) mustBe BAD_REQUEST
+    }
+  }
+
+  "UsersController #logIn" should {
+    "send a Ok if JSON body has a valid format" in {
+      val controller = new UsersController(
+        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithValidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        usersActions)
+      val result = controller.logIn.apply(FakeRequest(POST, "/login")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withBody(Json.toJson(Json.obj(
+          "username" -> "pluis@growin.pt",
+          "password" -> ""))))
+      status(result) mustBe OK
+    }
+  }
+
+  "UsersController #logIn" should {
+    val usersActionsWithWrongLogin = new FakeUserRepositoryImplWithWrongLoginAndLogout()
+    "send a Forbidden if password and username doesn´t match" in {
+      val controller = new UsersController(
+        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithValidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        usersActionsWithWrongLogin)
+      val result = controller.logIn.apply(FakeRequest(POST, "/login")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withBody(Json.toJson(Json.obj(
+          "username" -> "",
+          "password" -> ""))))
+      status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe PasswordMissMatchStatus
+    }
+  }
+
+  "UsersController #logOut" should {
+    "send a Ok if the user was logged out" in {
+      val controller = new UsersController(
+        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithValidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        usersActions)
+      val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      status(result) mustBe OK
+    }
+  }
+
+  "UsersController #logOut" should {
+    "send a NotModified if the user wasn´t logged out" in {
+      val usersActionsWithWrongLogin = new FakeUserRepositoryImplWithWrongLoginAndLogout()
+      val controller = new UsersController(
+        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithValidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        usersActionsWithWrongLogin)
+      val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      status(result) mustBe NOT_MODIFIED
+    }
+  }
+
+  "UsersController #logOut" should {
+    "send a Forbidden if JSON header has an invalid token" in {
+      val usersActionsWithWrongLogin = new FakeUserRepositoryImplWithWrongLoginAndLogout()
+      val controller = new UsersController(
+        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithInvalidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        usersActionsWithWrongLogin)
+      val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
     }
   }
 
