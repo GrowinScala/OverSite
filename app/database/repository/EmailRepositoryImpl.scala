@@ -230,7 +230,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
   }
 
   /** Function that update a draft deleting all the data related to that draftID replacing it with the new draft*/
-  def updateDraft(draft: CreateEmailDTO, username: String, draftID: String): Future[String] = {
+  def updateDraft(username: String, draftID: String, draft: CreateEmailDTO): Future[String] = {
 
     val updateDraft = for {
       _ <- destinationDraftTable
@@ -270,7 +270,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
    * @param draftID Identification the a specific draft
    * @return All the details of the draft selected
    */
-  def getDraft(userEmail: String, isTrash: Boolean, draftID: String): Future[Seq[DraftInfoDTO]] = {
+  def getDraft(userEmail: String, draftID: String, isTrash: Boolean): Future[Seq[DraftInfoDTO]] = {
 
     val queryResult = draftTable
       .filter(_.username === userEmail)

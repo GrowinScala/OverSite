@@ -79,7 +79,7 @@ import scala.concurrent.{ ExecutionContext, Future }
     implicit val req: RequestHeader = request
 
     request.userName.flatMap(
-      emailActions.getDraft(_, isTrash.getOrElse(false), draftID).map(
+      emailActions.getDraft(_, draftID, isTrash.getOrElse(false)).map(
         drafts => {
           val resultDraftID = JsArray(drafts.map(Json.toJson(_)))
           Ok(resultDraftID)
@@ -97,7 +97,7 @@ import scala.concurrent.{ ExecutionContext, Future }
         }
       },
       draft => {
-        request.userName.map(emailActions.updateDraft(draft, _, draftID))
+        request.userName.map(emailActions.updateDraft(_, draftID, draft))
         Future.successful {
           Ok(EmailUpdated)
         }

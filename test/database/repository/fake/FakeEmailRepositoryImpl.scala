@@ -32,11 +32,11 @@ class FakeEmailRepositoryImpl extends EmailRepository {
     Future.successful(Seq(MinimalInfoDTO(EmptyString, EmptyString)))
   }
 
-  def updateDraft(draft: CreateEmailDTO, username: String, draftID: String): Future[String] = {
+  def updateDraft(username: String, draftID: String, draft: CreateEmailDTO): Future[String] = {
     Future.successful(EmptyString)
   }
 
-  def getDraft(userEmail: String, isTrash: Boolean, draftID: String): Future[Seq[DraftInfoDTO]] = {
+  def getDraft(userEmail: String, draftID: String, isTrash: Boolean): Future[Seq[DraftInfoDTO]] = {
     Future.successful(Seq(DraftInfoDTO(EmptyString, userEmail, Seq(EmptyString), Seq(EmptyString), Seq(EmptyString), EmptyString, EmptyString, EmptyString)))
   }
 

@@ -2,14 +2,15 @@ package database.repository
 
 import java.util.UUID
 
-import api.dtos.{ CreateEmailDTO, CreateUserDTO, EmailInfoDTO, MinimalInfoDTO }
+import api.dtos._
 import database.mappings.ChatMappings.{ chatTable, shareTable }
 import database.mappings.Destination
-import database.mappings.DraftMappings.destinationDraftTable
+import database.mappings.DraftMappings.{ destinationDraftTable, draftTable }
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings.{ loginTable, userTable }
 import database.properties.TestDBProperties
 import definedStrings.testStrings.RepositoryStrings._
+import definedStrings.DatabaseStrings._
 import generators._
 import org.scalatest._
 import play.api.Mode
@@ -53,7 +54,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses))
 
-  private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
+  private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, draftTable, destinationDraftTable, loginTable, shareTable)
 
   override def beforeAll(): Unit = {
     Await.result(db.run(DBIO.seq(tables.map(_.schema.create): _*)), Duration.Inf)
@@ -367,14 +368,34 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
 
+    /** Verify the function getEmails */
+    EmailRepository + "#getEmails" should {
+      "check if the function getEmails is able to reach the inserted email that is trashed" in {
+
+        val result = for {
+          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+          resultEmailTable <- db.run(emailTable.result)
+          _ <- Future.sequence { resultEmailTable.map(x => emailActions.changeTrash(userCreation.username, x.emailID, moveToTrash = true)) }
+          resultToTrash <- emailActions.getEmails(userCreation.username, "trashed")
+        } yield (resultEmailTable, resultToTrash)
+
+        /** getEmails for sent and received cases */
+        result.map {
+          case (resultEmailTable, resultToTrash) =>
+            resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultToTrash
+
+        }
+      }
+    }
+
     /** Verify the function getEmail **/
-    EmailRepository + " #getOneEmail" should {
+    EmailRepository + " #getEmail" should {
       "check if the function getEmail is able to reach the email inserted" in {
 
         val result = for {
           _ <- emailActions.insertEmail(userCreation.username, emailCreation)
           resultEmailTable <- db.run(emailTable.result)
-          resultSent <- Future.sequence{resultEmailTable.map(x=>emailActions.getEmail(userCreation.username, "sent", x.emailID))}
+          resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, "sent", x.emailID)) }
           resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
             emailActions.getEmail(to, "received", resultEmailTable.map(emailRow =>
               emailRow.emailID).head)).map(seqEmailInfoDto => seqEmailInfoDto))
@@ -385,16 +406,450 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
             resultEmailTable.head.header,
             resultEmailTable.head.body,
             resultEmailTable.head.dateOf))
-        } yield (resultSent, resultReceived, resultTos)
+        } yield (resultSent.flatten, resultReceived.flatten, resultTos)
 
         result.map {
           case (resultSent, resultReceived, resultTos) =>
-            resultSent shouldEqual resultTos
-            resultReceived.map(_.contains(resultTos)) shouldBe true
-
+            resultSent.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
+            resultReceived.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
         }
       }
     }
   }
+
+  /** Verify the function getEmail **/
+  EmailRepository + " #getEmail" should {
+    "check if the function getEmail is able to reach the email inserted and trashed" in {
+
+      val result = for {
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultEmailTable <- db.run(emailTable.result)
+        resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, "sent", x.emailID)) }
+        resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
+          emailActions.getEmail(to, "received", resultEmailTable.map(emailRow =>
+            emailRow.emailID).head)).map(seqEmailInfoDto => seqEmailInfoDto))
+        resultTos <- Future.successful(EmailInfoDTO(
+          resultEmailTable.head.chatID,
+          resultEmailTable.head.fromAddress,
+          emailCreation.to.getOrElse(Seq("")),
+          resultEmailTable.head.header,
+          resultEmailTable.head.body,
+          resultEmailTable.head.dateOf))
+      } yield (resultSent.flatten, resultReceived.flatten, resultTos)
+
+      result.map {
+        case (resultSent, resultReceived, resultTos) =>
+          resultSent.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
+          resultReceived.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
+
+      }
+    }
+  }
+
+  /**DRAFT REPOSITORIES TESTS*/
+  /** Verify if an email is inserted in database correctly */
+  EmailRepository + " #insertDraft" should {
+    "check if the intended draft is inserted in the draft table in database" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultDraftTable <- db.run(draftTable.result)
+      } yield resultDraftTable
+
+      result.map { seqDraftRow =>
+
+        /** Verify if the email table is not empty **/
+        seqDraftRow.nonEmpty shouldEqual true
+
+        /** Verify if the respective arguments match **/
+        seqDraftRow.forall(_.fromAddress === userCreation.username) shouldBe true
+
+        seqDraftRow.forall(_.header === emailDraftCreation.header) shouldBe true
+
+        seqDraftRow.forall(_.body === emailDraftCreation.body) shouldBe true
+
+        seqDraftRow.forall(_.dateOf === emailDraftCreation.dateOf) shouldBe true
+
+        /** Verify if emailID and chatID have an UUID format **/
+
+        Try[Boolean] {
+          UUID.fromString(seqDraftRow.head.chatID)
+          true
+        }.getOrElse(false) shouldEqual true
+
+        Try[Boolean] {
+          UUID.fromString(seqDraftRow.head.draftID)
+          true
+        }.getOrElse(false) shouldEqual true
+
+      }
+    }
+  }
+
+  /** Verify if a second email is inserted in database correctly with the right chatID */
+  EmailRepository + " #insertDraft" should {
+    "check if a second draft with the same chatID as first is inserted in the draft table in database" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultChatIDFirst <- db.run(draftTable.map(_.chatID).result)
+        /* Insertion of a second email with the same chatID as the first one*/
+        _ <- Future.sequence(resultChatIDFirst.map(chatID => emailActions.insertDraft(
+          userCreation.username,
+          new CreateEmailDTO(
+            Option(chatID),
+            defaultCreation.dateOf,
+            defaultCreation.header,
+            defaultCreation.body,
+            Option(new Generator().emailAddresses),
+            Option(new Generator().emailAddresses),
+            Option(new Generator().emailAddresses)))))
+        resultChatIDSecond <- db.run(draftTable.map(_.chatID).result)
+
+      } yield (resultChatIDFirst, resultChatIDSecond)
+
+      result.map {
+        case (resultChatIDFirst, resultChatIDSecond) =>
+          resultChatIDFirst.toSet shouldEqual resultChatIDSecond.toSet
+      }
+    }
+  }
+
+  /** Verify if an email is inserted in the toAddress table correctly */
+  EmailRepository + " #insertDraft" should {
+    "check if the to is inserted in the destination draft table in database" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultDestinationTable <- db.run(destinationDraftTable.filter(_.destination === Destination.ToAddress).result)
+        resultDraftTable <- db.run(draftTable.result)
+      } yield (resultDestinationTable, resultDraftTable)
+
+      emailDraftCreation.to match {
+        case Some(_) =>
+          result.map {
+            case (toTable, draftTable) =>
+
+              /** If the parameter TO exists it is verified if the destination table is not empty */
+              toTable.nonEmpty shouldEqual true
+
+              /** Verify if the username of toAddress table is the same as toAddress parameter of draft inserted */
+              toTable.map(_.username).toSet shouldEqual emailDraftCreation.to.get.toSet
+
+              /** Verify if the sequence of toID have an UUID format **/
+              Try[Boolean] {
+                toTable.map(
+                  toRow => UUID.fromString(toRow.draftID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if the sequence of draftID have an UUID format **/
+
+              Try[Boolean] {
+                toTable.map(
+                  toRow => UUID.fromString(toRow.draftID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if draftID of draft table is the same as draftDestination table */
+              draftTable.forall(draftRow =>
+                toTable.map(toRow => toRow.draftID).contains(draftRow.draftID)) shouldEqual true
+          }
+        case _ =>
+
+          result.map {
+            case (toTable, _) =>
+
+              /** If the parameter To does not exists it is verified if the draftDestination table is empty */
+              toTable.isEmpty shouldEqual true
+          }
+      }
+    }
+  }
+
+  /** Verify if an draft is inserted with correct BCC */
+  EmailRepository + " #insertDraft" should {
+    "check if the BCC is inserted in the destination table in database" in {
+
+      val result = for {
+
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+
+        resultBCCTable <- db.run(destinationDraftTable.filter(_.destination === Destination.BCC).result)
+        resultDraftTable <- db.run(draftTable.result)
+      } yield (resultBCCTable, resultDraftTable)
+
+      /** Verify if the bcc table is created only if necessary **/
+      emailDraftCreation.BCC match {
+        case Some(_) =>
+
+          result.map {
+            case (bccTable, draftTable) =>
+
+              /** If the parameter BCC exists it is verified if the BCC table is not empty */
+              bccTable.nonEmpty shouldEqual true
+
+              /** Verify if the username of BCC table is the same as BCC parameter of email inserted */
+              bccTable.map(_.username).toSet shouldEqual emailDraftCreation.BCC.get.toSet
+
+              /** Verify if sequence of bccIDs have an UUID format **/
+              Try[Boolean] {
+                bccTable.map(row => UUID.fromString(row.draftID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if the sequence of emailID have an UUID format **/
+              Try[Boolean] {
+                bccTable.map(row => UUID.fromString(row.draftID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if draftID of draft table is the same as BCC table */
+              draftTable.forall(emailRow =>
+                bccTable.map(bccRow => bccRow.draftID).contains(emailRow.draftID)) shouldEqual true
+          }
+
+        case _ =>
+
+          result.map {
+            case (bccTable, _) =>
+
+              /** If the parameter BCC does not exists it is verified if the BCC table is empty */
+              bccTable.isEmpty shouldEqual true
+          }
+      }
+    }
+  }
+
+  /** Verify if an draft is inserted in CC table correctly */
+  EmailRepository + " #insertDraft" should {
+    "check if the CC parameters are inserted in the draft destination table in database when necessary" in {
+
+      val result = for {
+
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultCCTable <- db.run(destinationDraftTable.filter(_.destination === Destination.CC).result)
+        resultDraftTable <- db.run(draftTable.result)
+
+      } yield (resultCCTable, resultDraftTable)
+
+      /** Verify if the cc table is created only if necessary **/
+      emailDraftCreation.CC match {
+        case Some(_) =>
+
+          result.map {
+            case (ccTable, draftTable) =>
+
+              /** If the parameter CC exists it is verified if the CC table is not empty */
+              ccTable.nonEmpty shouldEqual true
+
+              /** Verify if the username of CC table is the same as CC parameter of email inserted */
+              ccTable.map(_.username).toSet shouldEqual emailDraftCreation.CC.get.toSet
+
+              /** Verify if sequence of ccIDs have an UUID format **/
+              Try[Boolean] {
+                ccTable.map(row => UUID.fromString(row.draftID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if the sequence of emailID have an UUID format **/
+              Try[Boolean] {
+                ccTable.map(row => UUID.fromString(row.draftID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if emailID of email table is the same as CC table */
+              draftTable.forall(emailRow =>
+                ccTable.map(ccRow => ccRow.draftID).contains(emailRow.draftID)) shouldBe true
+          }
+
+        case _ =>
+
+          result.map {
+            case (ccTable, _) =>
+
+              /** If the parameter CC does not exists it is verified if the destinationDraft Table  is empty */
+              ccTable.isEmpty shouldEqual true
+          }
+      }
+    }
+  }
+
+  /** Verify the function moveInOutTrash */
+  EmailRepository + "#moveInOutTrash" should {
+    "check if the function moveInOutTrash is able to change the trash status of the inserted draft" in {
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultDraftTable <- db.run(draftTable.result)
+        _ <- Future.sequence { resultDraftTable.map(draftRow => emailActions.moveInOutTrash(userCreation.username, draftRow.draftID, trash = true)) }
+        resultDraftTableTrash <- db.run(draftTable.result)
+      } yield (resultDraftTable, resultDraftTableTrash)
+
+      result.map {
+        case (resultDraftTable, resultDraftTableTrash) =>
+
+          /** Verify if the emails are not in trash when inserted */
+          resultDraftTable.forall(_.isTrash === false) shouldBe true
+
+          /** Verify if the emails are in trash after changeTrash */
+          resultDraftTableTrash.forall(_.isTrash === true) shouldBe true
+      }
+    }
+  }
+  /**
+   * WARNING: updateDraft is not possible to test since the following Slick exception:
+   * org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "delete ""DRAFTSDESTINATION"" from[*] ""DRAFTSDESTINATION"" where ""DRAFTSDESTINATION"".""DRAF
+   * TID"" = 'eddea02a-cdab-47d1-88aa-95984fc007c0' "; SQL statement:
+   */
+
+  /** Verify if an update is proceeded in draftTable correctly */
+  EmailRepository + " #getDrafts" should {
+    "check if the mails are reached in draft table in database" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultDraftTable <- db.run(draftTable.result)
+        resultNoTrash <- emailActions.getDrafts(userCreation.username, isTrash = false)
+        resultTrash <- emailActions.getDrafts(userCreation.username, isTrash = true)
+      } yield (resultDraftTable, resultNoTrash, resultTrash)
+
+      /** getEmails for trash and noTrash cases */
+      result.map {
+        case (resultDraftTable, resultNoTrash, resultTrash) =>
+          resultDraftTable.map(draftRow => MinimalInfoDTO(draftRow.draftID, draftRow.header)) shouldEqual resultNoTrash
+          resultTrash.isEmpty shouldBe true
+      }
+    }
+  }
+
+  /** Verify the function getDrafts */
+  EmailRepository + "#getDrafts" should {
+    "check if the function getDrafts is able to reach the inserted draft that is trashed" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultAuxDraftTable <- db.run(draftTable.result)
+        _ <- Future.sequence { resultAuxDraftTable.map(draftRow => emailActions.moveInOutTrash(userCreation.username, draftRow.draftID, trash = true)) }
+        resultDraftTable <- db.run(draftTable.result)
+        resultTrash <- emailActions.getDrafts(userCreation.username, isTrash = true)
+        resultNoTrash <- emailActions.getDrafts(userCreation.username, isTrash = false)
+      } yield (resultDraftTable, resultNoTrash, resultTrash)
+
+      /** getEmails for trash and noTrash cases */
+      result.map {
+        case (resultDraftTable, resultNoTrash, resultTrash) =>
+          resultDraftTable.map(draftRow => MinimalInfoDTO(draftRow.draftID, draftRow.header)) shouldEqual resultTrash
+          resultNoTrash.isEmpty shouldBe true
+      }
+    }
+  }
+
+  /** Verify the function getDraft **/
+  EmailRepository + " #getDraft" should {
+    "check if the function getDraft is able to reach the draft inserted" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultDraftTable <- db.run(draftTable.result)
+        resultGetTrash <- Future.sequence { resultDraftTable.map(draftRow => emailActions.getDraft(userCreation.username, draftRow.draftID, isTrash = true)) }
+        resultGetNoTrash <- Future.sequence { resultDraftTable.map(draftRow => emailActions.getDraft(userCreation.username, draftRow.draftID, isTrash = false)) }
+        resultTos <- Future.successful(DraftInfoDTO(
+          resultDraftTable.head.draftID,
+          userCreation.username,
+          emailDraftCreation.to.getOrElse(Seq("")),
+          emailDraftCreation.CC.getOrElse(Seq("")),
+          emailDraftCreation.BCC.getOrElse(Seq("")),
+          resultDraftTable.head.header,
+          resultDraftTable.head.body,
+          resultDraftTable.head.dateOf))
+
+      } yield (resultGetTrash.flatten, resultGetNoTrash.flatten, resultTos)
+
+      result.map {
+        case (resultGetTrash, resultGetNoTrash, resultTos) =>
+          resultGetNoTrash.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
+          resultGetTrash.isEmpty shouldBe true
+      }
+    }
+  }
+
+  /** Verify the function getDraft **/
+  EmailRepository + " #getDraft" should {
+    "check if the function getDraft is able to reach the draft inserted and trashed" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultDraftTable <- db.run(draftTable.result)
+        _ <- Future.sequence { resultDraftTable.map(draftRow => emailActions.moveInOutTrash(userCreation.username, draftRow.draftID, trash = true)) }
+        resultGetTrash <- Future.sequence { resultDraftTable.map(draftRow => emailActions.getDraft(userCreation.username, draftRow.draftID, isTrash = true)) }
+        resultGetNoTrash <- Future.sequence { resultDraftTable.map(draftRow => emailActions.getDraft(userCreation.username, draftRow.draftID, isTrash = false)) }
+        resultTos <- Future.successful(DraftInfoDTO(
+          resultDraftTable.head.draftID,
+          userCreation.username,
+          emailDraftCreation.to.getOrElse(Seq("")),
+          emailDraftCreation.CC.getOrElse(Seq("")),
+          emailDraftCreation.BCC.getOrElse(Seq("")),
+          resultDraftTable.head.header,
+          resultDraftTable.head.body,
+          resultDraftTable.head.dateOf))
+      } yield (resultGetTrash.flatten, resultGetNoTrash.flatten, resultTos)
+
+      result.map {
+        case (resultGetTrash, resultGetNoTrash, resultTos) =>
+          resultGetTrash.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
+          resultGetNoTrash.isEmpty shouldBe true
+      }
+    }
+  }
+
+  EmailRepository + "#destinations" should {
+    "check if the function destinations is able to reach the destinations inserted in draft" in {
+
+      val result = for {
+        _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        resultAuxDraftTable <- db.run(draftTable.result)
+        resultDestination <- Future.sequence { resultAuxDraftTable.map(draftRow => emailActions.destinations(userCreation.username, draftRow.draftID)) }
+      } yield resultDestination
+
+      result.map { resultDestination =>
+        resultDestination.forall(triplet => emailDraftCreation.to.getOrElse(Seq("")).toSet === triplet._1.toSet) shouldBe true
+        resultDestination.forall(triplet => emailDraftCreation.BCC.getOrElse(Seq("")).toSet === triplet._2.toSet) shouldBe true
+        resultDestination.forall(triplet => emailDraftCreation.CC.getOrElse(Seq("")).toSet === triplet._3.toSet) shouldBe true
+      }
+    }
+  }
+
+  EmailRepository + "#destinations" should {
+    "check if the function destinations is able return empty for no destinations inserted" in {
+
+      val result = for {
+        resultAuxDraftTable <- db.run(draftTable.result)
+        resultDestination <- Future.sequence { resultAuxDraftTable.map(draftRow => emailActions.destinations(userCreation.username, draftRow.draftID)) }
+      } yield resultDestination
+
+      result.map { resultDestination =>
+        resultDestination.forall(triplet => emailDraftCreation.to.getOrElse(Seq("")).isEmpty) shouldBe true
+        resultDestination.forall(triplet => emailDraftCreation.BCC.getOrElse(Seq("")).isEmpty) shouldBe true
+        resultDestination.forall(triplet => emailDraftCreation.CC.getOrElse(Seq("")).isEmpty) shouldBe true
+      }
+    }
+  }
+
+  EmailRepository + "#hasdestinations" should {
+    "check if the function destinations is able return empty for no destinations inserted" in {
+
+      val result = for {
+        falseResult <- emailActions.hasDestination(Seq(), Seq(), Seq())
+        trueResult <- emailActions.hasDestination(emailDraftCreation.to.getOrElse(Seq("")), emailDraftCreation.BCC.getOrElse(Seq("")), emailDraftCreation.CC.getOrElse(Seq("")))
+      } yield (falseResult, trueResult)
+
+      result.map {
+        case (falseResult, trueResult) =>
+          falseResult shouldBe false
+          trueResult shouldBe true
+      }
+    }
+  }
+
 }
 
