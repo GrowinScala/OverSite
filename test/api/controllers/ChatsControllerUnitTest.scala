@@ -2,24 +2,24 @@ package api.controllers
 
 import akka.stream.Materializer
 import api.validators.TokenValidator
-import database.repository.{ ChatRepository, _ }
 import database.repository.fake.{ FakeChatRepositoryImpl, FakeUserRepositoryImpl }
-import definedStrings.testStrings.ControllerStrings.TokenKey
+import database.repository.{ ChatRepository, _ }
+import definedStrings.ApiStrings._
+import definedStrings.testStrings.ControllerStrings.{ TokenKey, _ }
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import definedStrings.testStrings.ControllerStrings._
-import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContext
 
 class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy implicit val mat = UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[Materializer]
+  lazy implicit val mat: Materializer = UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[Materializer]
 
   val chatActions: ChatRepository = new FakeChatRepositoryImpl()
   val userActions: UserRepository = new FakeUserRepositoryImpl()
@@ -32,7 +32,21 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.inbox(Option(true)).apply(FakeRequest()
+      val result = controller.inbox(Option(true)).apply(FakeRequest(GET, "/chats?isTrash=true")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      status(result) mustBe OK
+    }
+  }
+
+  "ChatController #inbox" should {
+    "send a OK if JSON header has a valid token: case no TrashOption" in {
+      val controller = new ChatController(
+        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
+        UnitControllerTestsAppBuilder.ccWithValidToken,
+        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        chatActions,
+        userActions)
+      val result = controller.inbox(None).apply(FakeRequest(GET, "/chats")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe OK
     }
@@ -46,9 +60,11 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.inbox(Option(true)).apply(FakeRequest()
+      val result = controller.inbox(Option(true)).apply(FakeRequest(GET, "/chats?isTrash=true")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
     }
   }
 
@@ -60,7 +76,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getEmails("", Option(true)).apply(FakeRequest()
+      val result = controller.getEmails("", Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe OK
     }
@@ -74,7 +90,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getEmails("", None).apply(FakeRequest()
+      val result = controller.getEmails("", None).apply(FakeRequest(GET, "/chats/:chatID/emails")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe OK
     }
@@ -88,38 +104,11 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.getEmails("", Option(true)).apply(FakeRequest()
+      val result = controller.getEmails("", Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe FORBIDDEN
-    }
-  }
+      contentAsString(result) mustBe VerifyLoginStatus
 
-  "ChatController #getEmail" should {
-    "send a OK if JSON header has a valid token" in {
-      val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
-        chatActions,
-        userActions)
-      val result = controller.getEmail("", "", Option(true)).apply(FakeRequest()
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
-
-      status(result) mustBe OK
-    }
-  }
-
-  "ChatController #getEmail" should {
-    "send a Forbidden if JSON header has a valid token" in {
-      val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
-        chatActions,
-        userActions)
-      val result = controller.getEmail("", "", Option(true)).apply(FakeRequest()
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
-      status(result) mustBe FORBIDDEN
     }
   }
 
@@ -131,7 +120,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.moveInOutTrash("").apply(FakeRequest()
+      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "toTrash" -> true))))
@@ -147,11 +136,13 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.moveInOutTrash("").apply(FakeRequest()
+      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "toTrash" -> true))))
       status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
     }
   }
 
@@ -163,7 +154,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.moveInOutTrash("").apply(FakeRequest()
+      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "NOTtoTrash" -> true))))
@@ -179,7 +170,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.supervised.apply(FakeRequest()
+      val result = controller.supervised.apply(FakeRequest(POST, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "chatID" -> "",
@@ -196,12 +187,14 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.supervised().apply(FakeRequest()
+      val result = controller.supervised().apply(FakeRequest(POST, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "chatID" -> "",
           "supervisor" -> ""))))
       status(result) mustEqual FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
     }
   }
 
@@ -213,7 +206,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.supervised.apply(FakeRequest()
+      val result = controller.supervised.apply(FakeRequest(POST, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "NOTchatID" -> "",
@@ -230,7 +223,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.supervised.apply(FakeRequest()
+      val result = controller.supervised.apply(FakeRequest(POST, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "chatID" -> "",
@@ -247,7 +240,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getShares().apply(FakeRequest()
+      val result = controller.getShares().apply(FakeRequest(GET, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
 
       status(result) mustBe OK
@@ -262,9 +255,11 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.getShares().apply(FakeRequest()
+      val result = controller.getShares().apply(FakeRequest(GET, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
     }
   }
 
@@ -276,7 +271,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getSharedEmails("").apply(FakeRequest()
+      val result = controller.getSharedEmails("").apply(FakeRequest(GET, "/shares/:shareID/emails")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
 
       status(result) mustBe OK
@@ -291,9 +286,11 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.getSharedEmails("").apply(FakeRequest()
+      val result = controller.getSharedEmails("").apply(FakeRequest(GET, "/shares/:shareID/emails")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
     }
   }
 
@@ -305,7 +302,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getSharedEmail("", "").apply(FakeRequest()
+      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID/emails")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
 
       status(result) mustBe OK
@@ -320,9 +317,11 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.getSharedEmail("", "").apply(FakeRequest()
+      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID/emails")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
       status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
     }
   }
 
@@ -334,7 +333,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.takePermissions().apply(FakeRequest()
+      val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "chatID" -> "",
@@ -351,12 +350,14 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.takePermissions().apply(FakeRequest()
+      val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "chatID" -> "",
           "supervisor" -> ""))))
       status(result) mustEqual FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
     }
   }
 
@@ -368,7 +369,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.takePermissions().apply(FakeRequest()
+      val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "NOTchatID" -> "",
@@ -385,7 +386,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         UnitControllerTestsAppBuilder.actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.takePermissions().apply(FakeRequest()
+      val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "chatID" -> "",

@@ -16,13 +16,10 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton class DraftsController @Inject() (
-  //dbclass: dbClass,
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   emailActions: EmailRepository)(implicit exec: ExecutionContext) extends AbstractController(cc) {
-
-  //val tokenValidator: TokenValidator = new TokenValidator(dbclass.db)
 
   /**
    * Aims to send an email from an user to an userID
@@ -69,8 +66,8 @@ import scala.concurrent.{ ExecutionContext, Future }
   }
 
   /**
-   * Selects an email after filtering through status and emailID
-   * @param status Identification of the email status
+   * Selects an email after filtering through isTrash and draftID
+   * @param isTrash Identification of the email status
    * @param draftID Identification of the email
    * @return Action that shows the emailID required
    */
@@ -106,9 +103,8 @@ import scala.concurrent.{ ExecutionContext, Future }
   }
 
   /**
-   * Receive a target draft email and sends it if that email has a to parameter
-   * @param status Identification of the email status
-   * @param emailID Identification of the email
+   * Receive a target draft email and sends it if that email has a destination parameter
+   * @param draftID Identification of the email
    */
   def toSentOrDraft(draftID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
 
@@ -125,11 +121,12 @@ import scala.concurrent.{ ExecutionContext, Future }
         case StatusSend => request.userName.flatMap(username =>
           emailActions.destinations(username, draftID).flatMap {
             case (listTos, listBCCs, listCCs) => emailActions.hasDestination(listTos, listBCCs, listCCs).map(
-              if (_) {
-                emailActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
-                Ok(MailSentStatus)
-              } else
-                BadRequest(ImpossibleToSendDraft))
+              bool =>
+                if (bool) {
+                  emailActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
+                  Ok(MailSentStatus)
+                } else
+                  BadRequest(ImpossibleToSendDraft))
           })
 
         case StatusTrash =>

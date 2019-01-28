@@ -128,22 +128,6 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
     })
   }
 
-  /** Selects an email after filtering through chatID emailID*/
-  def getEmail(userEmail: String, chatID: String, emailID: String, isTrash: Boolean): Future[Seq[EmailInfoDTO]] = {
-
-    val queryTos = db.run(destinationEmailTable.filter(_.emailID === emailID).filter(_.destination === Destination.ToAddress).map(_.username).result)
-
-    val queryResult = queryTos.map(seqTos =>
-      queryChat(userEmail, chatID, isTrash)
-        .filter(_.emailID === emailID)
-        .map(table => (table.fromAddress, table.header, table.body, table.dateOf))
-        .result.map(seq => seq.map {
-          case (fromAddress, header, body, dateOf) => EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
-        }))
-
-    queryResult.flatMap(db.run(_))
-  }
-
   /**
    * Function that moves all the mails from a certain chatID to trash or vice versa
    * @param username Identification of the username

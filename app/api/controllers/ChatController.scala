@@ -74,25 +74,6 @@ import scala.concurrent.{ ExecutionContext, Future }
   }
 
   /**
-   * Selects an email after filtering through chatID and emailID
-   * @param chatID Identification of the chat
-   * @param emailID Identification of the email
-   * @return Action that shows the emailID required
-   */
-  def getEmail(chatID: String, emailID: String, isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
-    request.userName.flatMap {
-      chatActions.getEmail(_, chatID, emailID, isTrash.getOrElse(false)).map {
-        emails =>
-          val emailsResult = JsArray(
-            emails.map { email =>
-              Json.toJson(convertEmailInfoToSender(email, emailID))
-            })
-          Ok(emailsResult)
-      }
-    }
-  }
-
-  /**
    * Function that moves all the mails from a certain chatID to trash or vice versa
    * @param chatID Identification of the chat
    * @return Action that update the trash boolean status of each emailID involved

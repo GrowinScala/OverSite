@@ -9,7 +9,6 @@ trait ChatRepository {
   def insertChat(email: CreateEmailDTO, chatID: String): Future[String]
   def getInbox(userEmail: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]]
   def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]]
-  def getEmail(userEmail: String, chatID: String, emailID: String, isTrash: Boolean): Future[Seq[EmailInfoDTO]]
   def changeTrash(username: String, chatID: String, moveToTrash: Boolean): Future[Int]
   def insertPermission(from: String, share: CreateShareDTO): Future[String]
   def getShares(userEmail: String): Future[Seq[MinimalInfoDTO]]

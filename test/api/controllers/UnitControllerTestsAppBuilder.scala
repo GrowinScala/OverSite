@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import api.validators.{ MockedInvalidTokenValidator, MockedValidTokenValidator, TokenValidator }
 import database.repository._
-import database.repository.fake.{ FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
+import database.repository.fake.{ FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeEmailRepositoryImplWithNoDestination, FakeUserRepositoryImpl }
 import javax.inject.Singleton
 import play.api.Mode
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -35,6 +35,7 @@ object UnitControllerTestsAppBuilder {
 
   lazy val injectorWithValidToken: Injector = appBuilderWithValidToken.injector()
 
+  lazy implicit val matWithValidToken: Materializer = injectorWithValidToken.instanceOf[Materializer]
   lazy val ccWithValidToken: ControllerComponents = injectorWithValidToken.instanceOf[ControllerComponents]
   val actorSystemWithValidToken: ActorSystem = injectorWithValidToken.instanceOf[ActorSystem]
 

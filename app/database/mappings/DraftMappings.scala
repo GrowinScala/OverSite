@@ -25,8 +25,8 @@ case class DestinationDraftRow(
 /** Class that defines the draft table, establishing draftID as primary key in the database*/
 class DestinationDraftTable(tag: Tag) extends Table[DestinationDraftRow](tag, DraftsDestinationTable) {
 
-  def username = column[String](UsernameRow)
   def draftID = column[String](DraftIDRow)
+  def username = column[String](UsernameRow)
   def destination = column[Destination](DestinationRow)
 
   def * = (draftID, username, destination) <> (DestinationDraftRow.tupled, DestinationDraftRow.unapply)
