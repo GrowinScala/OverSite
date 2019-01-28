@@ -29,7 +29,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   lazy val injector: Injector = appBuilder.injector()
   lazy implicit val db: Database = TestDBProperties.db
 
-  val emailActions = injector.instanceOf[EmailRepository]
+  val emailActions: EmailRepository = injector.instanceOf[EmailRepository]
 
   val userGenerator = new Generator()
   val userCreation = new CreateUserDTO(userGenerator.username, userGenerator.password)
@@ -528,10 +528,11 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       emailDraftCreation.to match {
         case Some(_) =>
           result.map {
-            case (toTable, draftTable) =>
+            case (toTable, resultDraftTable) =>
 
               /** If the parameter TO exists it is verified if the destination table is not empty */
               toTable.nonEmpty shouldEqual true
+
 
               /** Verify if the username of toAddress table is the same as toAddress parameter of draft inserted */
               toTable.map(_.username).toSet shouldEqual emailDraftCreation.to.get.toSet
@@ -552,7 +553,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if draftID of draft table is the same as draftDestination table */
-              draftTable.forall(draftRow =>
+              resultDraftTable.forall(draftRow =>
                 toTable.map(toRow => toRow.draftID).contains(draftRow.draftID)) shouldEqual true
           }
         case _ =>
@@ -584,7 +585,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         case Some(_) =>
 
           result.map {
-            case (bccTable, draftTable) =>
+            case (bccTable, resultDraftTable) =>
 
               /** If the parameter BCC exists it is verified if the BCC table is not empty */
               bccTable.nonEmpty shouldEqual true
@@ -605,7 +606,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if draftID of draft table is the same as BCC table */
-              draftTable.forall(emailRow =>
+              resultDraftTable.forall(emailRow =>
                 bccTable.map(bccRow => bccRow.draftID).contains(emailRow.draftID)) shouldEqual true
           }
 
@@ -638,7 +639,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         case Some(_) =>
 
           result.map {
-            case (ccTable, draftTable) =>
+            case (ccTable, resultDraftTable) =>
 
               /** If the parameter CC exists it is verified if the CC table is not empty */
               ccTable.nonEmpty shouldEqual true
@@ -659,7 +660,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               }.getOrElse(false) shouldEqual true
 
               /** Verify if emailID of email table is the same as CC table */
-              draftTable.forall(emailRow =>
+              resultDraftTable.forall(emailRow =>
                 ccTable.map(ccRow => ccRow.draftID).contains(emailRow.draftID)) shouldBe true
           }
 
@@ -802,6 +803,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     }
   }
 
+  /** Verify the function destinations **/
   EmailRepository + "#destinations" should {
     "check if the function destinations is able to reach the destinations inserted in draft" in {
 
@@ -819,6 +821,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     }
   }
 
+  /** Verify the function destinations **/
   EmailRepository + "#destinations" should {
     "check if the function destinations is able return empty for no destinations inserted" in {
 
@@ -835,8 +838,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     }
   }
 
-  EmailRepository + "#hasdestinations" should {
-    "check if the function destinations is able return empty for no destinations inserted" in {
+  /** Verify the function hasdestinations **/
+  EmailRepository + "#hasDestination" should {
+    "check if the function hasDestination is able return true or false properly" in {
 
       val result = for {
         falseResult <- emailActions.hasDestination(Seq(), Seq(), Seq())
