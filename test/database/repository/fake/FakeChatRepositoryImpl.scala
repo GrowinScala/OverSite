@@ -19,9 +19,6 @@ class FakeChatRepositoryImpl extends ChatRepository {
   def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]] = {
     Future.successful(Seq(MinimalInfoDTO(EmptyString, EmptyString)))
   }
-  def getEmail(userEmail: String, chatID: String, emailID: String, isTrash: Boolean): Future[Seq[EmailInfoDTO]] = {
-    Future.successful(Seq(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString)))
-  }
 
   def changeTrash(username: String, chatID: String, moveToTrash: Boolean): Future[Int] = {
     Future.successful(0)
