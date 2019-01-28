@@ -24,7 +24,7 @@ import slick.jdbc.H2Profile.api._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
 
-class UsersControllerActionTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
+class UsersControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)

@@ -21,7 +21,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 /** Class injected with end-points*/
 
 @Singleton class ChatController @Inject() (
-  //dbclass: dbClass,
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
@@ -29,14 +28,10 @@ import scala.concurrent.{ ExecutionContext, Future }
   usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
-  //val tokenValidator: TokenValidator = new TokenValidator(dbclass.db)
-
-  //Auxiliary function that supports GET \chats and GET /chats?isTrash=true
   /**
    * Get inbox action
    * @return When a valid user is logged, the conversations are shown as an inbox
    */
-  //TODO NEED TO BE TESTED
   def inbox(isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
 
     implicit val req: RequestHeader = request
@@ -44,12 +39,11 @@ import scala.concurrent.{ ExecutionContext, Future }
     request.userName.flatMap {
       chatActions.getInbox(_, isTrash.getOrElse(false)).map {
         emails =>
-          Ok(Json.toJson(emails))
           val result = emails.map(email =>
 
             MinimalInfoDTO.addLink(
               email,
-              List(routes.EmailsController.getEmail(email.Id, Option(EndPointReceived)).absoluteURL())))
+              List(routes.ChatController.getEmails(email.Id, isTrash).absoluteURL())))
           Ok(Json.toJson(result))
       }
     }
@@ -109,6 +103,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
     toTrashResult.fold(
       errors => {
+        println(request.body.toString())
         Future {
           BadRequest(jsonErrors(errors))
         }

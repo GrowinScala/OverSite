@@ -4,7 +4,7 @@ import definedStrings.ApiStrings._
 import scala.concurrent.Future
 
 /** Mocked Token Validator to be used in Testing */
-class MockedTokenValidator extends TokenValidator {
+class MockedInvalidTokenValidator extends TokenValidator {
   /**
    * Validates the userName and token inserted by the user
    *
@@ -12,7 +12,7 @@ class MockedTokenValidator extends TokenValidator {
    * @return boolean value considering of the token is valid or not
    */
   def validateToken(token: String): Future[Boolean] = {
-    Future.successful(true)
+    Future.successful(false)
   }
 
   /**
@@ -25,3 +25,4 @@ class MockedTokenValidator extends TokenValidator {
     Future.successful(EmptyString)
   }
 }
+
