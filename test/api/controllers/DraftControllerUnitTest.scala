@@ -13,22 +13,23 @@ import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import UnitControllerTestsAppBuilder._
 
 import scala.concurrent.ExecutionContext
 
 class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy implicit val mat: Materializer = UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[Materializer]
+  lazy implicit val mat: Materializer = injectorWithValidToken.instanceOf[Materializer]
 
   val emailActions: EmailRepository = new FakeEmailRepositoryImpl()
 
   "DraftsController #draft" should {
     "send a Ok if JSON header has a valid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -48,9 +49,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a Ok if JSON header has a valid token: case missing chatID" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -70,9 +71,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a Ok if JSON header has a valid token: case missing to" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -92,9 +93,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a Ok if JSON header has a valid token: case missing bcc" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -114,9 +115,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a Ok if JSON header has a valid token: case missing cc" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -136,9 +137,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a Forbidden if JSON header has a invalid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -158,9 +159,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a BadRequest if JSON body has an invalid format: case dateOF" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -179,9 +180,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a BadRequest if JSON body has an invalid format: case header" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -200,9 +201,9 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "DraftsController #draft" should {
     "send a BadRequest if JSON body has an invalid format: case body" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -218,12 +219,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #getDrafts" should {
+  "DraftsController #getDrafts" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.getDrafts(Option(true)).apply(FakeRequest(GET, "/drafts?isTrash=true")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -232,12 +233,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #getDrafts" should {
+  "DraftsController #getDrafts" should {
     "send a OK if JSON header has a valid token: case no TrashOption" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.getDrafts(None).apply(FakeRequest(GET, "/drafts")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -246,12 +247,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #getDrafts" should {
+  "DraftsController #getDrafts" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         emailActions)
       val result = controller.getDrafts(Option(true)).apply(FakeRequest(GET, "/drafts?isTrash=true")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -261,12 +262,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #getDraft" should {
+  "DraftsController #getDraft" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.getDraft("", Option(true)).apply(FakeRequest(GET, "/drafts/:draftID?isTrash=true")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -275,12 +276,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #getDraft" should {
+  "DraftsController #getDraft" should {
     "send a OK if JSON header has a valid token: case no TrashOption" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.getDraft("", None).apply(FakeRequest(GET, "/drafts/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -289,12 +290,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #getDraft" should {
+  "DraftsController #getDraft" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         emailActions)
       val result = controller.getDraft("", Option(true)).apply(FakeRequest(GET, "/drafts/:draftID?isTrash=true")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -304,12 +305,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -328,12 +329,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a Ok if JSON header has a valid token: case missing chatID" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -351,12 +352,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a Ok if JSON header has a valid token: case missing to" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -374,12 +375,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a OK if JSON header has a valid token: case missing bcc" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -397,12 +398,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a OK if JSON header has a valid token: case missing cc" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -420,12 +421,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -443,12 +444,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a BadRequest if JSON body has an invalid format: case dateOf" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -465,12 +466,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a BadRequest if JSON body has an invalid format: case header" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -487,12 +488,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #updateDraft" should {
+  "DraftsController #updateDraft" should {
     "send a BadRequest if JSON body has an invalid format: case body" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -509,12 +510,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #toSentOrDraft" should {
+  "DraftsController #toSentOrDraft" should {
     "send a OK if JSON header has a valid token: case status = send" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -527,12 +528,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #toSentOrDraft" should {
+  "DraftsController #toSentOrDraft" should {
     "send a OK if JSON header has a valid token: case status = trash" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -545,12 +546,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #toSentOrDraft" should {
+  "DraftsController #toSentOrDraft" should {
     "send a OK if JSON header has a valid token: case status = draft" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -563,12 +564,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #toSentOrDraft" should {
+  "DraftsController #toSentOrDraft" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         emailActions)
       val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -581,12 +582,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #toSentOrDraft" should {
+  "DraftsController #toSentOrDraft" should {
     "send a BadRequest if JSON body has an invalid status" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -599,12 +600,12 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #toSentOrDraft" should {
+  "DraftsController #toSentOrDraft" should {
     "send a BadRequest if JSON body has an missing status" in {
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActions)
       val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -615,13 +616,13 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
 
-  "ChatController #toSentOrDraft" should {
+  "DraftsController #toSentOrDraft" should {
     "send a BadRequest if the email has no destination" in {
       val emailActionsWithNoDestination: EmailRepository = new FakeEmailRepositoryImplWithNoDestination()
       val controller = new DraftsController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         emailActionsWithNoDestination)
       val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")

@@ -533,7 +533,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
               /** If the parameter TO exists it is verified if the destination table is not empty */
               toTable.nonEmpty shouldEqual true
 
-
               /** Verify if the username of toAddress table is the same as toAddress parameter of draft inserted */
               toTable.map(_.username).toSet shouldEqual emailDraftCreation.to.get.toSet
 

@@ -35,13 +35,13 @@ object UnitControllerTestsAppBuilder {
 
   lazy val injectorWithValidToken: Injector = appBuilderWithValidToken.injector()
 
-  lazy implicit val matWithValidToken: Materializer = injectorWithValidToken.instanceOf[Materializer]
+  lazy val matWithValidToken: Materializer = injectorWithValidToken.instanceOf[Materializer]
   lazy val ccWithValidToken: ControllerComponents = injectorWithValidToken.instanceOf[ControllerComponents]
   val actorSystemWithValidToken: ActorSystem = injectorWithValidToken.instanceOf[ActorSystem]
 
   lazy val injectorWithInvalidToken: Injector = appBuilderWithInvalidToken.injector()
 
-  lazy implicit val matWithInvalidToken: Materializer = injectorWithInvalidToken.instanceOf[Materializer]
+  lazy val matWithInvalidToken: Materializer = injectorWithInvalidToken.instanceOf[Materializer]
   lazy val ccWithInvalidToken: ControllerComponents = injectorWithInvalidToken.instanceOf[ControllerComponents]
   val actorSystemWithInvalidToken: ActorSystem = injectorWithInvalidToken.instanceOf[ActorSystem]
 
