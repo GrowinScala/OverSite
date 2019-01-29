@@ -1,4 +1,4 @@
-package api.controllers
+package api.controllers.functionalTest
 
 import database.mappings.ChatMappings.{ chatTable, shareTable }
 import database.mappings.DraftMappings.destinationDraftTable
@@ -6,8 +6,8 @@ import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
 import database.properties.TestDBProperties
-import definedStrings.testStrings.ControllerStrings._
 import definedStrings.AlgorithmStrings._
+import definedStrings.testStrings.ControllerStrings._
 import encryption.EncryptString
 import generators.Generator
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
@@ -53,7 +53,6 @@ class UsersControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite wi
   override def beforeEach(): Unit = {
 
     Await.result(db.run(DBIO.seq(tables.map(_.delete): _*)), Duration.Inf)
-    //encrypted "12345" password
     Await.result(db.run(userTable += UserRow(emailExample, encryptedPasswordExample)), Duration.Inf)
     Await.result(db.run(loginTable +=
       LoginRow(emailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)

@@ -1,4 +1,4 @@
-package api.controllers
+package api.controllers.functionalTest
 
 import database.mappings.ChatMappings._
 import database.mappings.DraftMappings.destinationDraftTable
@@ -6,7 +6,6 @@ import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.mappings._
 import database.properties.TestDBProperties
-import database.repository.ChatRepositoryImpl
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.ControllerStrings._
 import encryption.EncryptString
@@ -129,28 +128,6 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
             "BCC" : ["$bccJsonExample"],
             "CC" : ["$ccJsonExample"],
             "sendNow" : true
-          }
-        """))
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe BAD_REQUEST
-    }
-  }
-
-  "EmailsController" + "#email" should {
-    "send a BadRequest if JSON body has an invalid format:" + " case sendNow" in {
-      val fakeRequest = FakeRequest(POST, "/email")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-        .withJsonBody(parse(
-          s"""
-          {
-            "chatID" : "$chatIDExample",
-            "dateOf" : "$dateExample",
-            "header" : "$headerExample",
-            "body" : "$bodyExample",
-            "to" : ["$toAddressesJsonExample"],
-            "BCC" : ["$bccJsonExample"],
-            "CC" : ["$ccJsonExample"],
-            "NOTsendNow" : true
           }
         """))
       val result = route(app, fakeRequest)
@@ -306,27 +283,6 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
   }
 
   "EmailsController" + "#email" should {
-    "send a BadRequest if JSON body has an invalid format:" + " case missing parameter sendNow" in {
-      val fakeRequest = FakeRequest(POST, "/email")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-        .withJsonBody(parse(
-          s"""
-          {
-            "chatID" : "$chatIDExample",
-            "dateOf" : "$dateExample",
-            "header" : "$headerExample",
-            "body" : "$bodyExample",
-            "to" : ["$toAddressesJsonExample"],
-            "BCC" : ["$bccJsonExample"],
-            "CC" : ["$ccJsonExample"]
-          }
-        """))
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe BAD_REQUEST
-    }
-  }
-
-  "EmailsController" + "#email" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
@@ -427,16 +383,6 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
   /**  GET /emails/:status/:emailID  end-point */
 
   "EmailsController" + "#getEmail" should {
-    "send a OK if JSON header has a valid token" + " and status: " + "draft" in {
-      val fakeRequest = FakeRequest(GET, "/emails/:emailID?status=draft")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe OK
-    }
-  }
-
-  "EmailsController" + "#getEmail" should {
     "send a OK if JSON header has a valid token" + " and status: " + "received" in {
       val fakeRequest = FakeRequest(GET, "/emails/:emailID?status=received")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -485,176 +431,4 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
       status(result.get) mustBe OK
     }
   }
-  /** ----------------------------------------------- */
-
-  "EmailsController" + "#toSent" should {
-    "send a OK if JSON header has a valid token" + " and status: " + "draft" + " and target email has to address" in {
-      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
-
-      Await.result(db.run(
-        destinationEmailTable += DestinationEmailRow(new Generator().ID, emailExample, Destination.ToAddress, isTrash = false)), Duration.Inf)
-
-      val fakeRequest = FakeRequest(PATCH, "/emails/" + emailIDExample + "/send")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe OK
-    }
-  }
-
-  "EmailsController" + "#toSent" should {
-    "send a BadRequest if target email has no to address" + " send status" in {
-
-      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
-
-      val fakeRequest = FakeRequest(PATCH, "/emails/:emailID/send")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe BAD_REQUEST
-    }
-  }
-
-  "EmailsController" + "#moveInOutTrash" should {
-    "send a BadRequest if target email has no to address" + " trash status" in {
-
-      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
-
-      val fakeRequest = FakeRequest(PATCH, "/emails/:emailID/trash")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe BAD_REQUEST
-    }
-  }
-
-  "EmailsController" + "#toSent" should {
-    "Ok with undefined status" in {
-
-      Await.result(db.run(chatTable += ChatRow(chatIDExample, headerExample)), Duration.Inf)
-      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample,
-        emailExample, dateExample, headerExample, bodyExample, isTrash = false)), Duration.Inf)
-      Await.result(db.run(
-        destinationEmailTable += DestinationEmailRow(new Generator().ID, emailExample, Destination.ToAddress, isTrash = false)), Duration.Inf)
-
-      val fakeRequest = FakeRequest(PATCH, "/emails/" + emailIDExample + "/send")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe OK
-    }
-  }
-
-  "EmailsController" + "#moveInOutTrash" should {
-    "Ok with undefined status" + " trash status" in {
-
-      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
-        headerExample, bodyExample, isTrash = false)), Duration.Inf)
-
-      val fakeRequest = FakeRequest(PATCH, s"/emails/$emailIDExample/trash")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe OK
-    }
-  }
-  "EmailsController" + "#updateDraft" should {
-    " update status" in {
-
-      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
-        headerExample, bodyExample, isTrash = false)), Duration.Inf)
-
-      val fakeRequest = FakeRequest(PATCH, s"/emails/$emailIDExample/update")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-        .withJsonBody(parse(
-          s"""
-          {
-            "dateOf" : "$dateExample",
-            "header" : "$headerExample",
-            "body" : "efe",
-            "to" : ["$toAddressesJsonExample"],
-            "BCC" : ["$bccJsonExample"],
-            "CC" : ["$ccJsonExample"],
-            "sendNow" : false
-          }
-        """))
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe OK
-    }
-  }
-
-  "EmailsController" + "#updateDraft" should {
-    " update status" + " no existing email id" in {
-
-      Await.result(db.run(emailTable += EmailRow(emailIDExample, chatIDExample, emailExample, dateExample,
-        headerExample, bodyExample, isTrash = false)), Duration.Inf)
-
-      val fakeRequest = FakeRequest(PATCH, "/emails/:emailID/update")
-        .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
-        .withJsonBody(parse(
-          s"""
-          {
-            "dateOf" : "$dateExample",
-            "header" : "$headerExample",
-            "body" : "$bodyExample",
-            "to" : ["$toAddressesJsonExample"],
-            "BCC" : ["$bccJsonExample"],
-            "CC" : ["$ccJsonExample"],
-            "sendNow" : true
-          }
-        """))
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe BAD_REQUEST
-    }
-  }
-
-  "EmailsController" + "#toSent" should {
-    "send a Forbidden if JSON header has an invalid token" + " send status" in {
-      val fakeRequest = FakeRequest(PATCH, "/emails/:emailID/send")
-        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe FORBIDDEN
-    }
-  }
-
-  "EmailsController" + "#moveInOutTrash" should {
-    "send a Forbidden if JSON header has an invalid token" + " trash status" in {
-      val fakeRequest = FakeRequest(PATCH, "/emails/:emailID/trash")
-        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe FORBIDDEN
-    }
-  }
-
-  "EmailsController" + "#updateDraft" should {
-    "send a Forbidden if JSON header has an invalid token" + " update status" in {
-      val fakeRequest = FakeRequest(PATCH, "/emails/:emailID/update")
-        .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
-        .withJsonBody(parse(
-          s"""
-          {
-            "chatID" : "$chatIDExample",
-            "dateOf" : "$dateExample",
-            "header" : "$headerExample",
-            "body" : "$bodyExample",
-            "to" : ["$toAddressesJsonExample"],
-            "BCC" : ["$bccJsonExample"],
-            "CC" : ["$ccJsonExample"],
-            "sendNow" : true
-          }
-        """))
-
-      val result = route(app, fakeRequest)
-      status(result.get) mustBe FORBIDDEN
-    }
-  }
-  /** ----------------------------------------------- */
-
 }

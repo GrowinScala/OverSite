@@ -1,6 +1,7 @@
-package api.controllers
+package api.controllers.unitTest
 
 import akka.stream.Materializer
+import api.controllers.{ DraftsController, UnitControllerTestsAppBuilder }
 import api.validators.TokenValidator
 import database.repository._
 import database.repository.fake.{ FakeEmailRepositoryImpl, FakeEmailRepositoryImplWithNoDestination }

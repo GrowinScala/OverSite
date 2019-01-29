@@ -1,6 +1,7 @@
-package api.controllers
+package api.controllers.unitTest
 
 import akka.stream.Materializer
+import api.controllers.{ ChatController, UnitControllerTestsAppBuilder }
 import api.validators.TokenValidator
 import database.repository.fake.{ FakeChatRepositoryImpl, FakeUserRepositoryImpl }
 import database.repository.{ ChatRepository, _ }

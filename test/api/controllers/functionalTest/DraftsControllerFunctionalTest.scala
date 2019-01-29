@@ -1,4 +1,5 @@
-package api.controllers
+package api.controllers.functionalTest
+
 import database.repository.fake.{ FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
 import org.scalatest.{ Matchers, _ }
 

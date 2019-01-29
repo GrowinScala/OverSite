@@ -515,6 +515,36 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     }
   }
 
+  /** Verify if a draft is inserted without destinations */
+  EmailRepository + " #insertDraft" should {
+    "check if a draft is properly inserted with no destination" in {
+
+      val result = for {
+        /* Insertion od draft without destinations*/
+        _ <- emailActions.insertDraft(
+          userCreation.username,
+          new CreateEmailDTO(
+            Option(defaultCreation.ID),
+            defaultCreation.dateOf,
+            defaultCreation.header,
+            defaultCreation.body,
+            None,
+            None,
+            None))
+
+        resultDraftTable <- db.run(draftTable.result)
+        resultDestinationTable <- db.run(destinationDraftTable.result)
+
+      } yield (resultDraftTable, resultDestinationTable)
+
+      result.map {
+        case (resultDraftTable, resultDestinationTable) =>
+          resultDraftTable.nonEmpty shouldBe true
+          resultDestinationTable.isEmpty shouldBe true
+      }
+    }
+  }
+
   /** Verify if an email is inserted in the toAddress table correctly */
   EmailRepository + " #insertDraft" should {
     "check if the to is inserted in the destination draft table in database" in {
@@ -532,7 +562,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
               /** If the parameter TO exists it is verified if the destination table is not empty */
               toTable.nonEmpty shouldEqual true
-
 
               /** Verify if the username of toAddress table is the same as toAddress parameter of draft inserted */
               toTable.map(_.username).toSet shouldEqual emailDraftCreation.to.get.toSet

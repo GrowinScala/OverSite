@@ -221,9 +221,9 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
 
     val insertDraft = for {
       _ <- draftTable += DraftRow(draftID, draft.chatID.getOrElse(""), username, draft.dateOf, draft.header, draft.body, isTrash = false)
-      _ <- destinationDraftTable ++= draft.to.getOrElse(Seq("")).map(DestinationDraftRow(draftID, _, Destination.ToAddress))
-      _ <- destinationDraftTable ++= draft.CC.getOrElse(Seq("")).map(DestinationDraftRow(draftID, _, Destination.CC))
-      _ <- destinationDraftTable ++= draft.BCC.getOrElse(Seq("")).map(DestinationDraftRow(draftID, _, Destination.BCC))
+      _ <- destinationDraftTable ++= draft.to.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.ToAddress))
+      _ <- destinationDraftTable ++= draft.CC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.CC))
+      _ <- destinationDraftTable ++= draft.BCC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.BCC))
     } yield draftID
 
     db.run(insertDraft.transactionally)
@@ -295,8 +295,8 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
         .result)
 
     } yield draft.map {
-      case (draftID, username, header, body, dateOf) =>
-        DraftInfoDTO(draftID, username, toSeq, ccSeq, bccSeq, header, body, dateOf)
+      case (draftId, username, header, body, dateOf) =>
+        DraftInfoDTO(draftId, username, toSeq, ccSeq, bccSeq, header, body, dateOf)
     }
   }
 
