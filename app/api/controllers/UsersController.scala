@@ -75,10 +75,10 @@ import scala.concurrent.{ ExecutionContext, Future }
         val loggedUser = userActions.loginUser(user)
         loggedUser.map(_.length).flatMap {
           case 1 =>
-            userActions.insertLogin(user).map(x =>
+            userActions.insertLogin(user).map(token =>
               Ok(JsObject(Seq(
-                (TokenJSONField, JsString(x)),
-                (TokenValidTimeJsonField, JsString(Token1HourValid))))))
+                (TokenJSONField, JsString(token)),
+                (TokenValidTimeJsonField, JsString(Token2HourValid))))))
           case _ =>
             Future.successful(Forbidden(PasswordMissMatchStatus))
         }
@@ -92,8 +92,7 @@ import scala.concurrent.{ ExecutionContext, Future }
   def logOut: Action[AnyContent] = tokenValidator.async { request =>
     val authToken = request.headers.get(TokenHeader).getOrElse("")
     userActions.insertLogout(authToken).map {
-      case 1 =>
-        Ok
+      case 1 => Ok
       case _ => NotModified
     }
   }

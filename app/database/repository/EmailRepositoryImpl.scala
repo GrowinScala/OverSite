@@ -295,8 +295,8 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
         .result)
 
     } yield draft.map {
-      case (draftID, username, header, body, dateOf) =>
-        DraftInfoDTO(draftID, username, toSeq, ccSeq, bccSeq, header, body, dateOf)
+      case (draftId, username, header, body, dateOf) =>
+        DraftInfoDTO(draftId, username, toSeq, ccSeq, bccSeq, header, body, dateOf)
     }
   }
 
