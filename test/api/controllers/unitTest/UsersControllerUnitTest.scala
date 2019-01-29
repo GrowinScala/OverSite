@@ -1,7 +1,7 @@
 package api.controllers.unitTest
 
 import akka.stream.Materializer
-import api.controllers.{ UnitControllerTestsAppBuilder, UsersController }
+import api.controllers.UsersController
 import api.validators.TokenValidator
 import database.repository._
 import database.repository.fake.{ FakeUserRepositoryImpl, FakeUserRepositoryImplWithWrongLoginAndLogout }
@@ -14,22 +14,23 @@ import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import UnitControllerTestsAppBuilder._
 
 import scala.concurrent.ExecutionContext
 
 class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy implicit val mat: Materializer = UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[Materializer]
+  lazy implicit val mat: Materializer = injectorWithValidToken.instanceOf[Materializer]
 
   val usersActions: UserRepository = new FakeUserRepositoryImpl()
 
   "UsersController #signIn" should {
     "send a Ok if JSON body has a valid format" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -43,9 +44,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "UsersController #signIn" should {
     "send a BadRequest if JSON body has an invalid email address" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -61,9 +62,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "UsersController #signIn" should {
     "send a BadRequest if JSON body has an invalid format: case username" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -77,9 +78,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "UsersController #signIn" should {
     "send a BadRequest if JSON body has an invalid format: case password" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -93,9 +94,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "UsersController #logIn" should {
     "send a BadRequest if JSON body has an invalid format: case username" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -109,9 +110,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "UsersController #logIn" should {
     "send a BadRequest if JSON body has an invalid format: case password" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -125,9 +126,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "UsersController #logIn" should {
     "send a Ok if JSON body has a valid format" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -142,9 +143,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     val usersActionsWithWrongLogin = new FakeUserRepositoryImplWithWrongLoginAndLogout()
     "send a Forbidden if password and username doesn´t match" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActionsWithWrongLogin)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
@@ -159,9 +160,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "UsersController #logOut" should {
     "send a Ok if the user was logged out" in {
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActions)
       val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -173,9 +174,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     "send a NotModified if the user wasn´t logged out" in {
       val usersActionsWithWrongLogin = new FakeUserRepositoryImplWithWrongLoginAndLogout()
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         usersActionsWithWrongLogin)
       val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
@@ -187,9 +188,9 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     "send a Forbidden if JSON header has an invalid token" in {
       val usersActionsWithWrongLogin = new FakeUserRepositoryImplWithWrongLoginAndLogout()
       val controller = new UsersController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         usersActionsWithWrongLogin)
       val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))

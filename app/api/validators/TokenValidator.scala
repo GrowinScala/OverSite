@@ -59,7 +59,7 @@ class ProdTokenValidator(db: Database) extends TokenValidator {
    * @return boolean value considering of the token is valid or not
    */
   def validateToken(token: String): Future[Boolean] = {
-    val validateTableToken = loginTable.filter(p => (p.token === token) && (p.active === true) && (p.validDate > System.currentTimeMillis())).result
+    val validateTableToken = loginTable.filter(entry => (entry.token === token) && (entry.active === true) && (entry.validDate > System.currentTimeMillis())).result
     db.run(validateTableToken).map(_.length).map {
       case 1 => true
       case _ => false
@@ -73,6 +73,6 @@ class ProdTokenValidator(db: Database) extends TokenValidator {
    */
   def getUserByToken(token: String): Future[String] = {
     val getUser = loginTable.filter(x => x.token === token).map(_.username).result
-    db.run(getUser).map(_.head)
+    db.run(getUser).map(_.headOption.getOrElse(""))
   }
 }

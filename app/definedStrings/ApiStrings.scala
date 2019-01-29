@@ -43,7 +43,7 @@ object ApiStrings {
   val TokenHeader = "Token"
 
   /** For token duration */
-  val Token1HourValid = " The token is valid for 1 hour"
+  val Token2HourValid = " The token is valid for 2 hour"
 
   /** For regular strings */
   val ErrorString = "Error:"

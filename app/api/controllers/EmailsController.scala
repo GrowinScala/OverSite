@@ -65,8 +65,7 @@ import scala.concurrent.{ ExecutionContext, Future }
         val result = emails.map(email =>
           MinimalInfoDTO.addLink(
             email,
-            //List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
-            List("")))
+            List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
         Ok(Json.toJson(result))
       }))
     } else if (status.getOrElse("") == SatanString) {

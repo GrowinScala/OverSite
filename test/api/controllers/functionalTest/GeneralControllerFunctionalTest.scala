@@ -121,9 +121,6 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
 
       val tokenUser2 = contentAsJson(route(app, fakeRequestLogInUser2).get).\("Token:").as[String]
 
-
-
-
     }
   }
 

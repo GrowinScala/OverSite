@@ -1,7 +1,7 @@
 package api.controllers.unitTest
 
 import akka.stream.Materializer
-import api.controllers.{ ChatController, UnitControllerTestsAppBuilder }
+import api.controllers.ChatController
 import api.validators.TokenValidator
 import database.repository.fake.{ FakeChatRepositoryImpl, FakeUserRepositoryImpl }
 import database.repository.{ ChatRepository, _ }
@@ -14,13 +14,14 @@ import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import UnitControllerTestsAppBuilder._
 
 import scala.concurrent.ExecutionContext
 
 class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy implicit val mat: Materializer = UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[Materializer]
+  lazy implicit val mat: Materializer = injectorWithValidToken.instanceOf[Materializer]
 
   val chatActions: ChatRepository = new FakeChatRepositoryImpl()
   val userActions: UserRepository = new FakeUserRepositoryImpl()
@@ -28,9 +29,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #inbox" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.inbox(Option(true)).apply(FakeRequest(GET, "/chats?isTrash=true")
@@ -42,9 +43,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #inbox" should {
     "send a OK if JSON header has a valid token: case no TrashOption" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.inbox(None).apply(FakeRequest(GET, "/chats")
@@ -56,9 +57,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #inbox" should {
     "send a Forbidden if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.inbox(Option(true)).apply(FakeRequest(GET, "/chats?isTrash=true")
@@ -72,9 +73,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getEmails" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.getEmails("", Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
@@ -86,9 +87,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getEmails" should {
     "send a OK if JSON header has a valid token: case no TrashOption" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.getEmails("", None).apply(FakeRequest(GET, "/chats/:chatID/emails")
@@ -100,9 +101,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getEmails" should {
     "send a Forbidden if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.getEmails("", Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
@@ -116,9 +117,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #moveInOutTrash" should {
     "send a Ok if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
@@ -132,9 +133,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #moveInOutTrash" should {
     "send a Forbidden if JSON header has a invalid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
@@ -150,9 +151,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #moveInOutTrash" should {
     "send a BadRequest if JSON body has an invalid format" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
@@ -166,9 +167,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #supervised" should {
     "send a Ok if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.supervised.apply(FakeRequest(POST, "/shares")
@@ -183,9 +184,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #supervised" should {
     "send a Forbidden if JSON header has a invalid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.supervised().apply(FakeRequest(POST, "/shares")
@@ -202,9 +203,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #supervised" should {
     "send a BadRequest if JSON body has an invalid format: case chatID" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.supervised.apply(FakeRequest(POST, "/shares")
@@ -219,9 +220,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #supervised" should {
     "send a BadRequest if JSON body has an invalid format: case supervisor" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.supervised.apply(FakeRequest(POST, "/shares")
@@ -236,9 +237,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getShares" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.getShares().apply(FakeRequest(GET, "/shares")
@@ -251,9 +252,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getShares" should {
     "send a Forbidden if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.getShares().apply(FakeRequest(GET, "/shares")
@@ -267,9 +268,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getSharedEmails" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.getSharedEmails("").apply(FakeRequest(GET, "/shares/:shareID/emails")
@@ -282,9 +283,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getSharedEmails" should {
     "send a Forbidden if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.getSharedEmails("").apply(FakeRequest(GET, "/shares/:shareID/emails")
@@ -298,9 +299,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getSharedEmail" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID/emails")
@@ -313,9 +314,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #getSharedEmail" should {
     "send a Forbidden if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID/emails")
@@ -329,9 +330,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #takePermissions" should {
     "send a Ok if JSON header has a valid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
@@ -346,9 +347,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #takePermissions" should {
     "send a Forbidden if JSON header has a invalid token" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithInvalidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithInvalidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithInvalidToken,
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
@@ -365,9 +366,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #takePermissions" should {
     "send a BadRequest if JSON body has an invalid format: case chatID" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
@@ -382,9 +383,9 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
   "ChatController #takePermissions" should {
     "send a BadRequest if JSON body has an invalid format: case supervisor" in {
       val controller = new ChatController(
-        UnitControllerTestsAppBuilder.injectorWithValidToken.instanceOf[TokenValidator],
-        UnitControllerTestsAppBuilder.ccWithValidToken,
-        UnitControllerTestsAppBuilder.actorSystemWithValidToken,
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
