@@ -43,7 +43,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "BCC" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
     }
   }
 
@@ -64,7 +64,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "BCC" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }
@@ -86,7 +86,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "BCC" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }
@@ -108,7 +108,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "to" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }
@@ -130,7 +130,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "to" -> Seq(""),
           "BCC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }
