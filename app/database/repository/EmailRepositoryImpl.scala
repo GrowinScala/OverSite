@@ -4,20 +4,19 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.{ CreateEmailDTO, DraftInfoDTO, EmailInfoDTO, MinimalInfoDTO }
-import database.mappings.ChatMappings.chatTable
 import database.mappings.DraftMappings.{ destinationDraftTable, draftTable }
 import database.mappings.EmailMappings.{ emailTable, _ }
 import database.mappings._
-import database.properties.DBProperties
+import database.properties.{ DBProperties, DatabaseModule }
 import definedStrings.ApiStrings._
 import javax.inject.Inject
-import slick.jdbc.MySQLProfile.api._
+import database.mappings.ChatMappings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
 /**  Class that receives a db path */
-class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends EmailRepository {
-
+class EmailRepositoryImpl @Inject() (profile: DatabaseModule, dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends EmailRepository {
+  import profile.profile.api._
   val db = dbClass.db
 
   /**

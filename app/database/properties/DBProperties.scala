@@ -10,5 +10,6 @@ trait DBProperties {
 
 @Singleton
 object ProdDBProperties extends DBProperties {
+
   override val db: Database = Database.forConfig(OversiteDB)
 }

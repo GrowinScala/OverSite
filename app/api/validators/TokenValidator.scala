@@ -2,14 +2,11 @@ package api.validators
 import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
 import database.mappings.UserMappings.loginTable
-import database.properties.DBProperties
-import javax.inject.{ Inject, Singleton }
+import database.properties.{ DBProperties, DatabaseModule }
+import definedStrings.ApiStrings._
 import play.api.mvc
 import play.api.mvc.Results._
 import play.api.mvc._
-import slick.jdbc.MySQLProfile.api._
-import definedStrings.ApiStrings._
-import definedStrings.DatabaseStrings.OversiteDB
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ ExecutionContext, Future }
@@ -51,8 +48,10 @@ trait TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
 }
 
 /** Class responsible to validate the token */
-class ProdTokenValidator(db: Database) extends TokenValidator {
+class ProdTokenValidator(profile: DatabaseModule, dbClass: DBProperties) extends TokenValidator {
+  import profile.profile.api._
 
+  val db = dbClass.db
   /**
    * Validates the userName and token inserted by the user
    * @param token token provided from the headers

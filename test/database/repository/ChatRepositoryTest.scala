@@ -411,20 +411,20 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
   }
 
   /* NOT WORKING THANKS TO SLICK BUG
-    /* Verify if deletePermission takes the permission from the supervised user*/
-    ChatRepository + DeletePermissionFunction should {
+     Verify if deletePermission takes the permission from the supervised user*/
+  ChatRepository + DeletePermissionFunction should {
     "check if a an user is not allowed to access the emails anymore after permission deleted" in {
-    val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
-    val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-    val resultEmailID = resultEmailTable.map(row => row.emailID).head
-    val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
-    val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
-    Await.result(chatActions.deletePermission(userCreation.username, shareCreation.supervisor, resultChatID), Duration.Inf)
-    val returnShares = Await.result(chatActions.getSharedEmails(shareCreation.supervisor, resultShareID), Duration.Inf)
-    /** Verify if returnShares is not empty */
-    assert(returnShares.isEmpty)
+      val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
+      val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
+      val resultEmailID = resultEmailTable.map(row => row.emailID).head
+      val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
+      val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
+      Await.result(chatActions.deletePermission(userCreation.username, shareCreation.supervisor, resultChatID), Duration.Inf)
+      val returnShares = Await.result(chatActions.getSharedEmails(shareCreation.supervisor, resultShareID), Duration.Inf)
+      /** Verify if returnShares is not empty */
+      assert(returnShares.isEmpty)
     }
-    }
-    */
+  }
+
 }
 

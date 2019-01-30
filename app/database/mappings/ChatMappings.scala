@@ -1,6 +1,7 @@
 package database.mappings
+
+import database.properties.prodModule.profile.api._
 import definedStrings.DatabaseStrings._
-import slick.jdbc.MySQLProfile.api._
 
 /** Case class of Chat Table Row: */
 case class ChatRow(
@@ -34,6 +35,7 @@ class ChatTable(tag: Tag) extends Table[ChatRow](tag, ChatsTable) {
  * and chatID as foreign key
  */
 class ShareTable(tag: Tag) extends Table[ShareRow](tag, SharesTable) {
+
   def shareID = column[String](ShareIDRow, O.PrimaryKey)
   def chatID = column[String](ChatIDRow)
   def fromUser = column[String](FromUserRow)

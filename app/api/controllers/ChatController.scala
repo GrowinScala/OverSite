@@ -5,16 +5,11 @@ import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
 import api.dtos.{ CreateShareDTO, MinimalInfoDTO, TrashInfoDTO }
 import api.validators.TokenValidator
-import database.properties.DBProperties
-import database.repository.{ ChatRepository, ChatRepositoryImpl, UserRepository, UserRepositoryImpl }
-import database.repository.{ ChatRepositoryImpl, UserRepositoryImpl }
+import database.repository.{ ChatRepository, UserRepository }
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
-import slick.jdbc.MySQLProfile.api._
-import definedStrings.ApiStrings._
-import definedStrings.DatabaseStrings.OversiteDB
 
 import scala.concurrent.{ ExecutionContext, Future }
 
@@ -84,7 +79,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 
     toTrashResult.fold(
       errors => {
-        println(request.body.toString())
         Future {
           BadRequest(jsonErrors(errors))
         }

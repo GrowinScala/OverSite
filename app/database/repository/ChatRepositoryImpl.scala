@@ -2,20 +2,19 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos._
 import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
-import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
-import database.properties.DBProperties
+import database.properties.{ DBProperties, DatabaseModule }
 import definedStrings.DatabaseStrings._
 import javax.inject.Inject
-import slick.jdbc.MySQLProfile.api._
+import database.mappings.ChatMappings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 
-class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
+class ChatRepositoryImpl @Inject() (profile: DatabaseModule, dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
 
+  import profile.profile.api._
   val db = dbClass.db
   /**
    * Aims to find an chatID already exists in the database

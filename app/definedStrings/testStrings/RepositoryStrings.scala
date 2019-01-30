@@ -26,9 +26,9 @@ object RepositoryStrings {
   val LogoutUserFunction = " #logoutUser"
 
   /** For Repositories */
-  val EmailRepository = "EmailsController"
-  val ChatRepository = "ChatsController"
-  val UserRepository = "UsersController"
+  val EmailRepository = "EmailsRepository"
+  val ChatRepository = "ChatsRepository"
+  val UserRepository = "UsersRepository"
 
   val EmptyString = ""
 
