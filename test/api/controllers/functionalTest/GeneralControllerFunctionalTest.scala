@@ -59,8 +59,8 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
   }
 
   /** POST /sign end-point */
-  "UsersController" + "#signIn" should {
-    "send a Created if JSON body has a valid format " in {
+  "Controller #DraftFunctionaltest" should {
+    "create and manage a draft between two users" in {
       /** SignIn of User 1*/
       val fakeRequestSignInUser1 = FakeRequest(POST, "/signin")
         .withHeaders(HOST -> LocalHost)
@@ -127,6 +127,107 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
       status(route(app, fakeRequestGetDraftsTrashedUser1).get) mustBe OK
       val draftIDTrashUser1 = contentAsJson(route(app, fakeRequestGetDraftsTrashedUser1).get).head.\("Id").as[String]
       draftIDUser1 mustEqual draftIDTrashUser1
+      /*
+      /** Gets draft by user 1 to reach the draftID*/
+      //PATCH  /draft/:draftID                     api.controllers.DraftsController.toSentOrDraft(draftID: String)
+      val fakeRequestGetDraftsToSentUser1 = FakeRequest(PATCH, "/draft/" + draftIDUser1)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
+        .withBody(Json.toJson(Json.obj("status" -> "send")))
+      status(route(app, fakeRequestGetDraftsToSentUser1).get) mustBe OK
+
+      //val draftIDTrashUser1 = contentAsJson(route(app, fakeRequestGetDraftsTrashedUser1).get).head.\("Id").as[String]
+      //draftIDUser1 mustEqual draftIDTrashUser1
+      Await.result(db.run(emailTable.result), Duration.Inf).foreach(println(_))
+*/
+    }
+  }
+
+  /** POST /sign end-point */
+  "Controller #EmailFunctionaltest" should {
+    "sent and manage an email between two users" in {
+      /** SignIn of User 1*/
+      val fakeRequestSignInUser1 = FakeRequest(POST, "/signin")
+        .withHeaders(HOST -> LocalHost)
+        .withBody(Json.toJson(Json.obj(
+          "username" -> emailExample1,
+          "password" -> passwordExample1)))
+      status(route(app, fakeRequestSignInUser1).get) mustBe CREATED
+
+      /** SignIn of User 2*/
+      val fakeRequestSignInUser2 = FakeRequest(POST, "/signin")
+        .withHeaders(HOST -> LocalHost)
+        .withBody(Json.toJson(Json.obj(
+          "username" -> emailExample2,
+          "password" -> passwordExample2)))
+      status(route(app, fakeRequestSignInUser2).get) mustBe CREATED
+
+      /** LogIn of User 1*/
+      val fakeRequestLogInUser1 = FakeRequest(POST, "/login")
+        .withHeaders(HOST -> LocalHost)
+        .withBody(Json.toJson(Json.obj(
+          "username" -> emailExample1,
+          "password" -> passwordExample1)))
+      status(route(app, fakeRequestLogInUser1).get) mustBe OK
+      val tokenUser1 = contentAsJson(route(app, fakeRequestLogInUser1).get).\("Token:").as[String]
+
+      /** LogIn of User 2*/
+      val fakeRequestLogInUser2 = FakeRequest(POST, "/login")
+        .withHeaders(HOST -> LocalHost)
+        .withBody(Json.toJson(Json.obj(
+          "username" -> emailExample2,
+          "password" -> passwordExample2)))
+      status(route(app, fakeRequestLogInUser2).get) mustBe OK
+      val tokenUser2 = contentAsJson(route(app, fakeRequestLogInUser2).get).\("Token:").as[String]
+
+      /** Email is sent by user1 to user 2*/
+      val fakeRequestInsertEmailUser1 = FakeRequest(POST, "/email")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
+        .withBody(Json.toJson(Json.obj(
+          "chatID" -> testGenerator1.ID,
+          "dateOf" -> testGenerator1.dateOf,
+          "header" -> testGenerator1.header,
+          "body" -> testGenerator1.body,
+          "to" -> (emailExample2 +: testGenerator1.emailAddresses),
+          "BCC" -> testGenerator1.emailAddresses,
+          "CC" -> testGenerator1.emailAddresses)))
+      status(route(app, fakeRequestInsertEmailUser1).get) mustBe OK
+
+      /** Gets emails by user 1 to reach the email*/
+      val fakeRequestGetEmailsUser1 = FakeRequest(GET, "/emails?=sent")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
+      status(route(app, fakeRequestGetEmailsUser1).get) mustBe OK
+      val emailIDUser1 = contentAsJson(route(app, fakeRequestGetEmailsUser1).get).head.\("Id").as[String]
+
+      /** Gets emails by user 2 to reach the email*/
+      val fakeRequestGetEmailsUser2 = FakeRequest(GET, "/emails?=received")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
+      status(route(app, fakeRequestGetEmailsUser2).get) mustBe OK
+      val emailIDUser2 = contentAsJson(route(app, fakeRequestGetEmailsUser2).get).head.\("Id").as[String]
+      /** Verify if the emailIDs are the same*/
+      emailIDUser1 mustEqual emailIDUser2
+
+      /** Send email to trash by user 1*/
+      val fakeRequestMoveInOutTrash2 = FakeRequest(PATCH, "/emails/" + emailIDUser1)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
+        .withBody(Json.toJson(Json.obj(
+          "toTrash" -> true)))
+      status(route(app, fakeRequestMoveInOutTrash2).get) mustBe OK
+
+      /** Gets emails by user 1 to reach the email*/
+      val fakeRequestGetEmailsSentUser1 = FakeRequest(GET, "/emails?=sent")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
+      status(route(app, fakeRequestGetEmailsSentUser1).get) mustBe OK
+      val emailIDUser1Aux = contentAsJson(route(app, fakeRequestGetEmailsSentUser1).get).as[Set[String]]
+      /** Since the mail was moved to trash, the GET /emails should return an empty set*/
+      emailIDUser1Aux.isEmpty mustBe true
+
+      /** Get email by user 2 to reach the specified email*/
+      val fakeRequestGetEmailUser2 = FakeRequest(GET, "/emails/" + emailIDUser2 + "?=received")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser2)
+      status(route(app, fakeRequestGetEmailUser2).get) mustBe OK
+      val emailIDUser2Aux = contentAsJson(route(app, fakeRequestGetEmailUser2).get).head.\("emailID").as[String]
+      /** BVerify if the User 2 still have access to the email*/
+      emailIDUser2Aux mustEqual emailIDUser2
     }
   }
 
