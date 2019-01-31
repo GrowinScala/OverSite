@@ -2,19 +2,21 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
+import api.dtos._
+import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO, MinimalShareInfoDTO }
+import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
-import database.properties.{ DBProperties, DatabaseModule }
+import database.properties.DBProperties
 import definedStrings.DatabaseStrings._
 import javax.inject.Inject
-import database.mappings.ChatMappings._
+import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
-class ChatRepositoryImpl @Inject() (profile: DatabaseModule, dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
+class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
 
-  import profile.profile.api._
   val db = dbClass.db
   /**
    * Aims to find an chatID already exists in the database
@@ -177,38 +179,45 @@ class ChatRepositoryImpl @Inject() (profile: DatabaseModule, dbClass: DBProperti
     } yield shareID
   }
 
-  /** Auxiliary function*/
-  private def queryUser(query: Query[(Rep[String], Rep[String]), (String, String), Seq]): Query[Rep[String], String, Seq] = {
+  def querySharesAux(userEmail: Rep[String]): Query[Rep[String], String, Seq] = {
     emailTable
-      .filter(_.fromAddress in query.map { case (_, user) => user })
+      .filter(_.fromAddress === userEmail)
       .map(_.emailID)
-      .union(destinationEmailTable.
-        filter(_.username in query.map { case (_, user) => user })
+      .union(destinationEmailTable
+        .filter(_.username === userEmail)
         .map(_.emailID))
   }
-
   /**
    * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
    * @param userEmail Identification of user by email
    * @return List of Chat IDs and respective headers
    */
-  def getShares(userEmail: String): Future[Seq[MinimalInfoDTO]] = {
+  def getShares(userEmail: String): Future[Seq[MinimalShareInfoDTO]] = {
 
     val queryEmailID = shareTable
       .filter(_.toUser === userEmail)
-      .map(shareTable => (shareTable.chatID, shareTable.fromUser))
+      .join(emailTable).on(_.chatID === _.chatID)
+      .map { case (share, email) => (share.shareID, share.fromUser, email.emailID, email.dateOf, email.header) }
 
-    val queryChatId = emailTable.filter(_.chatID in queryEmailID.map { case (chatID, _) => chatID })
-      .filter(_.emailID in queryUser(queryEmailID))
-      .sortBy(_.dateOf)
-      .map(emailTable => (emailTable.chatID, emailTable.header))
-      .distinctOn(_._1)
-      .result
+    val idsDistinctList = db.run(queryEmailID.result)
+      .map(seq => seq.map(_._1).distinct)
 
-    db.run(queryChatId).map(seq => seq.map {
-      case (id, header) => MinimalInfoDTO(id, header)
-    })
+    val result = idsDistinctList.map(seq =>
+      Future.sequence(seq.map(shareID =>
+        db.run(queryEmailID
+          .filter(_._1 === shareID)
+          .filter(x => x._3 in querySharesAux(x._2))
+          .sortBy(_._4.reverse)
+          .take(num = 1)
+          .result
+          .headOption))))
 
+    result.flatMap(futureSeqTriplets => futureSeqTriplets.map(seq =>
+      seq.map { optionTripletStrings =>
+        optionTripletStrings.getOrElse(("", "", "", "", "")) match {
+          case (shareID, fromUser, _, _, header) => MinimalShareInfoDTO(shareID, fromUser, header)
+        }
+      }))
   }
 
   /** Query to get the list of allowed emails that are linked to the chatID that correspond to shareID */
@@ -217,47 +226,17 @@ class ChatRepositoryImpl @Inject() (profile: DatabaseModule, dbClass: DBProperti
     val queryShareId = shareTable
       .filter(_.shareID === shareID)
       .filter(_.toUser === userEmail)
-      .map(shareTable => (shareTable.chatID, shareTable.fromUser))
+      .join(emailTable).on(_.chatID === _.chatID)
+      .map { case (share, email) => (share.fromUser, email.emailID, email.dateOf, email.header) }
 
-    val queryChatId = emailTable
-      .filter(_.chatID in queryShareId.map { case (chatID, _) => chatID })
-      .filter(_.emailID in queryUser(queryShareId))
-      .sortBy(_.dateOf)
-      .map(emailTable => (emailTable.emailID, emailTable.header))
-      .result
+    val result = db.run(queryShareId
+      .filter(x => x._2 in querySharesAux(x._1))
+      .sortBy(_._3.reverse)
+      .result)
 
-    db.run(queryChatId).map(seq => seq.map {
-      case (id, header) => MinimalInfoDTO(id, header)
+    result.map(futureSeqTriplets => futureSeqTriplets.map {
+      case (_, emailID, _, header) => MinimalInfoDTO(emailID, header)
     })
-  }
-
-  /**
-   * Query to get the email, when shareID and emailID are provided
-   * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
-   */
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
-
-    val queryShareId = shareTable
-      .filter(_.shareID === shareID)
-      .filter(_.toUser === userEmail)
-      .map(shareTable => (shareTable.chatID, shareTable.fromUser))
-
-    val queryTos = db.run(destinationEmailTable
-      .filter(_.emailID === emailID)
-      .filter(_.destination === Destination.ToAddress)
-      .map(_.username).result)
-
-    val queryChatId = queryTos.map(seqTos => emailTable
-      .filter(_.chatID in queryShareId.map { case (chatID, _) => chatID })
-      .filter(_.emailID in queryUser(queryShareId))
-      .filter(_.emailID === emailID)
-      .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
-      .result.map(seq => seq.map {
-        case (chatID, fromAddress, header, body, dateOf) =>
-          EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
-      }))
-
-    queryChatId.flatMap(db.run(_))
   }
 
   /**

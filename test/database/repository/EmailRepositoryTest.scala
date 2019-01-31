@@ -129,265 +129,267 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
           resultChatIDFirst shouldEqual resultChatIDSecond
       }
     }
+  }
 
-    /** Verify if an email is inserted in chatTable correctly */
-    EmailRepository + " #insertEmail" should {
-      "check if the chat parameters are inserted in the chat table in database" in {
+  /** Verify if an email is inserted in chatTable correctly */
+  EmailRepository + " #insertEmail" should {
+    "check if the chat parameters are inserted in the chat table in database" in {
 
-        val result = for {
+      val result = for {
 
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-          resultChatTable <- db.run(chatTable.result)
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultChatTable <- db.run(chatTable.result)
 
-        } yield resultChatTable
+      } yield resultChatTable
 
-        /** Verify if the chat table is not empty **/
-        result.map(_.nonEmpty shouldEqual true)
+      /** Verify if the chat table is not empty **/
+      result.map(_.nonEmpty shouldEqual true)
 
-        /** Verify if the respective arguments match **/
+      /** Verify if the respective arguments match **/
 
-        result.map(_.head.header shouldEqual userCreation.username)
+      result.map(_.head.header shouldEqual userCreation.username)
 
-        /** Verify if chatID have an UUID format **/
+      /** Verify if chatID have an UUID format **/
 
-        Try[Boolean] {
-          result.map(seqChatRow => UUID.fromString(seqChatRow.head.chatID))
-          true
-        }
-          .getOrElse(false) shouldEqual true
+      Try[Boolean] {
+        result.map(seqChatRow => UUID.fromString(seqChatRow.head.chatID))
+        true
+      }
+        .getOrElse(false) shouldEqual true
+    }
+  }
+
+  /** Verify if an email is inserted in the toAddress table correctly */
+  EmailRepository + " #insertEmail" should {
+    "check if the to is inserted in the toAddress table in database" in {
+
+      val result = for {
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultToAddressTable <- db.run(destinationEmailTable.filter(_.destination === Destination.ToAddress).result)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield (resultToAddressTable, resultEmailTable)
+
+      emailCreation.to match {
+        case Some(to) if to.nonEmpty =>
+
+          result.map {
+            case (tosTable, emailsTable) =>
+
+              /** If the parameter TO exists it is verified if the toAddress table is not empty */
+              tosTable.nonEmpty shouldEqual true
+
+              /** Verify if the username of toAddress table is the same as toAddress parameter of email inserted */
+              tosTable.map(_.username).toSet shouldEqual emailCreation.to.get.toSet
+
+              /** Verify if the sequence of toID have an UUID format **/
+              Try[Boolean] {
+                tosTable.map(
+                  toRow => UUID.fromString(toRow.emailID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if the sequence of emailID have an UUID format **/
+
+              Try[Boolean] {
+                tosTable.map(
+                  toRow => UUID.fromString(toRow.emailID))
+                true
+              }.getOrElse(false) shouldEqual true
+
+              /** Verify if emailID of email table is the same as toAddress table */
+              emailsTable.forall(emailRow =>
+                tosTable.map(toRow => toRow.emailID).contains(emailRow.emailID)) shouldEqual true
+
+          }
+
+        case _ =>
+
+          result.map {
+            case (tosTable, _) =>
+
+              /** If the parameter TO does not exists it is verified if the CC table is empty */
+              tosTable.isEmpty shouldEqual true
+          }
       }
     }
+  }
 
-    /** Verify if an email is inserted in the toAddress table correctly */
-    EmailRepository + " #insertEmail" should {
-      "check if the to is inserted in the toAddress table in database" in {
+  /** Verify if an email is inserted in BCC table correctly */
+  EmailRepository + " #insertEmail" should {
+    "check if the BCC is inserted in the BCC table in database" in {
 
-        val result = for {
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-          resultToAddressTable <- db.run(destinationEmailTable.filter(_.destination === Destination.ToAddress).result)
-          resultEmailTable <- db.run(emailTable.result)
-        } yield (resultToAddressTable, resultEmailTable)
+      val result = for {
 
-        emailCreation.to match {
-          case Some(to) if to.nonEmpty =>
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
 
-            result.map {
-              case (tosTable, emailsTable) =>
+        resultBCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.BCC).result)
+        resultEmailTable <- db.run(emailTable.result)
+      } yield (resultBCCtable, resultEmailTable)
 
-                /** If the parameter TO exists it is verified if the toAddress table is not empty */
-                tosTable.nonEmpty shouldEqual true
+      /** Verify if the bcc table is created only if necessary **/
+      emailCreation.BCC match {
+        case Some(_) =>
 
-                /** Verify if the username of toAddress table is the same as toAddress parameter of email inserted */
-                tosTable.map(_.username).toSet shouldEqual emailCreation.to.get.toSet
+          result.map {
+            case (bccsTable, emailsTable) =>
 
-                /** Verify if the sequence of toID have an UUID format **/
-                Try[Boolean] {
-                  tosTable.map(
-                    toRow => UUID.fromString(toRow.emailID))
-                  true
-                }.getOrElse(false) shouldEqual true
+              /** If the parameter BCC exists it is verified if the BCC table is not empty */
+              bccsTable.nonEmpty shouldEqual true
 
-                /** Verify if the sequence of emailID have an UUID format **/
+              /** Verify if the username of BCC table is the same as BCC parameter of email inserted */
+              bccsTable.map(_.username).toSet shouldEqual emailCreation.BCC.get.toSet
 
-                Try[Boolean] {
-                  tosTable.map(
-                    toRow => UUID.fromString(toRow.emailID))
-                  true
-                }.getOrElse(false) shouldEqual true
+              /** Verify if sequence of bccIDs have an UUID format **/
+              Try[Boolean] {
+                bccsTable.map(row => UUID.fromString(row.emailID))
+                true
+              }.getOrElse(false) shouldEqual true
 
-                /** Verify if emailID of email table is the same as toAddress table */
-                emailsTable.forall(emailRow =>
-                  tosTable.map(toRow => toRow.emailID).contains(emailRow.emailID)) shouldEqual true
+              /** Verify if the sequence of emailID have an UUID format **/
+              Try[Boolean] {
+                bccsTable.map(row => UUID.fromString(row.emailID))
+                true
+              }.getOrElse(false) shouldEqual true
 
-            }
+              /** Verify if emailID of email table is the same as BCC table */
+              emailsTable.forall(emailRow =>
+                bccsTable.map(bccRow => bccRow.emailID).contains(emailRow.emailID)) shouldEqual true
+          }
 
-          case _ =>
+        case _ =>
 
-            result.map {
-              case (tosTable, _) =>
+          result.map {
+            case (bccsTable, _) =>
 
-                /** If the parameter TO does not exists it is verified if the CC table is empty */
-                tosTable.isEmpty shouldEqual true
-            }
-        }
+              /** If the parameter BCC does not exists it is verified if the BCC table is empty */
+              bccsTable.isEmpty shouldEqual true
+          }
       }
     }
+  }
 
-    /** Verify if an email is inserted in BCC table correctly */
-    EmailRepository + " #insertEmail" should {
-      "check if the BCC is inserted in the BCC table in database" in {
+  /** Verify if an email is inserted in CC table correctly */
+  EmailRepository + " #insertEmail" should {
+    "check if the CC parameters are inserted in the CC table in database when necessary" in {
 
-        val result = for {
+      val result = for {
 
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.CC).result)
+        resultEmailTable <- db.run(emailTable.result)
 
-          resultBCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.BCC).result)
-          resultEmailTable <- db.run(emailTable.result)
-        } yield (resultBCCtable, resultEmailTable)
+      } yield (resultCCtable, resultEmailTable)
 
-        /** Verify if the bcc table is created only if necessary **/
-        emailCreation.BCC match {
-          case Some(_) =>
+      /** Verify if the cc table is created only if necessary **/
+      emailCreation.BCC match {
+        case Some(_) =>
 
-            result.map {
-              case (bccsTable, emailsTable) =>
+          result.map {
+            case (ccsTable, emailsTable) =>
 
-                /** If the parameter BCC exists it is verified if the BCC table is not empty */
-                bccsTable.nonEmpty shouldEqual true
+              /** If the parameter CC exists it is verified if the CC table is not empty */
+              ccsTable.nonEmpty shouldEqual true
 
-                /** Verify if the username of BCC table is the same as BCC parameter of email inserted */
-                bccsTable.map(_.username).toSet shouldEqual emailCreation.BCC.get.toSet
+              /** Verify if the username of CC table is the same as CC parameter of email inserted */
+              ccsTable.map(_.username).toSet shouldEqual emailCreation.CC.get.toSet
 
-                /** Verify if sequence of bccIDs have an UUID format **/
-                Try[Boolean] {
-                  bccsTable.map(row => UUID.fromString(row.emailID))
-                  true
-                }.getOrElse(false) shouldEqual true
+              /** Verify if sequence of ccIDs have an UUID format **/
+              Try[Boolean] {
+                ccsTable.map(row => UUID.fromString(row.emailID))
+                true
+              }.getOrElse(false) shouldEqual true
 
-                /** Verify if the sequence of emailID have an UUID format **/
-                Try[Boolean] {
-                  bccsTable.map(row => UUID.fromString(row.emailID))
-                  true
-                }.getOrElse(false) shouldEqual true
+              /** Verify if the sequence of emailID have an UUID format **/
+              Try[Boolean] {
+                ccsTable.map(row => UUID.fromString(row.emailID))
+                true
+              }.getOrElse(false) shouldEqual true
 
-                /** Verify if emailID of email table is the same as BCC table */
-                emailsTable.forall(emailRow =>
-                  bccsTable.map(bccRow => bccRow.emailID).contains(emailRow.emailID)) shouldEqual true
-            }
+              /** Verify if emailID of email table is the same as CC table */
+              emailsTable.forall(emailRow =>
+                ccsTable.map(ccRow => ccRow.emailID).contains(emailRow.emailID)) shouldBe true
+          }
 
-          case _ =>
+        case _ =>
 
-            result.map {
-              case (bccsTable, _) =>
+          result.map {
+            case (ccsTable, _) =>
 
-                /** If the parameter BCC does not exists it is verified if the BCC table is empty */
-                bccsTable.isEmpty shouldEqual true
-            }
-        }
+              /** If the parameter CC does not exists it is verified if the CC table is empty */
+              ccsTable.isEmpty shouldEqual true
+          }
       }
     }
+  }
 
-    /** Verify if an email is inserted in CC table correctly */
-    EmailRepository + " #insertEmail" should {
-      "check if the CC parameters are inserted in the CC table in database when necessary" in {
+  /** Verify the function changeTrash */
+  EmailRepository + "#changeTrash" should {
+    "check if the function changeTrash is able to change the trash status of the inserted email" in {
+      val result = for {
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultEmailTable <- db.run(emailTable.result)
+        _ <- Future.sequence { resultEmailTable.map(emailRow => emailActions.changeTrash(userCreation.username, emailRow.emailID, moveToTrash = true)) }
+        resultEmailTableTrash <- db.run(emailTable.result)
+      } yield (resultEmailTable, resultEmailTableTrash)
 
-        val result = for {
+      result.map {
+        case (resultEmailTable, resultEmailTableTrash) =>
 
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-          resultCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.CC).result)
-          resultEmailTable <- db.run(emailTable.result)
+          /** Verify if the emails are not in trash when inserted */
+          resultEmailTable.forall(_.isTrash === false) shouldBe true
 
-        } yield (resultCCtable, resultEmailTable)
-
-        /** Verify if the cc table is created only if necessary **/
-        emailCreation.BCC match {
-          case Some(_) =>
-
-            result.map {
-              case (ccsTable, emailsTable) =>
-
-                /** If the parameter CC exists it is verified if the CC table is not empty */
-                ccsTable.nonEmpty shouldEqual true
-
-                /** Verify if the username of CC table is the same as CC parameter of email inserted */
-                ccsTable.map(_.username).toSet shouldEqual emailCreation.CC.get.toSet
-
-                /** Verify if sequence of ccIDs have an UUID format **/
-                Try[Boolean] {
-                  ccsTable.map(row => UUID.fromString(row.emailID))
-                  true
-                }.getOrElse(false) shouldEqual true
-
-                /** Verify if the sequence of emailID have an UUID format **/
-                Try[Boolean] {
-                  ccsTable.map(row => UUID.fromString(row.emailID))
-                  true
-                }.getOrElse(false) shouldEqual true
-
-                /** Verify if emailID of email table is the same as CC table */
-                emailsTable.forall(emailRow =>
-                  ccsTable.map(ccRow => ccRow.emailID).contains(emailRow.emailID)) shouldBe true
-            }
-
-          case _ =>
-
-            result.map {
-              case (ccsTable, _) =>
-
-                /** If the parameter CC does not exists it is verified if the CC table is empty */
-                ccsTable.isEmpty shouldEqual true
-            }
-        }
+          /** Verify if the emails are in trash after changeTrash */
+          resultEmailTableTrash.forall(_.isTrash === true) shouldBe true
       }
     }
+  }
 
-    /** Verify the function changeTrash */
-    EmailRepository + "#changeTrash" should {
-      "check if the function changeTrash is able to change the trash status of the inserted email" in {
-        val result = for {
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-          resultEmailTable <- db.run(emailTable.result)
-          _ <- Future.sequence { resultEmailTable.map(emailRow => emailActions.changeTrash(userCreation.username, emailRow.emailID, moveToTrash = true)) }
-          resultEmailTableTrash <- db.run(emailTable.result)
-        } yield (resultEmailTable, resultEmailTableTrash)
+  /** Verify the function getEmails */
+  EmailRepository + "#getEmails" should {
+    "check if the function getEmails is able to reach the inserted email" in {
 
-        result.map {
-          case (resultEmailTable, resultEmailTableTrash) =>
+      val result = for {
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultEmailTable <- db.run(emailTable.result)
+        resultSent <- emailActions.getEmails(userCreation.username, "sent")
+        resultReceived <- Future.sequence(emailCreation.to.get.map(emailActions.getEmails(_, "received")))
+      } yield (resultEmailTable, resultSent, resultReceived)
 
-            /** Verify if the emails are not in trash when inserted */
-            resultEmailTable.forall(_.isTrash === false) shouldBe true
+      /** getEmails for sent and received cases */
+      result.map {
+        case (resultEmailTable, resultSent, resultReceived) =>
 
-            /** Verify if the emails are in trash after changeTrash */
-            resultEmailTableTrash.forall(_.isTrash === true) shouldBe true
-        }
+          resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
+
+          resultReceived.forall(seqEmailInfo =>
+            seqEmailInfo === resultEmailTable.map(row =>
+              MinimalInfoDTO(row.emailID, row.header))) shouldBe true
+
       }
     }
+  }
 
-    /** Verify the function getEmails */
-    EmailRepository + "#getEmails" should {
-      "check if the function getEmails is able to reach the inserted email" in {
+  /** Verify the function getEmails */
+  EmailRepository + "#getEmails" should {
+    "check if the function getEmails is able to reach the inserted email that is trashed" in {
 
-        val result = for {
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-          resultEmailTable <- db.run(emailTable.result)
-          resultSent <- emailActions.getEmails(userCreation.username, "sent")
-          resultReceived <- Future.sequence(emailCreation.to.get.map(emailActions.getEmails(_, "received")))
-        } yield (resultEmailTable, resultSent, resultReceived)
+      val result = for {
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultEmailTable <- db.run(emailTable.result)
+        _ <- Future.sequence { resultEmailTable.map(x => emailActions.changeTrash(userCreation.username, x.emailID, moveToTrash = true)) }
+        resultToTrash <- emailActions.getEmails(userCreation.username, "trashed")
+      } yield (resultEmailTable, resultToTrash)
 
-        /** getEmails for sent and received cases */
-        result.map {
-          case (resultEmailTable, resultSent, resultReceived) =>
+      /** getEmails for sent and received cases */
+      result.map {
+        case (resultEmailTable, resultToTrash) =>
+          resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultToTrash
 
-            resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultSent
-
-            resultReceived.forall(seqEmailInfo =>
-              seqEmailInfo === resultEmailTable.map(row =>
-                MinimalInfoDTO(row.emailID, row.header))) shouldBe true
-
-        }
       }
     }
-
-    /** Verify the function getEmails */
-    EmailRepository + "#getEmails" should {
-      "check if the function getEmails is able to reach the inserted email that is trashed" in {
-
-        val result = for {
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-          resultEmailTable <- db.run(emailTable.result)
-          _ <- Future.sequence { resultEmailTable.map(x => emailActions.changeTrash(userCreation.username, x.emailID, moveToTrash = true)) }
-          resultToTrash <- emailActions.getEmails(userCreation.username, "trashed")
-        } yield (resultEmailTable, resultToTrash)
-
-        /** getEmails for sent and received cases */
-        result.map {
-          case (resultEmailTable, resultToTrash) =>
-            resultEmailTable.map(emailsRow => MinimalInfoDTO(emailsRow.emailID, emailsRow.header)) shouldEqual resultToTrash
-
-        }
-      }
-    }
-
+  }
+  //TODO: REMAKE TESTS
+  /*
     /** Verify the function getEmail **/
     EmailRepository + " #getEmail" should {
       "check if the function getEmail is able to reach the email inserted" in {
@@ -416,7 +418,10 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
+  */
 
+  //TODO: REMAKE TESTS
+  /*
   /** Verify the function getEmail **/
   EmailRepository + " #getEmail" should {
     "check if the function getEmail is able to reach the email inserted and trashed" in {
@@ -445,6 +450,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
+  */
 
   /**DRAFT REPOSITORIES TESTS*/
   /** Verify if an email is inserted in database correctly */
@@ -511,6 +517,36 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       result.map {
         case (resultChatIDFirst, resultChatIDSecond) =>
           resultChatIDFirst.toSet shouldEqual resultChatIDSecond.toSet
+      }
+    }
+  }
+
+  /** Verify if a draft is inserted without destinations */
+  EmailRepository + " #insertDraft" should {
+    "check if a draft is properly inserted with no destination" in {
+
+      val result = for {
+        /* Insertion od draft without destinations*/
+        _ <- emailActions.insertDraft(
+          userCreation.username,
+          new CreateEmailDTO(
+            Option(defaultCreation.ID),
+            defaultCreation.dateOf,
+            defaultCreation.header,
+            defaultCreation.body,
+            None,
+            None,
+            None))
+
+        resultDraftTable <- db.run(draftTable.result)
+        resultDestinationTable <- db.run(destinationDraftTable.result)
+
+      } yield (resultDraftTable, resultDestinationTable)
+
+      result.map {
+        case (resultDraftTable, resultDestinationTable) =>
+          resultDraftTable.nonEmpty shouldBe true
+          resultDestinationTable.isEmpty shouldBe true
       }
     }
   }
@@ -696,11 +732,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-  /**
-   * WARNING: updateDraft is not possible to test since the following Slick exception:
-   * org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "delete ""DRAFTSDESTINATION"" from[*] ""DRAFTSDESTINATION"" where ""DRAFTSDESTINATION"".""DRAF
-   * TID"" = 'eddea02a-cdab-47d1-88aa-95984fc007c0' "; SQL statement:
-   */
 
   /** Verify if an update is proceeded in draftTable correctly */
   EmailRepository + " #getDrafts" should {
@@ -743,7 +774,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-
+  //TODO: REMAKE TEST
+  /*
   /** Verify the function getDraft **/
   EmailRepository + " #getDraft" should {
     "check if the function getDraft is able to reach the draft inserted" in {
@@ -772,7 +804,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-
+*/
+  /*
   /** Verify the function getDraft **/
   EmailRepository + " #getDraft" should {
     "check if the function getDraft is able to reach the draft inserted and trashed" in {
@@ -801,7 +834,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-
+*/
   /** Verify the function destinations **/
   EmailRepository + "#destinations" should {
     "check if the function destinations is able to reach the destinations inserted in draft" in {
@@ -853,6 +886,5 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-
 }
 

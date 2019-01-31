@@ -1,6 +1,9 @@
-package api.controllers
+package api.controllers.unitTest
 
+import database.repository.fake.{ FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
+import org.scalatest.{ Matchers, _ }
 import akka.stream.Materializer
+import api.controllers.EmailsController
 import api.validators.TokenValidator
 import database.repository._
 import database.repository.fake.{ FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
@@ -13,7 +16,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import UnitControllerTestsAppBuilder._
+import api.controllers.unitTest.UnitControllerTestsAppBuilder._
 
 import scala.concurrent.ExecutionContext
 

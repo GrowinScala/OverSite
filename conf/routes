@@ -43,7 +43,7 @@ POST   /shares                              api.controllers.ChatController.super
     #GET PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 GET    /shares                              api.controllers.ChatController.getShares
 GET    /shares/:shareID/emails              api.controllers.ChatController.getSharedEmails(shareID: String)
-
+GET    /shares/:shareID/email/:emailID      api.controllers.EmailsController.getSharedEmail(shareID: String, emailID: String)
 
     #DELETE PERMISSION TO SOMEONE TO ACCESS THE SHARED CHATS
 

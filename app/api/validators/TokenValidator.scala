@@ -1,15 +1,16 @@
 package api.validators
 import akka.actor.ActorSystem
-import akka.stream.{ ActorMaterializer, Materializer }
+import akka.stream.{ActorMaterializer, Materializer}
 import database.mappings.UserMappings.loginTable
-import database.properties.{ DBProperties, DatabaseModule }
+import database.properties.DBProperties
 import definedStrings.ApiStrings._
 import play.api.mvc
 import play.api.mvc.Results._
 import play.api.mvc._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /** Case class created to replace the first parameter of ActionBuilder */
 case class AuthRequest[A](
@@ -48,8 +49,7 @@ trait TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
 }
 
 /** Class responsible to validate the token */
-class ProdTokenValidator(profile: DatabaseModule, dbClass: DBProperties) extends TokenValidator {
-  import profile.profile.api._
+class ProdTokenValidator( dbClass: DBProperties) extends TokenValidator {
 
   val db = dbClass.db
   /**

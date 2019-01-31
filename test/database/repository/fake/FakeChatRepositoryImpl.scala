@@ -1,6 +1,6 @@
 package database.repository.fake
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
+import api.dtos._
 import database.repository.ChatRepository
 import definedStrings.testStrings.RepositoryStrings.EmptyString
 
@@ -28,16 +28,12 @@ class FakeChatRepositoryImpl extends ChatRepository {
     Future.successful(EmptyString)
   }
 
-  def getShares(userEmail: String): Future[Seq[MinimalInfoDTO]] = {
-    Future.successful(Seq(MinimalInfoDTO(EmptyString, EmptyString)))
+  def getShares(userEmail: String): Future[Seq[MinimalShareInfoDTO]] = {
+    Future.successful(Seq(MinimalShareInfoDTO(EmptyString, EmptyString, EmptyString)))
   }
 
   def getSharedEmails(userEmail: String, shareID: String): Future[Seq[MinimalInfoDTO]] = {
     Future.successful(Seq(MinimalInfoDTO(EmptyString, EmptyString)))
-  }
-
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
-    Future.successful(Seq(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString)))
   }
 
   def deletePermission(from: String, to: String, chatID: String): Future[Int] = {

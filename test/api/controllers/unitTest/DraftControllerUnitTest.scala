@@ -1,6 +1,7 @@
-package api.controllers
+package api.controllers.unitTest
 
 import akka.stream.Materializer
+import api.controllers.DraftsController
 import api.validators.TokenValidator
 import database.repository._
 import database.repository.fake.{ FakeEmailRepositoryImpl, FakeEmailRepositoryImplWithNoDestination }
@@ -42,7 +43,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "BCC" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
     }
   }
 
@@ -63,7 +64,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "BCC" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }
@@ -85,7 +86,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "BCC" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }
@@ -107,7 +108,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "to" -> Seq(""),
           "CC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }
@@ -129,7 +130,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
           "to" -> Seq(""),
           "BCC" -> Seq("")))))
       status(result) mustBe OK
-      contentAsString(result) mustBe MailSentStatus
+      contentAsString(result) mustBe MailDraftStatus
 
     }
   }

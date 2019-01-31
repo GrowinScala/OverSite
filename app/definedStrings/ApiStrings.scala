@@ -17,6 +17,7 @@ object ApiStrings {
   /**  For HTTP error code status */
   val InvalidEmailAddressStatus = "Please insert a valid e-mail address"
   val PasswordMissMatchStatus = "Username and password doesn´t match"
+  val MailDraftStatus = "Mail saved as draft"
   val MailSentStatus = "Mail sent"
   val InvalidEndPointStatus = "Invalid status"
   val VerifyLoginStatus = "Please verify your login details \n Try to login again"

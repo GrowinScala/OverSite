@@ -1,7 +1,7 @@
-package api.controllers
+package api.controllers.unitTest
 
 import akka.stream.Materializer
-import api.controllers.UnitControllerTestsAppBuilder._
+import api.controllers.UsersController
 import api.validators.TokenValidator
 import database.repository._
 import database.repository.fake.{ FakeUserRepositoryImpl, FakeUserRepositoryImplWithWrongLoginAndLogout }
@@ -14,6 +14,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import UnitControllerTestsAppBuilder._
 
 import scala.concurrent.ExecutionContext
 
@@ -32,7 +33,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "pluis@growin.pt",
           "password" -> ""))))
@@ -48,7 +49,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "pluis.growin.pt",
           "password" -> ""))))
@@ -66,7 +67,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "NOTusername" -> "pluis@growin.pt",
           "password" -> ""))))
@@ -82,7 +83,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "pluis@growin.pt",
           "NOTpassword" -> ""))))
@@ -98,7 +99,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "NOTusername" -> "pluis@growin.pt",
           "password" -> ""))))
@@ -114,7 +115,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "pluis@growin.pt",
           "NOTpassword" -> ""))))
@@ -130,7 +131,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "pluis@growin.pt",
           "password" -> ""))))
@@ -147,7 +148,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActionsWithWrongLogin)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
         .withBody(Json.toJson(Json.obj(
           "username" -> "",
           "password" -> ""))))

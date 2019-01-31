@@ -1,6 +1,6 @@
 import api.validators.{ ProdTokenValidator, TokenValidator }
 import com.google.inject.AbstractModule
-import database.properties.{ DatabaseModule, TestDBProperties, testModule }
+import database.properties.TestDBProperties
 import database.repository._
 
 import scala.concurrent.ExecutionContext
@@ -10,11 +10,9 @@ class Module extends AbstractModule {
   override def configure(): Unit = {
     implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-    val profile: DatabaseModule = testModule
-    bind(classOf[DatabaseModule]).toInstance(testModule)
-    bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl(profile, TestDBProperties))
-    bind(classOf[UserRepository]).toInstance(new UserRepositoryImpl(profile, TestDBProperties))
-    bind(classOf[EmailRepository]).toInstance(new EmailRepositoryImpl(profile, TestDBProperties))
-    bind(classOf[TokenValidator]).toInstance(new ProdTokenValidator(profile, TestDBProperties))
+    bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl(TestDBProperties))
+    bind(classOf[UserRepository]).toInstance(new UserRepositoryImpl(TestDBProperties))
+    bind(classOf[EmailRepository]).toInstance(new EmailRepositoryImpl(TestDBProperties))
+    bind(classOf[TokenValidator]).toInstance(new ProdTokenValidator(TestDBProperties))
   }
 }

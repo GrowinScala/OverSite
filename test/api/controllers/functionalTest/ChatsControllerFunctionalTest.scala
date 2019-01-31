@@ -1,11 +1,13 @@
-package api.controllers
+package api.controllers.functionalTest
 
 import database.mappings.ChatMappings._
+import database.mappings.DraftMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
-import database.mappings.DraftMappings._
 import database.mappings.{ LoginRow, UserRow }
 import database.properties.TestDBProperties
+import definedStrings.testStrings.ControllerStrings._
+import generators.Generator
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -16,8 +18,6 @@ import play.api.libs.json.Json.parse
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{ route, status, _ }
 import slick.jdbc.H2Profile.api._
-import definedStrings.testStrings.ControllerStrings._
-import generators.Generator
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }

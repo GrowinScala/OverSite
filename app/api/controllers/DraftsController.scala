@@ -10,7 +10,8 @@ import javax.inject.{ Inject, Singleton }
 import play.api.libs.json.{ JsArray, JsValue, Json }
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 @Singleton class DraftsController @Inject() (
   tokenValidator: TokenValidator,
@@ -32,10 +33,10 @@ import scala.concurrent.{ ExecutionContext, Future }
         }
       },
       draft => {
-        request.userName.map(
+        request.userName.flatMap(
           emailActions.insertDraft(_, draft))
         Future.successful {
-          Ok(MailSentStatus)
+          Ok(MailDraftStatus)
         }
       })
   }
@@ -74,10 +75,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
     request.userName.flatMap(
       emailActions.getDraft(_, draftID, isTrash.getOrElse(false)).map(
-        drafts => {
-          val resultDraftID = JsArray(drafts.map(Json.toJson(_)))
-          Ok(resultDraftID)
-        }))
+        draft => Ok(Json.toJson(draft))))
   }
 
   def updateDraft(draftID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
