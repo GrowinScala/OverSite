@@ -13,7 +13,6 @@ trait ChatRepository {
   def insertPermission(from: String, share: CreateShareDTO): Future[String]
   def getShares(userEmail: String): Future[Seq[MinimalShareInfoDTO]]
   def getSharedEmails(userEmail: String, shareID: String): Future[Seq[MinimalInfoDTO]]
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]]
   def deletePermission(from: String, to: String, chatID: String): Future[Int]
 
 }

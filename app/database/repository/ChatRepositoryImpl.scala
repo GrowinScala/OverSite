@@ -179,15 +179,7 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
     } yield shareID
   }
 
-  /** Auxiliary function*/
-  private def queryUser(query: Query[(Rep[String], Rep[String]), (String, String), Seq]): Query[Rep[String], String, Seq] = {
-    emailTable
-      .filter(_.fromAddress in query.map { case (_, user) => user })
-      .map(_.emailID)
-      .union(destinationEmailTable.
-        filter(_.username in query.map { case (_, user) => user })
-        .map(_.emailID))
-  }
+
   def querySharesAux(userEmail: Rep[String]): Query[Rep[String], String, Seq] = {
     emailTable
       .filter(_.fromAddress === userEmail)
@@ -246,35 +238,6 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
     result.map(futureSeqTriplets => futureSeqTriplets.map {
       case (_, emailID, _, header) => MinimalInfoDTO(emailID, header)
     })
-  }
-
-  /**
-   * Query to get the email, when shareID and emailID are provided
-   * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
-   */
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
-
-    val queryShareId = shareTable
-      .filter(_.shareID === shareID)
-      .filter(_.toUser === userEmail)
-      .map(shareTable => (shareTable.chatID, shareTable.fromUser))
-
-    val queryTos = db.run(destinationEmailTable
-      .filter(_.emailID === emailID)
-      .filter(_.destination === Destination.ToAddress)
-      .map(_.username).result)
-
-    val queryChatId = queryTos.map(seqTos => emailTable
-      .filter(_.chatID in queryShareId.map { case (chatID, _) => chatID })
-      .filter(_.emailID in queryUser(queryShareId))
-      .filter(_.emailID === emailID)
-      .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
-      .result.map(seq => seq.map {
-        case (chatID, fromAddress, header, body, dateOf) =>
-          EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
-      }))
-
-    queryChatId.flatMap(db.run(_))
   }
 
   /**

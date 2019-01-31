@@ -153,26 +153,6 @@ import scala.concurrent.{ ExecutionContext, Future }
   }
 
   /**
-   * Get the email that corresponds to the shareID and emailID inserted
-   * @param shareID Identification of the share
-   * @param emailID Identification of the email
-   * @return All details of the email required
-   */
-
-  def getSharedEmail(shareID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
-
-    request.userName.flatMap(
-      chatActions.getSharedEmail(_, shareID, emailID).map(
-        emails => {
-          val resultEmailID = JsArray(
-            emails.map { email =>
-              Json.toJson(convertEmailInfoToShareSender(email, shareID, emailID))
-            })
-          Ok(resultEmailID)
-        }))
-  }
-
-  /**
    * Delete permission from database
    * @return delete the permission from share Table
    */

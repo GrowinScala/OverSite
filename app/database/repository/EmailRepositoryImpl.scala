@@ -4,7 +4,7 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos.{ CreateEmailDTO, DraftInfoDTO, EmailInfoDTO, MinimalInfoDTO }
-import database.mappings.ChatMappings.chatTable
+import database.mappings.ChatMappings.{ chatTable, shareTable }
 import database.mappings.DraftMappings.{ destinationDraftTable, draftTable }
 import database.mappings.EmailMappings.{ emailTable, _ }
 import database.mappings._
@@ -189,7 +189,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
    * @param emailID Identification the a specific email
    * @return All the details of the email selected
    */
-  def getEmail(userEmail: String, status: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
+  def getEmail(userEmail: String, status: String, emailID: String): Future[EmailInfoDTO] = {
 
     val queryTos = db.run(destinationEmailTable
       .filter(_.emailID === emailID)
@@ -201,7 +201,9 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
       auxGetEmails(userEmail, status)
         .filter(_.emailID === emailID)
         .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
-        .result.map(seq => seq.map {
+        .result
+        .headOption
+        .map(seq => seq.getOrElse(("", "", "", "", "")) match {
           case (chatID, fromAddress, header, body, dateOf) =>
             EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
         }))
@@ -370,5 +372,24 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
       .map(_.isTrash)
 
     db.run(draftFilter.update(trash))
+  }
+
+  /** Supervised Repository */
+  /**
+   * Query to get the email, when shareID and emailID are provided
+   * @return Share ID, Email ID, Chat ID, From address, To address, Header, Body, Date of the email wanted
+   */
+  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[EmailInfoDTO] = {
+
+    val queryShareId = shareTable
+      .filter(_.shareID === shareID)
+      .filter(_.toUser === userEmail)
+      .join(emailTable.filter(_.emailID === emailID)).on(_.chatID === _.chatID)
+      .map { case (share, email) => (share.fromUser, email.emailID) }
+
+    db.run(queryShareId.result.headOption)
+      .flatMap { seq =>
+        seq.getOrElse(("", "")) match { case (fromUser, emailId) => getEmail(fromUser, status = "", emailId) }
+      }
   }
 }

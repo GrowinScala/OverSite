@@ -9,7 +9,7 @@ object AuxFunctions {
 
   }
 
-  def convertEmailInfoToShareSender(emailInfoDTO: EmailInfoDTO, emailID: String, shareId: String): ShareInfoDTOSender = {
+  def convertEmailInfoToShareSender(emailInfoDTO: EmailInfoDTO, shareId: String, emailID: String): ShareInfoDTOSender = {
 
     ShareInfoDTOSender(shareId, emailID, emailInfoDTO.chatID, emailInfoDTO.fromAddress,
       emailInfoDTO.username, emailInfoDTO.header, emailInfoDTO.body, emailInfoDTO.dateOf)

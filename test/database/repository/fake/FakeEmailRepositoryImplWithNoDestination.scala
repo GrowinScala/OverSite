@@ -16,8 +16,8 @@ class FakeEmailRepositoryImplWithNoDestination extends EmailRepository {
     Future.successful(Seq(MinimalInfoDTO(EmptyString, EmptyString)))
   }
 
-  def getEmail(userEmail: String, status: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
-    Future.successful(Seq(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString)))
+  def getEmail(userEmail: String, status: String, emailID: String): Future[EmailInfoDTO] = {
+    Future.successful(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString))
   }
 
   def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
@@ -55,5 +55,9 @@ class FakeEmailRepositoryImplWithNoDestination extends EmailRepository {
 
   def moveInOutTrash(userEmail: String, draftID: String, trash: Boolean): Future[Int] = {
     Future.successful(0)
+  }
+
+  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[EmailInfoDTO] = {
+    Future.successful(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString))
   }
 }

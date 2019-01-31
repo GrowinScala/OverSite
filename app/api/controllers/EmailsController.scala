@@ -87,14 +87,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 
     if (PossibleEndPointStatus.contains(status.getOrElse(""))) {
       request.userName.flatMap(
-        emailActions.getEmail(_, status.getOrElse(""), emailID).map(
-          emails => {
-            val resultEmailID = JsArray(
-              emails.map { email =>
-                Json.toJson(convertEmailInfoToSender(email, emailID))
-              })
-            Ok(resultEmailID)
-          }))
+        emailActions.getEmail(_, status.getOrElse(""), emailID).map { email =>
+          Ok(Json.toJson(convertEmailInfoToSender(email, emailID)))
+        })
     } else {
       Future.successful { BadRequest(InvalidEndPointStatus) }
     }
@@ -119,6 +114,21 @@ import scala.concurrent.{ ExecutionContext, Future }
         Future.successful {
           Ok
         }
+      })
+  }
+
+  /**
+   * Get the email that corresponds to the shareID and emailID inserted
+   * @param shareID Identification of the share
+   * @param emailID Identification of the email
+   * @return All details of the email required
+   */
+
+  def getSharedEmail(shareID: String, emailID: String): Action[AnyContent] = tokenValidator.async { request =>
+
+    request.userName.flatMap(
+      emailActions.getSharedEmail(_, shareID, emailID).map { email =>
+        Ok(Json.toJson(convertEmailInfoToShareSender(email, shareID, emailID)))
       })
   }
 }

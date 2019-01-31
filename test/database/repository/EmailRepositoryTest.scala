@@ -129,6 +129,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
           resultChatIDFirst shouldEqual resultChatIDSecond
       }
     }
+  }
 
     /** Verify if an email is inserted in chatTable correctly */
     EmailRepository + " #insertEmail" should {
@@ -387,7 +388,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         }
       }
     }
-
+    //TODO: REMAKE TESTS
+    /*
     /** Verify the function getEmail **/
     EmailRepository + " #getEmail" should {
       "check if the function getEmail is able to reach the email inserted" in {
@@ -416,7 +418,10 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
+  */
 
+    //TODO: REMAKE TESTS
+    /*
   /** Verify the function getEmail **/
   EmailRepository + " #getEmail" should {
     "check if the function getEmail is able to reach the email inserted and trashed" in {
@@ -445,6 +450,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
+  */
 
   /**DRAFT REPOSITORIES TESTS*/
   /** Verify if an email is inserted in database correctly */
@@ -726,11 +732,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-  /**
-   * WARNING: updateDraft is not possible to test since the following Slick exception:
-   * org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "delete ""DRAFTSDESTINATION"" from[*] ""DRAFTSDESTINATION"" where ""DRAFTSDESTINATION"".""DRAF
-   * TID"" = 'eddea02a-cdab-47d1-88aa-95984fc007c0' "; SQL statement:
-   */
 
   /** Verify if an update is proceeded in draftTable correctly */
   EmailRepository + " #getDrafts" should {
@@ -883,6 +884,5 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-
 }
 

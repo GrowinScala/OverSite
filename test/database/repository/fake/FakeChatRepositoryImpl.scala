@@ -36,10 +36,6 @@ class FakeChatRepositoryImpl extends ChatRepository {
     Future.successful(Seq(MinimalInfoDTO(EmptyString, EmptyString)))
   }
 
-  def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[Seq[EmailInfoDTO]] = {
-    Future.successful(Seq(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString)))
-  }
-
   def deletePermission(from: String, to: String, chatID: String): Future[Int] = {
     Future.successful(0)
   }
