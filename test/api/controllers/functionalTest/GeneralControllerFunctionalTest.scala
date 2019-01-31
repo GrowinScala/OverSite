@@ -186,8 +186,14 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
       val fakeRequestGetEmailUser2 = FakeRequest(GET, "/emails/" + emailIDUser2 + "?=received")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser2)
       status(route(app, fakeRequestGetEmailUser2).get) mustBe OK
-      val emailIDUser2Aux = contentAsJson(route(app, fakeRequestGetEmailUser2).get).head.\("emailID").as[JsString].value
-      val chatIDUser2Aux = contentAsJson(route(app, fakeRequestGetEmailUser2).get).head.\("chatID").as[JsString].value
+      val emailIDUser2Aux = contentAsJson(route(app, fakeRequestGetEmailUser2).get).\("emailID").as[JsString].value
+      val chatIDUser2Aux = contentAsJson(route(app, fakeRequestGetEmailUser2).get).\("chatID").as[JsString].value
+      val emailUser1 = contentAsJson(route(app, fakeRequestGetEmailUser2).get).toString
+
+      println("a " + emailIDUser2Aux)
+      println("b " + chatIDUser2Aux)
+      println("EMAIL:" + emailUser1)
+
       /** Verify if the User 2 still have access to the email*/
       emailIDUser2Aux mustEqual emailIDUser2
       println(emailIDUser2Aux)
@@ -200,14 +206,27 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
           "supervisor" -> emailExample3)))
       status(route(app, fakeRequestInsertPermissionUser1).get) mustBe OK
 
-      /** User 3 will supervise mail of User 2 */
+      /** User 3 will supervise mails of User 2 */
       val fakeRequestGetSharesUser3 = FakeRequest(GET, "/shares")
         .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser3)
       status(route(app, fakeRequestGetSharesUser3).get) mustBe OK
-      val chatIDUser3 = contentAsJson(route(app, fakeRequestGetSharesUser3).get).head.\("Id").as[JsString].value
-      chatIDUser2Aux mustEqual chatIDUser3
+      val shareIDUser3 = contentAsJson(route(app, fakeRequestGetSharesUser3).get).head.\("shareID").as[JsString].value
+      println(shareIDUser3)
 
-      println(chatIDUser3)
+      /** User 3 will supervise a chatID of User 2 */
+      val fakeRequestGetShareIDUser3 = FakeRequest(GET, "/shares/" + shareIDUser3 + "/emails")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser3)
+      status(route(app, fakeRequestGetShareIDUser3).get) mustBe OK
+      val emailIDUser3 = contentAsJson(route(app, fakeRequestGetShareIDUser3).get).head.\("Id").as[JsString].value
+      emailIDUser3 mustEqual emailIDUser2
+
+      /** User 3 will supervise a chatID of User 2 */
+      val fakeRequestGetSharesEmailIDUser3 = FakeRequest(GET, "/shares/" + shareIDUser3 + "/email/" + emailIDUser3)
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser3)
+      status(route(app, fakeRequestGetSharesEmailIDUser3).get) mustBe OK
+      val oioioi = contentAsJson(route(app, fakeRequestGetSharesEmailIDUser3).get).toString
+      //TODO: NEED TO BE CORRECTED AND FINISHED
+      println(oioioi)
 
     }
   }

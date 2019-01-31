@@ -179,7 +179,6 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
     } yield shareID
   }
 
-
   def querySharesAux(userEmail: Rep[String]): Query[Rep[String], String, Seq] = {
     emailTable
       .filter(_.fromAddress === userEmail)

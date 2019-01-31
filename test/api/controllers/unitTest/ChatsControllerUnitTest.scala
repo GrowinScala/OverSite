@@ -296,7 +296,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
     }
   }
   //TODO: REMAKE TESTS
-/*
+  /*
   "ChatController #getSharedEmail" should {
     "send a OK if JSON header has a valid token" in {
       val controller = new ChatController(

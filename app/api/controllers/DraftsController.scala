@@ -75,10 +75,7 @@ import scala.concurrent.{ Await, ExecutionContext, Future }
 
     request.userName.flatMap(
       emailActions.getDraft(_, draftID, isTrash.getOrElse(false)).map(
-        drafts => {
-          val resultDraftID = JsArray(drafts.map(Json.toJson(_)))
-          Ok(resultDraftID)
-        }))
+        draft => Ok(Json.toJson(draft))))
   }
 
   def updateDraft(draftID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>

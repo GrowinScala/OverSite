@@ -272,7 +272,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
    * @param draftID Identification the a specific draft
    * @return All the details of the draft selected
    */
-  def getDraft(userEmail: String, draftID: String, isTrash: Boolean): Future[Seq[DraftInfoDTO]] = {
+  def getDraft(userEmail: String, draftID: String, isTrash: Boolean): Future[DraftInfoDTO] = {
 
     val queryResult = draftTable
       .filter(_.username === userEmail)
@@ -294,9 +294,9 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
 
       draft <- db.run(queryResult
         .map(table => (table.draftID, table.username, table.header, table.body, table.dateOf))
-        .result)
+        .result.headOption)
 
-    } yield draft.map {
+    } yield draft.getOrElse(("", "", "", "", "")) match {
       case (draftId, username, header, body, dateOf) =>
         DraftInfoDTO(draftId, username, toSeq, ccSeq, bccSeq, header, body, dateOf)
     }

@@ -36,8 +36,8 @@ class FakeEmailRepositoryImpl extends EmailRepository {
     Future.successful(EmptyString)
   }
 
-  def getDraft(userEmail: String, draftID: String, isTrash: Boolean): Future[Seq[DraftInfoDTO]] = {
-    Future.successful(Seq(DraftInfoDTO(EmptyString, userEmail, Seq(EmptyString), Seq(EmptyString), Seq(EmptyString), EmptyString, EmptyString, EmptyString)))
+  def getDraft(userEmail: String, draftID: String, isTrash: Boolean): Future[DraftInfoDTO] = {
+    Future.successful(DraftInfoDTO(EmptyString, userEmail, Seq(EmptyString), Seq(EmptyString), Seq(EmptyString), EmptyString, EmptyString, EmptyString))
   }
 
   def takeDraftMakeSent(username: String, draftID: String, listTos: Seq[String], listBCCs: Seq[String], listCCs: Seq[String]): Future[String] = {
@@ -60,6 +60,5 @@ class FakeEmailRepositoryImpl extends EmailRepository {
   def getSharedEmail(userEmail: String, shareID: String, emailID: String): Future[EmailInfoDTO] = {
     Future.successful(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString))
   }
-
 
 }
