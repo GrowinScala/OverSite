@@ -3,7 +3,7 @@ package database.repository
 import java.util.UUID.randomUUID
 
 import api.dtos._
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO }
+import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO, MinimalShareInfoDTO }
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
@@ -12,7 +12,8 @@ import definedStrings.DatabaseStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
 
@@ -187,29 +188,45 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
         filter(_.username in query.map { case (_, user) => user })
         .map(_.emailID))
   }
-
+  def querySharesAux(userEmail: Rep[String]): Query[Rep[String], String, Seq] = {
+    emailTable
+      .filter(_.fromAddress === userEmail)
+      .map(_.emailID)
+      .union(destinationEmailTable
+        .filter(_.username === userEmail)
+        .map(_.emailID))
+  }
   /**
    * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
    * @param userEmail Identification of user by email
    * @return List of Chat IDs and respective headers
    */
-  def getShares(userEmail: String): Future[Seq[MinimalInfoDTO]] = {
+  def getShares(userEmail: String): Future[Seq[MinimalShareInfoDTO]] = {
 
     val queryEmailID = shareTable
       .filter(_.toUser === userEmail)
-      .map(shareTable => (shareTable.chatID, shareTable.fromUser))
+      .join(emailTable).on(_.chatID === _.chatID)
+      .map { case (share, email) => (share.shareID, share.fromUser, email.emailID, email.dateOf, email.header) }
 
-    val queryChatId = emailTable.filter(_.chatID in queryEmailID.map { case (chatID, _) => chatID })
-      .filter(_.emailID in queryUser(queryEmailID))
-      .sortBy(_.dateOf)
-      .map(emailTable => (emailTable.chatID, emailTable.header))
-      .distinctOn(_._1)
-      .result
+    val idsDistinctList = db.run(queryEmailID.result)
+      .map(seq => seq.map(_._1).distinct)
 
-    db.run(queryChatId).map(seq => seq.map {
-      case (id, header) => MinimalInfoDTO(id, header)
-    })
+    val result = idsDistinctList.map(seq =>
+      Future.sequence(seq.map(shareID =>
+        db.run(queryEmailID
+          .filter(_._1 === shareID)
+          .filter(x => x._3 in querySharesAux(x._2))
+          .sortBy(_._4.reverse)
+          .take(num = 1)
+          .result
+          .headOption))))
 
+    result.flatMap(futureSeqTriplets => futureSeqTriplets.map(seq =>
+      seq.map { optionTripletStrings =>
+        optionTripletStrings.getOrElse(("", "", "", "", "")) match {
+          case (shareID, fromUser, _, _, header) => MinimalShareInfoDTO(shareID, fromUser, header)
+        }
+      }))
   }
 
   /** Query to get the list of allowed emails that are linked to the chatID that correspond to shareID */
@@ -218,17 +235,16 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
     val queryShareId = shareTable
       .filter(_.shareID === shareID)
       .filter(_.toUser === userEmail)
-      .map(shareTable => (shareTable.chatID, shareTable.fromUser))
+      .join(emailTable).on(_.chatID === _.chatID)
+      .map { case (share, email) => (share.fromUser, email.emailID, email.dateOf, email.header) }
 
-    val queryChatId = emailTable
-      .filter(_.chatID in queryShareId.map { case (chatID, _) => chatID })
-      .filter(_.emailID in queryUser(queryShareId))
-      .sortBy(_.dateOf)
-      .map(emailTable => (emailTable.emailID, emailTable.header))
-      .result
+    val result = db.run(queryShareId
+      .filter(x => x._2 in querySharesAux(x._1))
+      .sortBy(_._3.reverse)
+      .result)
 
-    db.run(queryChatId).map(seq => seq.map {
-      case (id, header) => MinimalInfoDTO(id, header)
+    result.map(futureSeqTriplets => futureSeqTriplets.map {
+      case (_, emailID, _, header) => MinimalInfoDTO(emailID, header)
     })
   }
 

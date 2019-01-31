@@ -10,7 +10,8 @@ import javax.inject.{ Inject, Singleton }
 import play.api.libs.json.{ JsArray, JsValue, Json }
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 @Singleton class DraftsController @Inject() (
   tokenValidator: TokenValidator,
