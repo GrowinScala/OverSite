@@ -6,7 +6,7 @@ case class DraftInfoDTO(
 
   draftID: String,
   username: String,
-  toAddress: Seq[String],
+  toAddresses: Seq[String],
   ccs: Seq[String],
   bccs: Seq[String],
   header: String,

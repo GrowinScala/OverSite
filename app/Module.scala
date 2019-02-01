@@ -12,8 +12,7 @@ class Module extends AbstractModule {
 
     implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-
-    bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl( ProdDBProperties))
+    bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl(ProdDBProperties))
     bind(classOf[UserRepository]).toInstance(new UserRepositoryImpl(ProdDBProperties))
     bind(classOf[EmailRepository]).toInstance(new EmailRepositoryImpl(ProdDBProperties))
     bind(classOf[TokenValidator]).toInstance(new ProdTokenValidator(ProdDBProperties))

@@ -152,11 +152,9 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
       case EndPointNoFilter =>
         val queryTrashEmailIds = emailTable
           .filter(_.fromAddress === userEmail)
-          .filter(_.isTrash === false)
           .map(_.emailID)
           .union(destinationEmailTable
             .filter(_.username === userEmail)
-            .filter(_.isTrash === false)
             .map(_.emailID))
 
         emailTable.filter(_.emailID in queryTrashEmailIds)

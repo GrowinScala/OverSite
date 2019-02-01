@@ -94,7 +94,7 @@ class ChatsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite wi
   "ChatsController" + "#getEmails" should {
     "send a OK if JSON header has a valid token" in {
 
-      val fakeRequest = FakeRequest(GET, "/chats/:chatID/emails")
+      val fakeRequest = FakeRequest(GET, "/chats/:chatID")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -105,7 +105,7 @@ class ChatsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite wi
   "ChatsController" + "#getEmails" should {
     "send a OK if JSON header has a valid token and a valid body" in {
 
-      val fakeRequest = FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
+      val fakeRequest = FakeRequest(GET, "/chats/:chatID?isTrash=true")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -115,7 +115,7 @@ class ChatsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite wi
 
   "ChatsController" + "#getEmails" should {
     "send a Forbidden if JSON header has an invalid token" in {
-      val fakeRequest = FakeRequest(GET, "/chats/:chatID/emails")
+      val fakeRequest = FakeRequest(GET, "/chats/:chatID")
         .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
@@ -268,7 +268,7 @@ class ChatsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite wi
   "ChatsController" + "#getSharedEmails" should {
     "send a OK if JSON header has a valid token" in {
 
-      val fakeRequest = FakeRequest(GET, "/shares/:shareID/emails")
+      val fakeRequest = FakeRequest(GET, "/shares/:shareID")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
 
       val result = route(app, fakeRequest)
@@ -278,7 +278,7 @@ class ChatsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite wi
 
   "ChatsController" + "#getSharedEmails" should {
     "send a Forbidden if JSON header has an invalid token" in {
-      val fakeRequest = FakeRequest(GET, "/shares/:shareID/emails")
+      val fakeRequest = FakeRequest(GET, "/shares/:shareID")
         .withHeaders(HOST -> LocalHost, TokenKey -> new Generator().token)
 
       val result = route(app, fakeRequest)
