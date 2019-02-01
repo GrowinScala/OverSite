@@ -4,10 +4,10 @@ import akka.stream.Materializer
 import api.controllers.ChatController
 import api.controllers.unitTest.UnitControllerTestsAppBuilder._
 import api.validators.TokenValidator
+import database.repository._
 import database.repository.fake.{ FakeChatRepositoryImpl, FakeUserRepositoryImpl }
-import database.repository.{ ChatRepository, _ }
 import definedStrings.ApiStrings._
-import definedStrings.testStrings.ControllerStrings.{ TokenKey, _ }
+import definedStrings.testStrings.ControllerStrings._
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -295,41 +295,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
 
     }
   }
-  //TODO: REMAKE TESTS
-  /*
-  "ChatController #getSharedEmail" should {
-    "send a OK if JSON header has a valid token" in {
-      val controller = new ChatController(
-        injectorWithValidToken.instanceOf[TokenValidator],
-        ccWithValidToken,
-        actorSystemWithValidToken,
-        chatActions,
-        userActions)
-      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID/emails")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
 
-      status(result) mustBe OK
-    }
-  }
-  */
-  //TODO: REMAKE TESTS
-  /*
-  "ChatController #getSharedEmail" should {
-    "send a Forbidden if JSON header has a valid token" in {
-      val controller = new ChatController(
-        injectorWithInvalidToken.instanceOf[TokenValidator],
-        ccWithInvalidToken,
-        actorSystemWithInvalidToken,
-        chatActions,
-        userActions)
-      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID/emails")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
-      status(result) mustBe FORBIDDEN
-      contentAsString(result) mustBe VerifyLoginStatus
-
-    }
-  }
-*/
   "ChatController #takePermissions" should {
     "send a Ok if JSON header has a valid token" in {
       val controller = new ChatController(

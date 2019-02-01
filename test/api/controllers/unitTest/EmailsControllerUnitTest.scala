@@ -480,4 +480,35 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
     }
   }
 
+  "EmailsController #getSharedEmail" should {
+    "send a OK if JSON header has a valid token" in {
+      val controller = new EmailsController(
+        injectorWithValidToken.instanceOf[TokenValidator],
+        ccWithValidToken,
+        actorSystemWithValidToken,
+        emailActions,
+        userActions)
+      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+
+      status(result) mustBe OK
+    }
+  }
+
+  "EmailsController #getSharedEmail" should {
+    "send a Forbidden if JSON header has a valid token" in {
+      val controller = new EmailsController(
+        injectorWithInvalidToken.instanceOf[TokenValidator],
+        ccWithInvalidToken,
+        actorSystemWithInvalidToken,
+        emailActions,
+        userActions)
+      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      status(result) mustBe FORBIDDEN
+      contentAsString(result) mustBe VerifyLoginStatus
+
+    }
+  }
+
 }

@@ -3,21 +3,22 @@ package database.repository
 import java.util.UUID
 
 import api.dtos._
-import database.mappings.ChatMappings.{ chatTable, shareTable }
+import database.mappings.ChatMappings.{chatTable, shareTable}
 import database.mappings.Destination
-import database.mappings.DraftMappings.{ destinationDraftTable, draftTable }
+import database.mappings.DraftMappings.{destinationDraftTable, draftTable}
 import database.mappings.EmailMappings._
-import database.mappings.UserMappings.{ loginTable, userTable }
+import database.mappings.UserMappings.{loginTable, userTable}
 import database.properties.TestDBProperties
+import definedStrings.testStrings.RepositoryStrings.EmptyString
 import generators._
-import org.scalatest.{ Matchers, _ }
+import org.scalatest.{Matchers, _}
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
 
 class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
@@ -41,12 +42,20 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses))
 
-  private val DraftCreation = new Generator()
   private val emailDraftCreation = new CreateEmailDTO(
-    Option(DraftCreation.ID),
-    DraftCreation.dateOf,
-    DraftCreation.header,
-    DraftCreation.body,
+    Option(new Generator().ID),
+    new Generator().dateOf,
+    new Generator().header,
+    new Generator().body,
+    Option(new Generator().emailAddresses),
+    Option(new Generator().emailAddresses),
+    Option(new Generator().emailAddresses))
+
+  private val updatedDraftCreation = new CreateEmailDTO(
+    Option(new Generator().ID),
+    new Generator().dateOf,
+    new Generator().header,
+    new Generator().body,
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses))
@@ -219,9 +228,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
 
-        resultBCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.BCC).result)
+        resultBCCTable <- db.run(destinationEmailTable.filter(_.destination === Destination.BCC).result)
         resultEmailTable <- db.run(emailTable.result)
-      } yield (resultBCCtable, resultEmailTable)
+      } yield (resultBCCTable, resultEmailTable)
 
       /** Verify if the bcc table is created only if necessary **/
       emailCreation.BCC match {
@@ -272,10 +281,10 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       val result = for {
 
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-        resultCCtable <- db.run(destinationEmailTable.filter(_.destination === Destination.CC).result)
+        resultCCTable <- db.run(destinationEmailTable.filter(_.destination === Destination.CC).result)
         resultEmailTable <- db.run(emailTable.result)
 
-      } yield (resultCCtable, resultEmailTable)
+      } yield (resultCCTable, resultEmailTable)
 
       /** Verify if the cc table is created only if necessary **/
       emailCreation.BCC match {
@@ -385,42 +394,37 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-  //TODO: REMAKE TESTS
-  /*
-    /** Verify the function getEmail **/
-    EmailRepository + " #getEmail" should {
-      "check if the function getEmail is able to reach the email inserted" in {
 
-        val result = for {
-          _ <- emailActions.insertEmail(userCreation.username, emailCreation)
-          resultEmailTable <- db.run(emailTable.result)
-          resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, "sent", x.emailID)) }
-          resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
-            emailActions.getEmail(to, "received", resultEmailTable.map(emailRow =>
-              emailRow.emailID).head)).map(seqEmailInfoDto => seqEmailInfoDto))
-          resultTos <- Future.successful(EmailInfoDTO(
-            resultEmailTable.head.chatID,
-            resultEmailTable.head.fromAddress,
-            emailCreation.to.getOrElse(Seq("")),
-            resultEmailTable.head.header,
-            resultEmailTable.head.body,
-            resultEmailTable.head.dateOf))
-        } yield (resultSent.flatten, resultReceived.flatten, resultTos)
+  /** Verify the function getEmail **/
+  "EmailRepository #getEmail" should {
+    "check if the function getEmail is able to reach the email inserted" in {
 
-        result.map {
-          case (resultSent, resultReceived, resultTos) =>
-            resultSent.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
-            resultReceived.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
-        }
+      val result = for {
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
+        resultEmailTable <- db.run(emailTable.result)
+        resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, "sent", x.emailID)) }
+        resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
+          emailActions.getEmail(to, "received", resultEmailTable.map(emailRow =>
+            emailRow.emailID).head)).map(seqEmailInfoDto => seqEmailInfoDto))
+        resultTos <- Future.successful(EmailInfoDTO(
+          resultEmailTable.head.chatID,
+          resultEmailTable.head.fromAddress,
+          emailCreation.to.getOrElse(Seq(EmptyString)),
+          resultEmailTable.head.header,
+          resultEmailTable.head.body,
+          resultEmailTable.head.dateOf))
+      } yield (resultSent, resultReceived, resultTos)
+
+      result.map {
+        case (resultSent, resultReceived, resultTos) =>
+          resultSent.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
+          resultReceived.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
       }
     }
   }
-  */
 
-  //TODO: REMAKE TESTS
-  /*
   /** Verify the function getEmail **/
-  EmailRepository + " #getEmail" should {
+  "EmailRepository #getEmail" should {
     "check if the function getEmail is able to reach the email inserted and trashed" in {
 
       val result = for {
@@ -433,11 +437,11 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         resultTos <- Future.successful(EmailInfoDTO(
           resultEmailTable.head.chatID,
           resultEmailTable.head.fromAddress,
-          emailCreation.to.getOrElse(Seq("")),
+          emailCreation.to.getOrElse(Seq(EmptyString)),
           resultEmailTable.head.header,
           resultEmailTable.head.body,
           resultEmailTable.head.dateOf))
-      } yield (resultSent.flatten, resultReceived.flatten, resultTos)
+      } yield (resultSent, resultReceived, resultTos)
 
       result.map {
         case (resultSent, resultReceived, resultTos) =>
@@ -447,7 +451,6 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-  */
 
   /**DRAFT REPOSITORIES TESTS*/
   /** Verify if an email is inserted in database correctly */
@@ -771,10 +774,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
-  //TODO: REMAKE TEST
-  /*
+
   /** Verify the function getDraft **/
-  EmailRepository + " #getDraft" should {
+  "EmailRepository #getDraft" should {
     "check if the function getDraft is able to reach the draft inserted" in {
 
       val result = for {
@@ -785,53 +787,52 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         resultTos <- Future.successful(DraftInfoDTO(
           resultDraftTable.head.draftID,
           userCreation.username,
-          emailDraftCreation.to.getOrElse(Seq("")),
-          emailDraftCreation.CC.getOrElse(Seq("")),
-          emailDraftCreation.BCC.getOrElse(Seq("")),
+          emailDraftCreation.to.getOrElse(Seq(EmptyString)).toVector,
+          emailDraftCreation.CC.getOrElse(Seq(EmptyString)).toVector,
+          emailDraftCreation.BCC.getOrElse(Seq(EmptyString)).toVector,
           resultDraftTable.head.header,
           resultDraftTable.head.body,
           resultDraftTable.head.dateOf))
 
-      } yield (resultGetTrash.flatten, resultGetNoTrash.flatten, resultTos)
+      } yield (resultGetTrash, resultGetNoTrash, resultTos)
 
       result.map {
         case (resultGetTrash, resultGetNoTrash, resultTos) =>
           resultGetNoTrash.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
-          resultGetTrash.isEmpty shouldBe true
+          resultGetTrash.nonEmpty shouldBe true
       }
     }
   }
-*/
-  /*
+
   /** Verify the function getDraft **/
-  EmailRepository + " #getDraft" should {
+  "EmailRepository #getDraft" should {
     "check if the function getDraft is able to reach the draft inserted and trashed" in {
 
       val result = for {
         _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
         resultDraftTable <- db.run(draftTable.result)
-        _ <- Future.sequence { resultDraftTable.map(draftRow => emailActions.moveInOutTrash(userCreation.username, draftRow.draftID, trash = true)) }
+        _ <- Future.sequence { resultDraftTable.map(draftRow => emailActions.moveInOutTrashDraft(userCreation.username, draftRow.draftID, trash = true)) }
         resultGetTrash <- Future.sequence { resultDraftTable.map(draftRow => emailActions.getDraft(userCreation.username, draftRow.draftID, isTrash = true)) }
         resultGetNoTrash <- Future.sequence { resultDraftTable.map(draftRow => emailActions.getDraft(userCreation.username, draftRow.draftID, isTrash = false)) }
         resultTos <- Future.successful(DraftInfoDTO(
           resultDraftTable.head.draftID,
           userCreation.username,
-          emailDraftCreation.to.getOrElse(Seq("")),
-          emailDraftCreation.CC.getOrElse(Seq("")),
-          emailDraftCreation.BCC.getOrElse(Seq("")),
+          emailDraftCreation.to.getOrElse(Seq(EmptyString)),
+          emailDraftCreation.CC.getOrElse(Seq(EmptyString)),
+          emailDraftCreation.BCC.getOrElse(Seq(EmptyString)),
           resultDraftTable.head.header,
           resultDraftTable.head.body,
           resultDraftTable.head.dateOf))
-      } yield (resultGetTrash.flatten, resultGetNoTrash.flatten, resultTos)
+      } yield (resultGetTrash, resultGetNoTrash, resultTos)
 
       result.map {
         case (resultGetTrash, resultGetNoTrash, resultTos) =>
           resultGetTrash.forall(emailInfoDTO => emailInfoDTO === resultTos) shouldBe true
-          resultGetNoTrash.isEmpty shouldBe true
+          resultGetNoTrash.nonEmpty shouldBe true
       }
     }
   }
-*/
+
   /** Verify the function destinations **/
   "EmailsRepository #destinations" should {
     "check if the function destinations is able to reach the destinations inserted in draft" in {
@@ -860,9 +861,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       } yield resultDestination
 
       result.map { resultDestination =>
-        resultDestination.forall(triplet => emailDraftCreation.to.getOrElse(Seq("")).isEmpty) shouldBe true
-        resultDestination.forall(triplet => emailDraftCreation.BCC.getOrElse(Seq("")).isEmpty) shouldBe true
-        resultDestination.forall(triplet => emailDraftCreation.CC.getOrElse(Seq("")).isEmpty) shouldBe true
+        resultDestination.forall(_ => emailDraftCreation.to.getOrElse(Seq(EmptyString)).isEmpty) shouldBe true
+        resultDestination.forall(_ => emailDraftCreation.BCC.getOrElse(Seq(EmptyString)).isEmpty) shouldBe true
+        resultDestination.forall(_ => emailDraftCreation.CC.getOrElse(Seq(EmptyString)).isEmpty) shouldBe true
       }
     }
   }
@@ -873,7 +874,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
       val result = for {
         falseResult <- emailActions.hasDestination(Seq(), Seq(), Seq())
-        trueResult <- emailActions.hasDestination(emailDraftCreation.to.getOrElse(Seq("")), emailDraftCreation.BCC.getOrElse(Seq("")), emailDraftCreation.CC.getOrElse(Seq("")))
+        trueResult <- emailActions.hasDestination(
+          emailDraftCreation.to.getOrElse(Seq(EmptyString)),
+          emailDraftCreation.BCC.getOrElse(Seq(EmptyString)), emailDraftCreation.CC.getOrElse(Seq(EmptyString)))
       } yield (falseResult, trueResult)
 
       result.map {
@@ -883,5 +886,25 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       }
     }
   }
+
+  /** Verify the function updateDraft **/
+  "EmailsRepository #updateDraft" should {
+    "check if the function updateDraft updates correctly a draft" in {
+
+      val updatedDraft = for {
+        draftID <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
+        updatedDraftID <- emailActions.updateDraft(userCreation.username, draftID, updatedDraftCreation)
+        draft <- emailActions.getDraft(userCreation.username, updatedDraftID, isTrash = false)
+      } yield draft
+
+      updatedDraft.map(_.dateOf shouldEqual updatedDraftCreation.dateOf)
+      updatedDraft.map(_.header shouldEqual updatedDraftCreation.header)
+      updatedDraft.map(_.body shouldEqual updatedDraftCreation.body)
+      updatedDraft.map(_.bccs shouldEqual updatedDraftCreation.BCC.getOrElse(Seq()))
+      updatedDraft.map(_.ccs shouldEqual updatedDraftCreation.CC.getOrElse(Seq()))
+      updatedDraft.map(_.toAddresses shouldEqual updatedDraftCreation.to.getOrElse(Seq()))
+    }
+  }
+
 }
 

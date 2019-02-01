@@ -206,7 +206,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       val result = for {
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
         _ <- Future.sequence {
-          emailCreation.to.getOrElse(Seq("")).map(recipient =>
+          emailCreation.to.getOrElse(Seq(EmptyString)).map(recipient =>
             chatActions.changeTrash(recipient, resultChatID, moveToTrash = true))
         }
         resultDestinationTable <- db.run(destinationEmailTable.filterNot(_.destination === Destination.ToAddress).result)
@@ -218,7 +218,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
 
   /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
   ChatRepository + ChangeTrashFunction should {
-    "check if the changes to trash for toAddresses doesnt work for wrong username" in {
+    "check if the changes to trash for toAddresses doesn´t work for wrong username" in {
       val result = for {
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
         _ <- chatActions.changeTrash(new Generator().emailAddress, resultChatID, moveToTrash = true)
@@ -231,9 +231,9 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
 
   /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
   ChatRepository + ChangeTrashFunction should {
-    "check if the changes to trash for toAddresses doesnt work for wrong chatID" in {
+    "check if the changes to trash for toAddresses doesn´t work for wrong chatID" in {
       val result = for {
-        resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
+        _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         _ <- chatActions.changeTrash(userCreation.username, new Generator().ID, moveToTrash = true)
         resultEmailTable <- db.run(emailTable.result)
       } yield resultEmailTable
@@ -244,7 +244,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
 
   /* Verify if a the function changeTrash changes a mail to trash correctly for a recipient*/
   ChatRepository + ChangeTrashFunction should {
-    "check if the changes to trash for toAddresses doesnt work for wrong moveToTrash boolean" in {
+    "check if the changes to trash for toAddresses doesn´t work for wrong moveToTrash boolean" in {
       val result = for {
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
         _ <- chatActions.changeTrash(userCreation.username, resultChatID, moveToTrash = false)
@@ -293,7 +293,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       } yield (resultChatID, returnShares)
 
       result.map {
-        case (resultChatID, returnShares) =>
+        case (_, returnShares) =>
 
           /** Verify if returnShares is not empty */
           returnShares.nonEmpty shouldBe true
@@ -351,7 +351,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
     "check if the emails that were allowed to supervise are not returned for other user" in {
       val result = for {
         resultChatID <- emailActions.insertEmail(userCreation.username, emailCreation)
-        resultEmailTable <- db.run(emailTable.result)
+        _ <- db.run(emailTable.result)
         shareCreation = CreateShareDTO(resultChatID, new Generator().emailAddress)
         resultShareID <- chatActions.insertPermission(userCreation.username, shareCreation)
         returnShares <- chatActions.getSharedEmails(new Generator().emailAddress, resultShareID)
@@ -361,8 +361,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
       result.map(_.isEmpty shouldBe true)
     }
   }
-  //TODO: REMAKE TESTS
-  /*
+
   /* Verify if getSharedEmail return a specific email correctly */
   ChatRepository + GetSharedEmailFunction should {
     "check if a specific email that was allowed to supervise is returned correctly" in {
@@ -372,32 +371,25 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         resultEmailID = resultEmailTable.map(row => row.emailID).head
         shareCreation = CreateShareDTO(resultChatID, new Generator().emailAddress)
         resultShareID <- chatActions.insertPermission(userCreation.username, shareCreation)
-        returnShare <- chatActions.getSharedEmail(shareCreation.supervisor, resultShareID, resultEmailID)
+        returnShare <- emailActions.getSharedEmail(shareCreation.supervisor, resultShareID, resultEmailID)
       } yield (resultChatID, returnShare)
 
       result.map {
         case (resultChatID, returnShare) =>
 
-          /** Verify if returnShare is not empty */
-          returnShare.nonEmpty shouldBe true
-
           /** Verify if the parameters returned are correct */
-          returnShare.forall(_.chatID === resultChatID) shouldBe true
-          returnShare.forall(_.fromAddress === userCreation.username) shouldBe true
-          returnShare.forall(_.fromAddress === userCreation.username) shouldBe true
-          returnShare.flatMap(_.username).toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
-          returnShare.forall(_.header === emailCreation.header) shouldBe true
-          returnShare.forall(_.body === emailCreation.body) shouldBe true
-          returnShare.forall(_.dateOf === emailCreation.dateOf) shouldBe true
-
+          (returnShare.chatID === resultChatID) shouldBe true
+          (returnShare.fromAddress === userCreation.username) shouldBe true
+          (returnShare.fromAddress === userCreation.username) shouldBe true
+          returnShare.username.toSet shouldEqual emailCreation.to.getOrElse(Seq()).toSet
+          (returnShare.header === emailCreation.header) shouldBe true
+          (returnShare.body === emailCreation.body) shouldBe true
+          (returnShare.dateOf === emailCreation.dateOf) shouldBe true
       }
     }
   }
-  */
 
-  //TODO: REMAKE TESTS
-  /*
-  /* Verify if getSharedEmail doesnt return a specific email to the wrong user */
+  /* Verify if getSharedEmail doesn´t return a specific email to the wrong user */
   ChatRepository + GetSharedEmailFunction should {
     "check if a specific email that was allowed to supervise is not accessed by the wrong user" in {
       val result = for {
@@ -406,21 +398,25 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         resultEmailID = resultEmailTable.map(row => row.emailID).head
         shareCreation = CreateShareDTO(resultChatID, new Generator().emailAddress)
         resultShareID <- chatActions.insertPermission(userCreation.username, shareCreation)
-        returnShare <- chatActions.getSharedEmail(new Generator().emailAddress, resultShareID, resultEmailID)
+        returnShare <- emailActions.getSharedEmail(new Generator().emailAddress, resultShareID, resultEmailID)
       } yield returnShare
 
-      /** Verify if returnShares is not empty */
-      result.map(_.isEmpty shouldBe true)
+      /** Verify if returnShares is empty */
+      result.map(_.body shouldBe EmptyString)
+      result.map(_.chatID shouldBe EmptyString)
+      result.map(_.dateOf shouldBe EmptyString)
+      result.map(_.fromAddress shouldBe EmptyString)
+      result.map(_.header shouldBe EmptyString)
+      result.map(_.username shouldBe Seq())
     }
   }
-*/
-  /* NOT WORKING THANKS TO SLICK BUG
-     Verify if deletePermission takes the permission from the supervised user*/
+
+  /* Verify if deletePermission takes the permission from the supervised user*/
   ChatRepository + DeletePermissionFunction should {
     "check if a an user is not allowed to access the emails anymore after permission deleted" in {
       val resultChatID = Await.result(emailActions.insertEmail(userCreation.username, emailCreation), Duration.Inf)
       val resultEmailTable = Await.result(db.run(emailTable.result), Duration.Inf)
-      val resultEmailID = resultEmailTable.map(row => row.emailID).head
+      resultEmailTable.map(row => row.emailID).head
       val shareCreation = new CreateShareDTO(resultChatID, new Generator().emailAddress)
       val resultShareID = Await.result(chatActions.insertPermission(userCreation.username, shareCreation), Duration.Inf)
       Await.result(chatActions.deletePermission(userCreation.username, shareCreation.supervisor, resultChatID), Duration.Inf)
