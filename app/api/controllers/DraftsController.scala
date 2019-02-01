@@ -2,15 +2,15 @@ package api.controllers
 
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
-import api.dtos.{CreateEmailDTO, DraftStatusDTO, MinimalInfoDTO}
+import api.dtos.{ CreateEmailDTO, DraftStatusDTO, MinimalInfoDTO }
 import api.validators.TokenValidator
 import database.repository.EmailRepository
-import definedStrings.ApiStrings.{MailSentStatus, _}
-import javax.inject.{Inject, Singleton}
-import play.api.libs.json.{JsValue, Json}
+import definedStrings.ApiStrings.{ MailSentStatus, _ }
+import javax.inject.{ Inject, Singleton }
+import play.api.libs.json.{ JsValue, Json }
 import play.api.mvc._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton class DraftsController @Inject() (
   tokenValidator: TokenValidator,

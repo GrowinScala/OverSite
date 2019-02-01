@@ -1,6 +1,6 @@
 package api.dtos
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{ Json, OFormat }
 
 case class EmailInfoDTOSender(
   emailID: String,

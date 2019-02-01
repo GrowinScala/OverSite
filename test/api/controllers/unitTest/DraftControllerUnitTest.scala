@@ -5,10 +5,10 @@ import api.controllers.DraftsController
 import api.controllers.unitTest.UnitControllerTestsAppBuilder._
 import api.validators.TokenValidator
 import database.repository._
-import database.repository.fake.{FakeEmailRepositoryImpl, FakeEmailRepositoryImplWithNoDestination}
+import database.repository.fake.{ FakeEmailRepositoryImpl, FakeEmailRepositoryImplWithNoDestination }
 import definedStrings.ApiStrings._
-import definedStrings.testStrings.ControllerStrings.{LocalHost, TokenKey}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import definedStrings.testStrings.ControllerStrings.{ LocalHost, TokenKey }
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json

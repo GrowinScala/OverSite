@@ -1,6 +1,6 @@
 package database.repository
 
-import api.dtos.{CreateEmailDTO, CreateShareDTO, CreateUserDTO}
+import api.dtos.{ CreateEmailDTO, CreateShareDTO, CreateUserDTO }
 import database.mappings.ChatMappings._
 import database.mappings.Destination
 import database.mappings.DraftMappings._
@@ -9,14 +9,14 @@ import database.mappings.UserMappings._
 import database.properties.TestDBProperties
 import definedStrings.testStrings.RepositoryStrings._
 import generators.Generator
-import org.scalatest.{Matchers, _}
+import org.scalatest.{ Matchers, _ }
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 

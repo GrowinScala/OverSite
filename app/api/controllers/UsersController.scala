@@ -12,7 +12,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import regex.RegexPatterns.emailAddressPattern
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /** Class that is injected with end-points */
 

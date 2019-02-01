@@ -1,7 +1,7 @@
 
 package database.repository.fake
 
-import api.dtos.{CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO, _}
+import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO, _ }
 import database.repository.EmailRepository
 import definedStrings.testStrings.RepositoryStrings.EmptyString
 

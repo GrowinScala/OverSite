@@ -4,11 +4,11 @@ import akka.stream.Materializer
 import api.controllers.ChatController
 import api.controllers.unitTest.UnitControllerTestsAppBuilder._
 import api.validators.TokenValidator
-import database.repository.fake.{FakeChatRepositoryImpl, FakeUserRepositoryImpl}
-import database.repository.{ChatRepository, _}
+import database.repository.fake.{ FakeChatRepositoryImpl, FakeUserRepositoryImpl }
+import database.repository.{ ChatRepository, _ }
 import definedStrings.ApiStrings._
-import definedStrings.testStrings.ControllerStrings.{TokenKey, _}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import definedStrings.testStrings.ControllerStrings.{ TokenKey, _ }
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
