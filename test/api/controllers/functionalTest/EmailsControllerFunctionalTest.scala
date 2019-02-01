@@ -10,7 +10,7 @@ import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.ControllerStrings._
 import encryption.EncryptString
 import generators.Generator
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
@@ -18,18 +18,18 @@ import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json.parse
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{ route, status, _ }
+import play.api.test.Helpers.{route, status, _}
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 
 class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
-  lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = TestDBProperties.db
+  implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  lazy private val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
+  lazy private val injector: Injector = appBuilder.injector()
+  lazy implicit private val db: Database = TestDBProperties.db
 
   private val testGenerator = new Generator()
   private val chatIDExample = testGenerator.ID
@@ -69,7 +69,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
 
   /** POST /email end-point */
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a BadRequest if JSON body has an invalid format:" + " case dateOf" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -91,7 +91,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a BadRequest if JSON body has an invalid format:" + " case header" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -113,7 +113,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a BadRequest if JSON body has an invalid format:" + " case body" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -135,7 +135,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send an OK if JSON body has an valid format:" + " case missing parameter chatID" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -156,7 +156,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a BadRequest if JSON body has an invalid format:" + " case missing parameter dateOf" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -177,7 +177,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a BadRequest if JSON body has an invalid format:" + " case missing parameter header" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -198,7 +198,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a BadRequest if JSON body has an invalid format:" + " case missing parameter body" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -219,7 +219,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send an OK if JSON body has an valid format:" + " case missing parameter to" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -240,7 +240,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send an OK if JSON body has an valid format:" + " case missing parameter BCC" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -261,7 +261,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send an OK if JSON body has an valid format:" + " case missing parameter CC" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -282,7 +282,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
@@ -304,7 +304,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#email" should {
+  "EmailsController #email" should {
     "send a OK if JSON header has a valid token" + " and a valid JSON body" in {
       val fakeRequest = FakeRequest(POST, "/email")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -329,7 +329,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
 
   /** GET /emails/:status end-point */
 
-  "EmailsController" + "#getEmails" should {
+  "EmailsController #getEmails" should {
     "send a OK if JSON header has a valid token" + " and status: " + "draft" in {
       val fakeRequest = FakeRequest(GET, "/emails/draft")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -339,7 +339,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#getEmails" should {
+  "EmailsController #getEmails" should {
     "send a OK if JSON header has a valid token" + " and status: " + "received" in {
       val fakeRequest = FakeRequest(GET, "/emails/received")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -349,7 +349,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#getEmails" should {
+  "EmailsController #getEmails" should {
     "send a OK if JSON header has a valid token" + " and status: " + "sent" in {
       val fakeRequest = FakeRequest(GET, "/emails/sent")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -359,7 +359,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#getEmails" should {
+  "EmailsController #getEmails" should {
     "Ok with undefined status" in {
       val fakeRequest = FakeRequest(GET, "/emails/:status")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -369,7 +369,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#getEmails" should {
+  "EmailsController #getEmails" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val fakeRequest = FakeRequest(GET, "/emails/:status")
         .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
@@ -382,7 +382,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
 
   /**  GET /emails/:status/:emailID  end-point */
 
-  "EmailsController" + "#getEmail" should {
+  "EmailsController #getEmail" should {
     "send a OK if JSON header has a valid token" + " and status: " + "received" in {
       val fakeRequest = FakeRequest(GET, "/emails/:emailID?status=received")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -392,7 +392,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#getEmail" should {
+  "EmailsController #getEmail" should {
     "send a OK if JSON header has a valid token" + " and status: " + "sent" in {
       val fakeRequest = FakeRequest(GET, "/emails/:emailID?status=sent")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -402,7 +402,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
   // /emails/:emailID
-  "EmailsController" + "#getEmail" should {
+  "EmailsController #getEmail" should {
     "Ok with undefined status" in {
       val fakeRequest = FakeRequest(GET, "/emails/:emailID?status=:status")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)
@@ -412,7 +412,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#getEmail" should {
+  "EmailsController #getEmail" should {
     "send a Forbidden if JSON header has an invalid token" in {
       val fakeRequest = FakeRequest(GET, "/emails/:emailID")
         .withHeaders(HOST -> LocalHost, TokenKey -> wrongTokenExample)
@@ -422,7 +422,7 @@ class EmailsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite w
     }
   }
 
-  "EmailsController" + "#getEmail" should {
+  "EmailsController #getEmail" should {
     "send a OK if JSON header has a valid token" + "case empty optionalStatus = " in {
       val fakeRequest = FakeRequest(GET, "/emails/:emailID?status=")
         .withHeaders(HOST -> LocalHost, TokenKey -> testGenerator.token)

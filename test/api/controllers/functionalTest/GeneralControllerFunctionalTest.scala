@@ -1,26 +1,26 @@
 package api.controllers.functionalTest
 
-import database.mappings.ChatMappings.{ chatTable, shareTable }
+import database.mappings.ChatMappings.{chatTable, shareTable}
 import database.mappings.DraftMappings._
 import database.mappings.EmailMappings._
 import database.mappings.UserMappings._
 import database.properties.TestDBProperties
 import definedStrings.testStrings.ControllerStrings._
 import generators.Generator
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{ JsObject, JsString, Json }
 import play.api.libs.json.Json._
+import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 
 class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
@@ -45,25 +45,25 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
   private val passwordUser3 = testGenerator3.password
 
   private val draftUser1: JsObject = Json.obj(
-    "chatID" -> testGenerator1.ID,
-    "dateOf" -> testGenerator1.dateOf,
-    "header" -> testGenerator1.header,
-    "body" -> testGenerator1.body,
-    "to" -> (usernameUser2 +: testGenerator1.emailAddresses),
-    "BCC" -> testGenerator1.emailAddresses,
-    "CC" -> testGenerator1.emailAddresses)
+    ChatIDKey -> testGenerator1.ID,
+    DateOfKey -> testGenerator1.dateOf,
+    HeaderKey -> testGenerator1.header,
+    BodyKey -> testGenerator1.body,
+    ToKey -> (usernameUser2 +: testGenerator1.emailAddresses),
+    BCCKey -> testGenerator1.emailAddresses,
+    CCKey -> testGenerator1.emailAddresses)
 
   private val user1Credentials: JsObject = Json.obj(
-    "username" -> usernameUser1,
-    "password" -> passwordUser1)
+    UsernameKey -> usernameUser1,
+    PasswordKey -> passwordUser1)
 
   private val user2Credentials: JsObject = Json.obj(
-    "username" -> usernameUser2,
-    "password" -> passwordUser2)
+    UsernameKey -> usernameUser2,
+    PasswordKey -> passwordUser2)
 
   private val user3Credentials: JsObject = Json.obj(
-    "username" -> usernameUser3,
-    "password" -> passwordUser3)
+    UsernameKey -> usernameUser3,
+    PasswordKey -> passwordUser3)
 
   private val tables = Seq(chatTable, draftTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 
@@ -80,8 +80,11 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
   }
 
   /** POST /sign end-point */
-  "Controller #DraftFunctionaltest" should {
-    "create and manage a draft between two users" in {
+  "Functional test" should {
+    "Able to signin and login users " +
+      "\n create a draft and turn it into an email " +
+      "\n get the emails sent and received from different users " +
+      "\n give permission to a user from a chat and that user able to see those emails " in {
       /** SignIn of User 1*/
       val signInUser1 = FakeRequest(POST, "/signin")
         .withHeaders(HOST -> LocalHost)
@@ -105,21 +108,21 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         .withHeaders(HOST -> LocalHost)
         .withBody(Json.toJson(user1Credentials))
       status(route(app, logInUser1).get) mustBe OK
-      val tokenUser1 = contentAsJson(route(app, logInUser1).get).\("Token:").as[JsString].value
+      val tokenUser1 = contentAsJson(route(app, logInUser1).get).\("Token").as[JsString].value
 
       /** LogIn of User 2*/
       val logInUser2 = FakeRequest(POST, "/login")
         .withHeaders(HOST -> LocalHost)
         .withBody(Json.toJson(user2Credentials))
       status(route(app, logInUser2).get) mustBe OK
-      val tokenUser2 = contentAsJson(route(app, logInUser2).get).\("Token:").as[JsString].value
+      val tokenUser2 = contentAsJson(route(app, logInUser2).get).\("Token").as[JsString].value
 
       /** LogIn of User 3*/
       val logInUser3 = FakeRequest(POST, "/login")
         .withHeaders(HOST -> LocalHost)
         .withBody(Json.toJson(user3Credentials))
       status(route(app, logInUser3).get) mustBe OK
-      val tokenUser3 = contentAsJson(route(app, logInUser3).get).\("Token:").as[JsString].value
+      val tokenUser3 = contentAsJson(route(app, logInUser3).get).\("Token").as[JsString].value
 
       /** Draft is saved by user1 with user2 as a destination*/
       val insertDraftUser1 = FakeRequest(POST, "/draft")

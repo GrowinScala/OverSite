@@ -1,6 +1,6 @@
 package database.mappings
 
-import definedStrings.DatabaseStrings.{ BCCValue, CCValue, ToValue }
+import definedStrings.DatabaseStrings.{BCCValue, CCValue, ToValue}
 import slick.jdbc.JdbcType
 import slick.jdbc.MySQLProfile.api._
 

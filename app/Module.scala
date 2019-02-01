@@ -1,6 +1,6 @@
-import api.validators.{ ProdTokenValidator, TokenValidator }
+import api.validators.{ProdTokenValidator, TokenValidator}
 import com.google.inject.AbstractModule
-import database.properties.{ DatabaseModule, ProdDBProperties }
+import database.properties.ProdDBProperties
 import database.repository._
 
 import scala.concurrent.ExecutionContext

@@ -3,39 +3,36 @@ package database.repository
 import java.util.UUID
 
 import api.dtos._
-import database.mappings.ChatMappings.{ chatTable, shareTable }
+import database.mappings.ChatMappings.{chatTable, shareTable}
 import database.mappings.Destination
-import database.mappings.DraftMappings.{ destinationDraftTable, draftTable }
+import database.mappings.DraftMappings.{destinationDraftTable, draftTable}
 import database.mappings.EmailMappings._
-import database.mappings.UserMappings.{ loginTable, userTable }
+import database.mappings.UserMappings.{loginTable, userTable}
 import database.properties.TestDBProperties
-import definedStrings.testStrings.RepositoryStrings._
-import definedStrings.DatabaseStrings._
 import generators._
-import org.scalatest._
+import org.scalatest.{Matchers, _}
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
-import org.scalatest.Matchers
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
 
 class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
-  lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = TestDBProperties.db
+  implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  lazy private val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
+  lazy private val injector: Injector = appBuilder.injector()
+  lazy implicit private val db: Database = TestDBProperties.db
 
-  val emailActions: EmailRepository = injector.instanceOf[EmailRepository]
+  private val emailActions: EmailRepository = injector.instanceOf[EmailRepository]
 
-  val userGenerator = new Generator()
-  val userCreation = new CreateUserDTO(userGenerator.username, userGenerator.password)
+  private val userGenerator = new Generator()
+  private val userCreation = new CreateUserDTO(userGenerator.username, userGenerator.password)
 
-  val defaultCreation = new Generator()
-  val emailCreation = new CreateEmailDTO(
+  private val defaultCreation = new Generator()
+  private val emailCreation = new CreateEmailDTO(
     Option(defaultCreation.ID),
     defaultCreation.dateOf,
     defaultCreation.header,
@@ -44,8 +41,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     Option(new Generator().emailAddresses),
     Option(new Generator().emailAddresses))
 
-  val DraftCreation = new Generator()
-  val emailDraftCreation = new CreateEmailDTO(
+  private val DraftCreation = new Generator()
+  private val emailDraftCreation = new CreateEmailDTO(
     Option(DraftCreation.ID),
     DraftCreation.dateOf,
     DraftCreation.header,
@@ -69,7 +66,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in database correctly */
-  EmailRepository + " #insertEmail" should {
+  "EmailsRepository #insertEmail" should {
     "check if the intended email is inserted in the email table in database" in {
 
       val result = for {
@@ -108,7 +105,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if a second email is inserted in database correctly with the right chatID */
-  EmailRepository + " #insertEmail" should {
+  "EmailsRepository #insertEmail" should {
     "check if a second email with the same chatID as first is inserted in the email table in database" in {
 
       val result = for {
@@ -132,7 +129,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in chatTable correctly */
-  EmailRepository + " #insertEmail" should {
+  "EmailsRepository #insertEmail" should {
     "check if the chat parameters are inserted in the chat table in database" in {
 
       val result = for {
@@ -160,7 +157,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in the toAddress table correctly */
-  EmailRepository + " #insertEmail" should {
+  "EmailsRepository #insertEmail" should {
     "check if the to is inserted in the toAddress table in database" in {
 
       val result = for {
@@ -215,7 +212,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in BCC table correctly */
-  EmailRepository + " #insertEmail" should {
+  "EmailsRepository #insertEmail" should {
     "check if the BCC is inserted in the BCC table in database" in {
 
       val result = for {
@@ -269,7 +266,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in CC table correctly */
-  EmailRepository + " #insertEmail" should {
+  "EmailsRepository #insertEmail" should {
     "check if the CC parameters are inserted in the CC table in database when necessary" in {
 
       val result = for {
@@ -323,12 +320,12 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function changeTrash */
-  EmailRepository + "#changeTrash" should {
+  "EmailsRepository #changeTrash" should {
     "check if the function changeTrash is able to change the trash status of the inserted email" in {
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
-        _ <- Future.sequence { resultEmailTable.map(emailRow => emailActions.changeTrash(userCreation.username, emailRow.emailID, moveToTrash = true)) }
+        _ <- Future.sequence { resultEmailTable.map(emailRow => emailActions.moveInOutTrashEmail(userCreation.username, emailRow.emailID, moveToTrash = true)) }
         resultEmailTableTrash <- db.run(emailTable.result)
       } yield (resultEmailTable, resultEmailTableTrash)
 
@@ -345,7 +342,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function getEmails */
-  EmailRepository + "#getEmails" should {
+  "EmailsRepository #getEmails" should {
     "check if the function getEmails is able to reach the inserted email" in {
 
       val result = for {
@@ -370,13 +367,13 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function getEmails */
-  EmailRepository + "#getEmails" should {
+  "EmailsRepository #getEmails" should {
     "check if the function getEmails is able to reach the inserted email that is trashed" in {
 
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
-        _ <- Future.sequence { resultEmailTable.map(x => emailActions.changeTrash(userCreation.username, x.emailID, moveToTrash = true)) }
+        _ <- Future.sequence { resultEmailTable.map(x => emailActions.moveInOutTrashEmail(userCreation.username, x.emailID, moveToTrash = true)) }
         resultToTrash <- emailActions.getEmails(userCreation.username, "trashed")
       } yield (resultEmailTable, resultToTrash)
 
@@ -454,7 +451,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
 
   /**DRAFT REPOSITORIES TESTS*/
   /** Verify if an email is inserted in database correctly */
-  EmailRepository + " #insertDraft" should {
+  "EmailsRepository #insertDraft" should {
     "check if the intended draft is inserted in the draft table in database" in {
 
       val result = for {
@@ -493,7 +490,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if a second email is inserted in database correctly with the right chatID */
-  EmailRepository + " #insertDraft" should {
+  "EmailsRepository #insertDraft" should {
     "check if a second draft with the same chatID as first is inserted in the draft table in database" in {
 
       val result = for {
@@ -522,7 +519,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if a draft is inserted without destinations */
-  EmailRepository + " #insertDraft" should {
+  "EmailsRepository #insertDraft" should {
     "check if a draft is properly inserted with no destination" in {
 
       val result = for {
@@ -552,7 +549,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an email is inserted in the toAddress table correctly */
-  EmailRepository + " #insertDraft" should {
+  "EmailsRepository #insertDraft" should {
     "check if the to is inserted in the destination draft table in database" in {
 
       val result = for {
@@ -604,7 +601,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an draft is inserted with correct BCC */
-  EmailRepository + " #insertDraft" should {
+  "EmailsRepository #insertDraft" should {
     "check if the BCC is inserted in the destination table in database" in {
 
       val result = for {
@@ -658,7 +655,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an draft is inserted in CC table correctly */
-  EmailRepository + " #insertDraft" should {
+  "EmailsRepository #insertDraft" should {
     "check if the CC parameters are inserted in the draft destination table in database when necessary" in {
 
       val result = for {
@@ -712,12 +709,12 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function moveInOutTrash */
-  EmailRepository + "#moveInOutTrash" should {
+  "EmailsRepository #moveInOutTrash" should {
     "check if the function moveInOutTrash is able to change the trash status of the inserted draft" in {
       val result = for {
         _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
         resultDraftTable <- db.run(draftTable.result)
-        _ <- Future.sequence { resultDraftTable.map(draftRow => emailActions.moveInOutTrash(userCreation.username, draftRow.draftID, trash = true)) }
+        _ <- Future.sequence { resultDraftTable.map(draftRow => emailActions.moveInOutTrashDraft(userCreation.username, draftRow.draftID, trash = true)) }
         resultDraftTableTrash <- db.run(draftTable.result)
       } yield (resultDraftTable, resultDraftTableTrash)
 
@@ -734,7 +731,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify if an update is proceeded in draftTable correctly */
-  EmailRepository + " #getDrafts" should {
+  "EmailsRepository #getDrafts" should {
     "check if the mails are reached in draft table in database" in {
 
       val result = for {
@@ -754,13 +751,13 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function getDrafts */
-  EmailRepository + "#getDrafts" should {
+  "EmailsRepository #getDrafts" should {
     "check if the function getDrafts is able to reach the inserted draft that is trashed" in {
 
       val result = for {
         _ <- emailActions.insertDraft(userCreation.username, emailDraftCreation)
         resultAuxDraftTable <- db.run(draftTable.result)
-        _ <- Future.sequence { resultAuxDraftTable.map(draftRow => emailActions.moveInOutTrash(userCreation.username, draftRow.draftID, trash = true)) }
+        _ <- Future.sequence { resultAuxDraftTable.map(draftRow => emailActions.moveInOutTrashDraft(userCreation.username, draftRow.draftID, trash = true)) }
         resultDraftTable <- db.run(draftTable.result)
         resultTrash <- emailActions.getDrafts(userCreation.username, isTrash = true)
         resultNoTrash <- emailActions.getDrafts(userCreation.username, isTrash = false)
@@ -836,7 +833,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 */
   /** Verify the function destinations **/
-  EmailRepository + "#destinations" should {
+  "EmailsRepository #destinations" should {
     "check if the function destinations is able to reach the destinations inserted in draft" in {
 
       val result = for {
@@ -854,7 +851,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
   }
 
   /** Verify the function destinations **/
-  EmailRepository + "#destinations" should {
+  "EmailsRepository #destinations" should {
     "check if the function destinations is able return empty for no destinations inserted" in {
 
       val result = for {
@@ -870,8 +867,8 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
     }
   }
 
-  /** Verify the function hasdestinations **/
-  EmailRepository + "#hasDestination" should {
+  /** Verify the function hasDestinations **/
+  "EmailsRepository #hasDestination" should {
     "check if the function hasDestination is able return true or false properly" in {
 
       val result = for {

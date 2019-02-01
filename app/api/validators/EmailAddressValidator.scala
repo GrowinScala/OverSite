@@ -2,7 +2,7 @@ package api.validators
 
 import regex.RegexPatterns.emailAddressPattern
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.Future
 import scala.util.matching.Regex
 
 object EmailAddressValidator {

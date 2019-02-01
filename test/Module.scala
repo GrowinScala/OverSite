@@ -1,4 +1,4 @@
-import api.validators.{ ProdTokenValidator, TokenValidator }
+import api.validators.{ProdTokenValidator, TokenValidator}
 import com.google.inject.AbstractModule
 import database.properties.TestDBProperties
 import database.repository._

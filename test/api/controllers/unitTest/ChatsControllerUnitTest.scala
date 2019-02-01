@@ -2,29 +2,29 @@ package api.controllers.unitTest
 
 import akka.stream.Materializer
 import api.controllers.ChatController
+import api.controllers.unitTest.UnitControllerTestsAppBuilder._
 import api.validators.TokenValidator
-import database.repository.fake.{ FakeChatRepositoryImpl, FakeUserRepositoryImpl }
-import database.repository.{ ChatRepository, _ }
+import database.repository.fake.{FakeChatRepositoryImpl, FakeUserRepositoryImpl}
+import database.repository.{ChatRepository, _}
 import definedStrings.ApiStrings._
-import definedStrings.testStrings.ControllerStrings.{ TokenKey, _ }
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import definedStrings.testStrings.ControllerStrings.{TokenKey, _}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import UnitControllerTestsAppBuilder._
 
 import scala.concurrent.ExecutionContext
 
 class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy implicit val mat: Materializer = injectorWithValidToken.instanceOf[Materializer]
+  implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  lazy implicit private val mat: Materializer = injectorWithValidToken.instanceOf[Materializer]
 
-  val chatActions: ChatRepository = new FakeChatRepositoryImpl()
-  val userActions: UserRepository = new FakeUserRepositoryImpl()
+  private val chatActions: ChatRepository = new FakeChatRepositoryImpl()
+  private val userActions: UserRepository = new FakeUserRepositoryImpl()
 
   "ChatController #inbox" should {
     "send a OK if JSON header has a valid token" in {

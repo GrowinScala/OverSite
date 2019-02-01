@@ -1,6 +1,7 @@
 package api.validators
 
 import definedStrings.ApiStrings._
+
 import scala.concurrent.Future
 
 /** Mocked Token Validator to be used in Testing */

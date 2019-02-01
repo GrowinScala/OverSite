@@ -1,37 +1,36 @@
 package database.repository
 
 import api.dtos.CreateUserDTO
-import database.mappings.ChatMappings.{ chatTable, shareTable }
+import database.mappings.ChatMappings.{chatTable, shareTable}
 import database.mappings.DraftMappings.destinationDraftTable
 import database.mappings.EmailMappings._
-import database.mappings.UserMappings.{ loginTable, userTable }
+import database.mappings.UserMappings.{loginTable, userTable}
 import database.properties.TestDBProperties
 import definedStrings.AlgorithmStrings.MD5Algorithm
 import definedStrings.testStrings.RepositoryStrings._
 import encryption.EncryptString
 import generators._
-import org.scalatest._
+import org.scalatest.{Matchers, _}
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
-import org.scalatest.Matchers
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 
 class UserRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
-  lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = TestDBProperties.db
+  implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  lazy private val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
+  lazy private val injector: Injector = appBuilder.injector()
+  lazy implicit private val db: Database = TestDBProperties.db
 
-  val userActions = injector.instanceOf[UserRepository]
-  val userGenerator = new Generator()
-  val userCreation = CreateUserDTO(userGenerator.username, userGenerator.password)
-  val userCreationWrongPassword = new CreateUserDTO(userCreation.username, new Generator().password)
-  val userCreationWrongUser = new CreateUserDTO(new Generator().username, userCreation.password)
+  private val userActions = injector.instanceOf[UserRepository]
+  private val userGenerator = new Generator()
+  private val userCreation = CreateUserDTO(userGenerator.username, userGenerator.password)
+  private val userCreationWrongPassword = new CreateUserDTO(userCreation.username, new Generator().password)
+  private val userCreationWrongUser = new CreateUserDTO(new Generator().username, userCreation.password)
 
   private val tables = Seq(chatTable, userTable, emailTable, destinationEmailTable, destinationDraftTable, loginTable, shareTable)
 

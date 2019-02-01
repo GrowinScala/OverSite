@@ -1,21 +1,18 @@
 package api.controllers
 
 import akka.actor.ActorSystem
+import api.JsonObjects._
 import api.dtos.CreateUserDTO
 import api.validators.EmailAddressValidator._
 import api.validators.TokenValidator
-import database.repository.{ UserRepository, UserRepositoryImpl }
+import database.repository.UserRepository
 import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
 import regex.RegexPatterns.emailAddressPattern
-import slick.jdbc.MySQLProfile.api._
-import api.JsonObjects._
-import database.properties.DBProperties
-import definedStrings.DatabaseStrings.OversiteDB
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /** Class that is injected with end-points */
 

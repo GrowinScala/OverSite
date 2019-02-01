@@ -214,7 +214,7 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
 
     result.flatMap(futureSeqTriplets => futureSeqTriplets.map(seq =>
       seq.map { optionTripletStrings =>
-        optionTripletStrings.getOrElse(("", "", "", "", "")) match {
+        optionTripletStrings.getOrElse((EmptyString, EmptyString, EmptyString, EmptyString, EmptyString)) match {
           case (shareID, fromUser, _, _, header) => MinimalShareInfoDTO(shareID, fromUser, header)
         }
       }))

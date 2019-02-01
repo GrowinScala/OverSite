@@ -1,7 +1,7 @@
 
 package database.repository.fake
 
-import api.dtos.{ CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO, _ }
+import api.dtos.{CreateEmailDTO, EmailInfoDTO, MinimalInfoDTO, _}
 import database.repository.EmailRepository
 import definedStrings.testStrings.RepositoryStrings.EmptyString
 
@@ -20,7 +20,7 @@ class FakeEmailRepositoryImplWithNoDestination extends EmailRepository {
     Future.successful(EmailInfoDTO(EmptyString, userEmail, Seq(EmptyString), EmptyString, EmptyString, EmptyString))
   }
 
-  def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
+  def moveInOutTrashEmail(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
     Future.successful(0)
   }
 
@@ -53,7 +53,7 @@ class FakeEmailRepositoryImplWithNoDestination extends EmailRepository {
     Future.successful { false }
   }
 
-  def moveInOutTrash(userEmail: String, draftID: String, trash: Boolean): Future[Int] = {
+  def moveInOutTrashDraft(userEmail: String, draftID: String, trash: Boolean): Future[Int] = {
     Future.successful(0)
   }
 

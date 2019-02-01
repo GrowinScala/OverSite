@@ -3,18 +3,15 @@ package api.controllers
 import akka.actor.ActorSystem
 import api.JsonObjects.jsonErrors
 import api.dtos.AuxFunctions._
-import api.dtos.{ CreateEmailDTO, MinimalInfoDTO, TrashInfoDTO }
+import api.dtos.{CreateEmailDTO, MinimalInfoDTO, TrashInfoDTO}
 import api.validators.TokenValidator
-import database.properties.DBProperties
-import database.repository.{ EmailRepository, EmailRepositoryImpl, UserRepository, UserRepositoryImpl }
+import database.repository.{EmailRepository, UserRepository}
 import definedStrings.ApiStrings._
-import definedStrings.DatabaseStrings.OversiteDB
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
-import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /** Class injected with end-points */
 
@@ -110,7 +107,7 @@ import scala.concurrent.{ ExecutionContext, Future }
       },
       move => {
         request.userName.flatMap(
-          emailActions.changeTrash(_, emailID, move.toTrash))
+          emailActions.moveInOutTrashEmail(_, emailID, move.toTrash))
         Future.successful {
           Ok
         }

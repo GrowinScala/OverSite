@@ -1,6 +1,6 @@
 package database.repository
 
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, CreateUserDTO }
+import api.dtos.{CreateEmailDTO, CreateShareDTO, CreateUserDTO}
 import database.mappings.ChatMappings._
 import database.mappings.Destination
 import database.mappings.DraftMappings._
@@ -9,31 +9,31 @@ import database.mappings.UserMappings._
 import database.properties.TestDBProperties
 import definedStrings.testStrings.RepositoryStrings._
 import generators.Generator
-import org.scalatest.{ Matchers, _ }
+import org.scalatest.{Matchers, _}
 import play.api.Mode
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
-  lazy val injector: Injector = appBuilder.injector()
-  lazy implicit val db: Database = TestDBProperties.db
+  implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  lazy private val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
+  lazy private val injector: Injector = appBuilder.injector()
+  lazy implicit private val db: Database = TestDBProperties.db
 
-  val emailActions: EmailRepository = injector.instanceOf[EmailRepository]
-  val chatActions: ChatRepository = injector.instanceOf[ChatRepository]
+  private val emailActions: EmailRepository = injector.instanceOf[EmailRepository]
+  private val chatActions: ChatRepository = injector.instanceOf[ChatRepository]
 
-  val userGenerator = new Generator()
-  val userCreation = CreateUserDTO(userGenerator.username, userGenerator.password)
-  val userCreationWrongUser = new CreateUserDTO(new Generator().username, userCreation.password)
+  private val userGenerator = new Generator()
+  private val userCreation = CreateUserDTO(userGenerator.username, userGenerator.password)
+  private val userCreationWrongUser = new CreateUserDTO(new Generator().username, userCreation.password)
 
-  val defaultCreation = new Generator()
-  val emailCreation = new CreateEmailDTO(
+  private val defaultCreation = new Generator()
+  private val emailCreation = new CreateEmailDTO(
     Option(defaultCreation.ID),
     defaultCreation.dateOf,
     defaultCreation.header,

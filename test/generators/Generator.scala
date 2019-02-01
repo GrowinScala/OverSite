@@ -1,7 +1,7 @@
 package generators
-import org.scalacheck.Gen._
 import definedStrings.testStrings.RepositoryStrings._
 import org.scalacheck.Gen
+import org.scalacheck.Gen._
 
 import scala.util.Random
 class Generator extends CommonDTOGenerator {

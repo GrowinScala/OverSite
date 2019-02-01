@@ -1,4 +1,5 @@
 package database.mappings
+
 import definedStrings.DatabaseStrings._
 import slick.jdbc.MySQLProfile.api._
 

@@ -71,6 +71,7 @@ object ControllerStrings {
   val CCKey = "CC"
   val SendNowKey = "sendNow"
   val TrueKey = "true"
+  val IDKey = "Id"
 
   val WrongUsernameKey = "NOTusername"
   val WrongPasswordKey = "NOTpassword"

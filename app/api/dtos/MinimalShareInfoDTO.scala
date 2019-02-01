@@ -1,5 +1,6 @@
 package api.dtos
-import play.api.libs.json._
+
+import play.api.libs.json.{Json, OFormat}
 
 case class MinimalShareInfoDTO(
   shareID: String,

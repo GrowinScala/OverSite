@@ -2,13 +2,13 @@ package api.controllers.unitTest
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import api.validators.{ MockedInvalidTokenValidator, MockedValidTokenValidator, TokenValidator }
-import database.repository.fake.{ FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl }
-import database.repository.{ ChatRepository, EmailRepository, UserRepository }
+import api.validators.{MockedInvalidTokenValidator, MockedValidTokenValidator, TokenValidator}
+import database.repository.fake.{FakeChatRepositoryImpl, FakeEmailRepositoryImpl, FakeUserRepositoryImpl}
+import database.repository.{ChatRepository, EmailRepository, UserRepository}
 import javax.inject.Singleton
 import play.api.Mode
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.inject.{ Injector, bind }
+import play.api.inject.{Injector, bind}
 import play.api.mvc.ControllerComponents
 
 @Singleton

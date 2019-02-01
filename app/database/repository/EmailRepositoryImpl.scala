@@ -3,17 +3,18 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos.{ CreateEmailDTO, DraftInfoDTO, EmailInfoDTO, MinimalInfoDTO }
-import database.mappings.ChatMappings.{ chatTable, shareTable }
-import database.mappings.DraftMappings.{ destinationDraftTable, draftTable }
-import database.mappings.EmailMappings.{ emailTable, _ }
+import api.dtos.{CreateEmailDTO, DraftInfoDTO, EmailInfoDTO, MinimalInfoDTO}
+import database.mappings.ChatMappings.{chatTable, shareTable}
+import database.mappings.DraftMappings.{destinationDraftTable, draftTable}
+import database.mappings.EmailMappings.{emailTable, _}
 import database.mappings._
 import database.properties.DBProperties
 import definedStrings.ApiStrings._
+import definedStrings.DatabaseStrings.EmptyString
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**  Class that receives a db path */
 class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends EmailRepository {
@@ -91,7 +92,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
    * @param emailID Identification the a specific email
    * @return
    */
-  def changeTrash(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
+  def moveInOutTrashEmail(userName: String, emailID: String, moveToTrash: Boolean): Future[Int] = {
 
     val emailQuery = emailTable
       .filter(_.emailID === emailID)
@@ -201,7 +202,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
         .map(table => (table.chatID, table.fromAddress, table.header, table.body, table.dateOf))
         .result
         .headOption
-        .map(seq => seq.getOrElse(("", "", "", "", "")) match {
+        .map(seq => seq.getOrElse((EmptyString, EmptyString, EmptyString, EmptyString, EmptyString)) match {
           case (chatID, fromAddress, header, body, dateOf) =>
             EmailInfoDTO(chatID, fromAddress, seqTos, header, body, dateOf)
         }))
@@ -220,7 +221,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
     val draftID = randomUUID().toString
 
     val insertDraft = for {
-      _ <- draftTable += DraftRow(draftID, draft.chatID.getOrElse(""), username, draft.dateOf, draft.header, draft.body, isTrash = false)
+      _ <- draftTable += DraftRow(draftID, draft.chatID.getOrElse(EmptyString), username, draft.dateOf, draft.header, draft.body, isTrash = false)
       _ <- destinationDraftTable ++= draft.to.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.ToAddress))
       _ <- destinationDraftTable ++= draft.CC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.CC))
       _ <- destinationDraftTable ++= draft.BCC.getOrElse(Seq()).map(DestinationDraftRow(draftID, _, Destination.BCC))
@@ -294,7 +295,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
         .map(table => (table.draftID, table.username, table.header, table.body, table.dateOf))
         .result.headOption)
 
-    } yield draft.getOrElse(("", "", "", "", "")) match {
+    } yield draft.getOrElse((EmptyString, EmptyString, EmptyString, EmptyString, EmptyString)) match {
       case (draftId, username, header, body, dateOf) =>
         DraftInfoDTO(draftId, username, toSeq, ccSeq, bccSeq, header, body, dateOf)
     }
@@ -362,7 +363,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
     Future.successful { listCCs.size + listBCCs.size + listTos.size > 0 }
   }
 
-  def moveInOutTrash(userEmail: String, draftID: String, trash: Boolean): Future[Int] = {
+  def moveInOutTrashDraft(userEmail: String, draftID: String, trash: Boolean): Future[Int] = {
 
     val draftFilter = draftTable
       .filter(_.username === userEmail)
@@ -387,7 +388,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
 
     db.run(queryShareId.result.headOption)
       .flatMap { seq =>
-        seq.getOrElse(("", "")) match { case (fromUser, emailId) => getEmail(fromUser, status = "", emailId) }
+        seq.getOrElse((EmptyString, EmptyString)) match { case (fromUser, emailId) => getEmail(fromUser, status = EmptyString, emailId) }
       }
   }
 }

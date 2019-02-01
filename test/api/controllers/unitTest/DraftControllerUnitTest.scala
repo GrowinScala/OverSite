@@ -2,28 +2,28 @@ package api.controllers.unitTest
 
 import akka.stream.Materializer
 import api.controllers.DraftsController
+import api.controllers.unitTest.UnitControllerTestsAppBuilder._
 import api.validators.TokenValidator
 import database.repository._
-import database.repository.fake.{ FakeEmailRepositoryImpl, FakeEmailRepositoryImplWithNoDestination }
+import database.repository.fake.{FakeEmailRepositoryImpl, FakeEmailRepositoryImplWithNoDestination}
 import definedStrings.ApiStrings._
-import definedStrings.testStrings.ControllerStrings.{ LocalHost, TokenKey }
-import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
+import definedStrings.testStrings.ControllerStrings.{LocalHost, TokenKey}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import UnitControllerTestsAppBuilder._
 
 import scala.concurrent.ExecutionContext
 
 class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach with Results {
 
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy implicit val mat: Materializer = injectorWithValidToken.instanceOf[Materializer]
+  implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  lazy implicit private val mat: Materializer = injectorWithValidToken.instanceOf[Materializer]
 
-  val emailActions: EmailRepository = new FakeEmailRepositoryImpl()
+  private val emailActions: EmailRepository = new FakeEmailRepositoryImpl()
 
   "DraftsController #draft" should {
     "send a Ok if JSON header has a valid token" in {
