@@ -2,8 +2,7 @@ package database.repository
 
 import java.util.UUID.randomUUID
 
-import api.dtos._
-import api.dtos.{ CreateEmailDTO, CreateShareDTO, EmailInfoDTO, MinimalInfoDTO, MinimalShareInfoDTO }
+import api.dtos.{CreateEmailDTO, CreateShareDTO, MinimalInfoDTO, MinimalShareInfoDTO}
 import database.mappings.ChatMappings._
 import database.mappings.EmailMappings._
 import database.mappings._
@@ -12,8 +11,7 @@ import definedStrings.DatabaseStrings._
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
   val db = dbClass.db
