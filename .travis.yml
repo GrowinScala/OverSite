@@ -1,6 +1,10 @@
-language: scala
+language:
+  scala
 
-scala: - 2.12.6
+scala:
+  - 2.11.12
+  - 2.12.7
 
-script: - sbt clean coverage test coverageReport
+script:
+  - sbt clean coverage test coverageReport
 
