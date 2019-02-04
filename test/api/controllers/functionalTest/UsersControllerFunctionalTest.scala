@@ -16,7 +16,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-//import slick.jdbc.H2Profile.api._
+import slick.jdbc.H2Profile.api._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext }
