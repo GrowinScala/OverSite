@@ -68,7 +68,7 @@ class ChatRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befor
         case (resultChatID, resultChatTable) =>
 
           /** Verify if something was inserted in the chat table */
-          resultChatTable.nonEmpty shouldBe false
+          resultChatTable.nonEmpty shouldBe true
 
           /** Verify if the chatID in chat Table matches with email inserted */
           resultChatTable.forall(_.chatID === resultChatID) shouldBe true
