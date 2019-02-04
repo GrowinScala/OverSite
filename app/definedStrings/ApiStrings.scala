@@ -8,7 +8,8 @@ object ApiStrings {
   val EndPointSent = "sent"
   val EndPointTrash = "trashed"
   val EndPointNoFilter = ""
-  val PossibleEndPointStatus = List(EndPointReceived, EndPointSent, EndPointTrash, EndPointNoFilter)
+  val EndPointShare = "share"
+  val PossibleEndPointStatus = List(EndPointReceived, EndPointSent, EndPointTrash, EndPointNoFilter, EndPointShare)
 
   val StatusDraft = "draft"
   val StatusTrash = "trash"
