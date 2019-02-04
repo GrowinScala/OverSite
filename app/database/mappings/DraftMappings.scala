@@ -44,7 +44,6 @@ class DraftTable(tag: Tag) extends Table[DraftRow](tag, DraftsTable) {
   def isTrash = column[Boolean](TrashRow)
 
   def * = (draftID, chatID, username, dateOf, header, body, isTrash) <> (DraftRow.tupled, DraftRow.unapply)
-
 }
 
 object DraftMappings {

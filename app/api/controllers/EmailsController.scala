@@ -16,7 +16,6 @@ import scala.concurrent.{ ExecutionContext, Future }
 /** Class injected with end-points */
 
 @Singleton class EmailsController @Inject() (
-  //dbclass: dbClass,
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,

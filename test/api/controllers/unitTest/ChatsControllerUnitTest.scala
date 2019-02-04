@@ -35,7 +35,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.inbox(Option(true)).apply(FakeRequest(GET, "/chats?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -49,7 +49,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.inbox(None).apply(FakeRequest(GET, "/chats")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -63,7 +63,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.inbox(Option(true)).apply(FakeRequest(GET, "/chats?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 
@@ -78,8 +78,8 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getEmails("", Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmails(chatID = EmptyString, Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -92,8 +92,8 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getEmails("", None).apply(FakeRequest(GET, "/chats/:chatID/emails")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmails(chatID = EmptyString, None).apply(FakeRequest(GET, "/chats/:chatID/emails")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -106,8 +106,8 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.getEmails("", Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmails(chatID = EmptyString, Option(true)).apply(FakeRequest(GET, "/chats/:chatID/emails?isTrash=true")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 
@@ -122,8 +122,8 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.moveInOutTrash(chatID = EmptyString).apply(FakeRequest(PATCH, "/chats/:chatID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
           "toTrash" -> true))))
       status(result) mustBe OK
@@ -138,10 +138,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.moveInOutTrash(chatID = EmptyString).apply(FakeRequest(PATCH, "/chats/:chatID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "toTrash" -> true))))
+          fields = "toTrash" -> true))))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 
@@ -156,10 +156,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/chats/:chatID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.moveInOutTrash(chatID = EmptyString).apply(FakeRequest(PATCH, "/chats/:chatID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "NOTtoTrash" -> true))))
+          fields = "NOTtoTrash" -> true))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -173,10 +173,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.supervised.apply(FakeRequest(POST, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
-          "supervisor" -> ""))))
+          fields = "chatID" -> EmptyString,
+          "supervisor" -> EmptyString))))
       status(result) mustBe OK
     }
   }
@@ -190,10 +190,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.supervised().apply(FakeRequest(POST, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
-          "supervisor" -> ""))))
+          fields = "chatID" -> EmptyString,
+          "supervisor" -> EmptyString))))
       status(result) mustEqual FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 
@@ -209,10 +209,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.supervised.apply(FakeRequest(POST, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "NOTchatID" -> "",
-          "supervisor" -> ""))))
+          fields = "NOTchatID" -> EmptyString,
+          "supervisor" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -226,10 +226,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.supervised.apply(FakeRequest(POST, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
-          "NOTsupervisor" -> ""))))
+          fields = "chatID" -> EmptyString,
+          "NOTsupervisor" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -243,7 +243,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.getShares().apply(FakeRequest(GET, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe OK
     }
@@ -258,7 +258,7 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.getShares().apply(FakeRequest(GET, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 
@@ -273,8 +273,8 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         chatActions,
         userActions)
-      val result = controller.getSharedEmails("").apply(FakeRequest(GET, "/shares/:shareID/emails")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getSharedEmails(shareID = EmptyString).apply(FakeRequest(GET, "/shares/:shareID/emails")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe OK
     }
@@ -288,8 +288,8 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithInvalidToken,
         chatActions,
         userActions)
-      val result = controller.getSharedEmails("").apply(FakeRequest(GET, "/shares/:shareID/emails")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getSharedEmails(shareID = EmptyString).apply(FakeRequest(GET, "/shares/:shareID/emails")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 
@@ -305,10 +305,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
-          "supervisor" -> ""))))
+          fields = "chatID" -> EmptyString,
+          "supervisor" -> EmptyString))))
       status(result) mustBe OK
     }
   }
@@ -322,10 +322,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
-          "supervisor" -> ""))))
+          fields = "chatID" -> EmptyString,
+          "supervisor" -> EmptyString))))
       status(result) mustEqual FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 
@@ -341,10 +341,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "NOTchatID" -> "",
-          "supervisor" -> ""))))
+          fields = "NOTchatID" -> EmptyString,
+          "supervisor" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -358,10 +358,10 @@ class ChatsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         chatActions,
         userActions)
       val result = controller.takePermissions().apply(FakeRequest(DELETE, "/shares")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
-          "NOTsupervisor" -> ""))))
+          fields = "chatID" -> EmptyString,
+          "NOTsupervisor" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }

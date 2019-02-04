@@ -5,14 +5,10 @@ object DatabaseStrings {
   /** For table names */
   val ChatsTable = "chats"
   val SharesTable = "shares"
-  val ChatUsersTable = "chatusers"
   val EmailsTable = "emails"
   val DraftsTable = "drafts"
   val DraftsDestinationTable = "draftsdestination"
   val EmailsDestinationTable = "emailsdestination"
-  val ToAddressesTable = "toaddresses"
-  val CCsTable = "ccs"
-  val BCCsTable = "bccs"
   val ToValue = "TO"
   val CCValue = "CC"
   val BCCValue = "BCC"
@@ -32,10 +28,7 @@ object DatabaseStrings {
   val FromAddressRow = "fromAddress"
   val DateOfRow = "dateOf"
   val BodyRow = "body"
-  val ToAddressesSetRow = "toAddressesSet"
   val TrashRow = "trash"
-  val CCIDRow = "CCID"
-  val BCCIDRow = "BCCID"
   val TokenRow = "token"
   val ValidDateRow = "validDate"
   val ActiveRow = "active"
@@ -45,7 +38,6 @@ object DatabaseStrings {
   val OversiteDB = "oversiteDB"
 
   /** For regular strings */
-  val NoneString = "none"
   val EmptyString = ""
   val TripletEmptyString = (EmptyString, EmptyString, EmptyString)
 }

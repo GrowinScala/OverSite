@@ -17,14 +17,11 @@ import scala.concurrent.{ ExecutionContext, Future }
 /** Class that is injected with end-points */
 
 @Singleton class UsersController @Inject() (
-  //dbclass: dbClass,
   tokenValidator: TokenValidator,
   cc: ControllerComponents,
   actorSystem: ActorSystem,
   userActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
-
-  //val tokenValidator: TokenValidator = new TokenValidator(dbclass.db)
 
   /**
    * Sign in action
@@ -87,7 +84,7 @@ import scala.concurrent.{ ExecutionContext, Future }
    * @return When a logout is called, the "active" parameter is turned down
    */
   def logOut: Action[AnyContent] = tokenValidator.async { request =>
-    val authToken = request.headers.get(TokenHeader).getOrElse("")
+    val authToken = request.headers.get(TokenHeader).getOrElse(EmptyString)
     userActions.insertLogout(authToken).map {
       case 1 => Ok
       case _ => NotModified

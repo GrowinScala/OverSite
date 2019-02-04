@@ -12,7 +12,6 @@ import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
-import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json.parse
 import play.api.test.FakeRequest
@@ -25,9 +24,7 @@ import scala.concurrent.{ Await, ExecutionContext }
 class ChatsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
   implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy private val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
 
-  lazy private val injector: Injector = appBuilder.injector()
   lazy implicit private val db: Database = TestDBProperties.db
 
   private val testGenerator = new Generator()
@@ -39,7 +36,6 @@ class ChatsControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite wi
   override def beforeEach(): Unit = {
 
     Await.result(db.run(userTable += UserRow(emailExample, testGenerator.password)), Duration.Inf)
-    //encrypted "12345" password
     Await.result(db.run(loginTable +=
       LoginRow(emailExample, testGenerator.token, System.currentTimeMillis() + 360000, active = true)), Duration.Inf)
   }

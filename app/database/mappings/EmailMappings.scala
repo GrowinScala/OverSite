@@ -31,8 +31,6 @@ class EmailTable(tag: Tag) extends Table[EmailRow](tag, EmailsTable) {
   def body = column[String](BodyRow)
   def isTrash = column[Boolean](TrashRow)
 
-  //def fileIdFK = foreignKey(ChatIDRow, chatID, ChatMappings.chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-
   def * = (emailID, chatID, fromAddress, dateOf, header, body, isTrash) <> (EmailRow.tupled, EmailRow.unapply)
 }
 
@@ -47,8 +45,8 @@ class DestinationEmailTable(tag: Tag) extends Table[DestinationEmailRow](tag, Em
   def * = (emailID, username, destination, isTrash) <> (DestinationEmailRow.tupled, DestinationEmailRow.unapply)
 }
 
+/** Queries of Email table and it's nested entities: */
 object EmailMappings {
-  /** Queries of Email table and it's nested entities: */
   lazy val emailTable = TableQuery[EmailTable]
   lazy val destinationEmailTable = TableQuery[DestinationEmailTable]
 }

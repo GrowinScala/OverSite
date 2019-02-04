@@ -35,15 +35,15 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2010-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "bcc" -> Seq(""),
-          "cc" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "bcc" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailSentStatus
     }
@@ -58,14 +58,14 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "dateOf" -> "2010-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "bcc" -> Seq(""),
-          "cc" -> Seq("")))))
+          fields = "dateOf" -> "2010-10-10",
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "bcc" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailSentStatus
     }
@@ -80,14 +80,14 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2010-10-10",
-          "header" -> "",
-          "body" -> "",
-          "bcc" -> Seq(""),
-          "cc" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "bcc" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailSentStatus
     }
@@ -102,14 +102,14 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2010-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "cc" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailSentStatus
     }
@@ -124,14 +124,14 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2010-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "bcc" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "bcc" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailSentStatus
     }
@@ -146,15 +146,15 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2010-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "bcc" -> Seq(""),
-          "cc" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "bcc" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
     }
@@ -169,14 +169,14 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "bcc" -> Seq(""),
-          "cc" -> Seq("")))))
+          fields = "chatID" -> EmptyString,
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "bcc" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -190,14 +190,14 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2010-10-10",
-          "body" -> "",
-          "to" -> Seq(""),
-          "bcc" -> Seq(""),
-          "cc" -> Seq("")))))
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "bcc" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -211,14 +211,14 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.email().apply(FakeRequest(POST, "/email")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2010-10-10",
-          "header" -> "",
-          "to" -> Seq(""),
-          "bcc" -> Seq(""),
-          "cc" -> Seq("")))))
+          "header" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "bcc" -> Seq(EmptyString),
+          "cc" -> Seq(EmptyString)))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -231,8 +231,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getEmails(Option("")).apply(FakeRequest(GET, "/emails")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmails(Option(EmptyString)).apply(FakeRequest(GET, "/emails")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -246,7 +246,7 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.getEmails(Option(EndPointReceived)).apply(FakeRequest(GET, s"/emails?status=$EndPointReceived")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -260,7 +260,7 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.getEmails(Option(EndPointSent)).apply(FakeRequest(GET, s"/emails?status=$EndPointSent")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -274,7 +274,7 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.getEmails(Option(EndPointTrash)).apply(FakeRequest(GET, s"/emails?status=$EndPointTrash")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -288,7 +288,7 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.getEmails(None).apply(FakeRequest(GET, "/emails")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -301,8 +301,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithInvalidToken,
         emailActions,
         userActions)
-      val result = controller.getEmails(Option("")).apply(FakeRequest(GET, "/emails?status=")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmails(Option(EmptyString)).apply(FakeRequest(GET, "/emails?status=")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
     }
   }
@@ -316,7 +316,7 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
       val result = controller.getEmails(Option("NOTstatus")).apply(FakeRequest(GET, "/emails?status=NOTstatus")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe BAD_REQUEST
       contentAsString(result) mustBe InvalidEndPointStatus
 
@@ -331,8 +331,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getEmail("", Option("")).apply(FakeRequest(GET, s"/emails/:emailID?status=")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmail(emailID = EmptyString, Option(EmptyString)).apply(FakeRequest(GET, s"/emails/:emailID?status=")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -345,8 +345,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getEmail("", Option(EndPointReceived)).apply(FakeRequest(GET, s"/emails/:emailID?status=$EndPointReceived")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmail(emailID = EmptyString, Option(EndPointReceived)).apply(FakeRequest(GET, s"/emails/:emailID?status=$EndPointReceived")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -359,8 +359,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getEmail("", Option(EndPointSent)).apply(FakeRequest(GET, s"/emails/:emailID?status=$EndPointSent")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmail(emailID = EmptyString, Option(EndPointSent)).apply(FakeRequest(GET, s"/emails/:emailID?status=$EndPointSent")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -373,8 +373,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getEmail("", Option(EndPointTrash)).apply(FakeRequest(GET, s"/emails/:emailID?status=$EndPointTrash")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmail(emailID = EmptyString, Option(EndPointTrash)).apply(FakeRequest(GET, s"/emails/:emailID?status=$EndPointTrash")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -387,8 +387,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getEmail("", None).apply(FakeRequest(GET, "/emails/:emailID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmail(emailID = EmptyString, None).apply(FakeRequest(GET, "/emails/:emailID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -401,8 +401,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithInvalidToken,
         emailActions,
         userActions)
-      val result = controller.getEmail("", Option("")).apply(FakeRequest(GET, "/emails/:emailID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmail(emailID = EmptyString, Option(EmptyString)).apply(FakeRequest(GET, "/emails/:emailID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
     }
   }
@@ -415,8 +415,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getEmail("", Option("NOTstatus")).apply(FakeRequest(GET, "/emails/:emailID?status=NOTstatus")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getEmail(emailID = EmptyString, Option("NOTstatus")).apply(FakeRequest(GET, "/emails/:emailID?status=NOTstatus")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe BAD_REQUEST
       contentAsString(result) mustBe InvalidEndPointStatus
 
@@ -433,10 +433,10 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
 
-      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/emails/:emailID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.moveInOutTrash(emailID = EmptyString).apply(FakeRequest(PATCH, "/emails/:emailID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "toTrash" -> true))))
+          fields = "toTrash" -> true))))
 
       status(result) mustBe OK
     }
@@ -452,10 +452,10 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
 
-      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/emails/:emailID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.moveInOutTrash(emailID = EmptyString).apply(FakeRequest(PATCH, "/emails/:emailID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "toTrash" -> true))))
+          fields = "toTrash" -> true))))
 
       status(result) mustBe FORBIDDEN
     }
@@ -471,10 +471,10 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         emailActions,
         userActions)
 
-      val result = controller.moveInOutTrash("").apply(FakeRequest(PATCH, "/emails/:emailID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.moveInOutTrash(emailID = EmptyString).apply(FakeRequest(PATCH, "/emails/:emailID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "NOTtoTrash" -> true))))
+          fields = "NOTtoTrash" -> true))))
 
       status(result) mustBe BAD_REQUEST
     }
@@ -488,8 +488,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithValidToken,
         emailActions,
         userActions)
-      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getSharedEmail(shareID = EmptyString, emailID = EmptyString).apply(FakeRequest(GET, "/shares/:shareID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe OK
     }
@@ -503,8 +503,8 @@ class EmailsControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Be
         actorSystemWithInvalidToken,
         emailActions,
         userActions)
-      val result = controller.getSharedEmail("", "").apply(FakeRequest(GET, "/shares/:shareID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+      val result = controller.getSharedEmail(shareID = EmptyString, emailID = EmptyString).apply(FakeRequest(GET, "/shares/:shareID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
 

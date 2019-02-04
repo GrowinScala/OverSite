@@ -401,7 +401,9 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
 
     db.run(queryShareId.result.headOption)
       .flatMap { seq =>
-        seq.getOrElse((EmptyString, EmptyString)) match { case (fromUser, emailId) => getEmail(fromUser, status = EndPointShare, emailId) }
+        seq.getOrElse((EmptyString, EmptyString)) match {
+          case (fromUser, emailId) => getEmail(fromUser, status = EndPointShare, emailId)
+        }
       }
   }
 }

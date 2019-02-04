@@ -34,7 +34,6 @@ import scala.concurrent.{ ExecutionContext, Future }
       chatActions.getInbox(_, isTrash.getOrElse(false)).map {
         emails =>
           val result = emails.map(email =>
-
             MinimalInfoDTO.addLink(
               email,
               List(routes.ChatController.getEmails(email.Id, isTrash).absoluteURL())))
@@ -142,7 +141,6 @@ import scala.concurrent.{ ExecutionContext, Future }
               List(routes.EmailsController.getEmail(email.Id, Option("")).absoluteURL())))
           Ok(Json.toJson(result))
         }))
-
   }
 
   /**

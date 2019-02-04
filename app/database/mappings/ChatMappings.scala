@@ -40,14 +40,12 @@ class ShareTable(tag: Tag) extends Table[ShareRow](tag, SharesTable) {
   def chatID = column[String](ChatIDRow)
   def fromUser = column[String](FromUserRow)
   def toUser = column[String](ToUserRow)
-  //def fileIdFK = foreignKey(ChatIDRow, chatID, chatTable)(_.chatID, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
 
   def * = (shareID, chatID, fromUser, toUser) <> (ShareRow.tupled, ShareRow.unapply)
 }
 
+/** Queries of user table and login table */
 object ChatMappings {
-
-  /** Queries of user table and login table */
   lazy val chatTable = TableQuery[ChatTable]
   lazy val shareTable = TableQuery[ShareTable]
 }

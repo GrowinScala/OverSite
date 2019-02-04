@@ -8,7 +8,6 @@ import scala.concurrent.Future
 class MockedValidTokenValidator extends TokenValidator {
   /**
    * Validates the userName and token inserted by the user
-   *
    * @param token token provided from the headers
    * @return boolean value considering of the token is valid or not
    */
@@ -18,7 +17,6 @@ class MockedValidTokenValidator extends TokenValidator {
 
   /**
    * Corresponds an token to an username
-   *
    * @param token token provided from the headers
    * @return Username associated to token
    */

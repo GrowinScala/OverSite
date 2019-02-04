@@ -1,7 +1,6 @@
     # ROUTES
     # THIS FILE DEFINES ALL APPLICATION ROUTES (HIGHER PRIORITY ROUTES FIRST)
 
-
     #SEND AN EMAIL
 
 POST   /email                               api.controllers.EmailsController.email

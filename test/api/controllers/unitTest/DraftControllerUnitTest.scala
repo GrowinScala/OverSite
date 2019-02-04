@@ -33,15 +33,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailDraftStatus
     }
@@ -55,14 +55,14 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          fields = "dateOf" -> "2000-10-10",
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailDraftStatus
 
@@ -77,14 +77,14 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailDraftStatus
 
@@ -99,14 +99,14 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailDraftStatus
 
@@ -121,14 +121,14 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString)))))
       status(result) mustBe OK
       contentAsString(result) mustBe MailDraftStatus
 
@@ -143,15 +143,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithInvalidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
     }
@@ -165,15 +165,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "NOTdateOF" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -186,15 +186,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "NOTheader" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "NOTheader" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -207,15 +207,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.draft.apply(FakeRequest(POST, "/draft")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "NOTbody" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "NOTbody" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -228,7 +228,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.getDrafts(Option(true)).apply(FakeRequest(GET, "/drafts?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe OK
     }
@@ -242,7 +242,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.getDrafts(None).apply(FakeRequest(GET, "/drafts")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe OK
     }
@@ -256,7 +256,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithInvalidToken,
         emailActions)
       val result = controller.getDrafts(Option(true)).apply(FakeRequest(GET, "/drafts?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
@@ -271,7 +271,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.getDraft("", Option(true)).apply(FakeRequest(GET, "/drafts/:draftID?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe OK
     }
@@ -285,7 +285,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         emailActions)
       val result = controller.getDraft("", None).apply(FakeRequest(GET, "/drafts/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe OK
     }
@@ -299,7 +299,7 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithInvalidToken,
         emailActions)
       val result = controller.getDraft("", Option(true)).apply(FakeRequest(GET, "/drafts/:draftID?isTrash=true")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
 
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
@@ -313,16 +313,16 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe EmailUpdated
@@ -337,15 +337,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe EmailUpdated
@@ -360,15 +360,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe EmailUpdated
@@ -383,15 +383,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe EmailUpdated
@@ -406,15 +406,15 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(draftID = EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString)))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe EmailUpdated
@@ -429,16 +429,16 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithInvalidToken,
         actorSystemWithInvalidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(draftID = EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
@@ -452,16 +452,16 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "NOTdateOf" -> "2000-10-10",
-          "header" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe BAD_REQUEST
     }
@@ -474,16 +474,16 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "NOTheader" -> "",
-          "body" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "NOTheader" -> EmptyString,
+          "body" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe BAD_REQUEST
     }
@@ -496,16 +496,16 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.updateDraft("").apply(FakeRequest(PUT, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.updateDraft(EmptyString).apply(FakeRequest(PUT, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "chatID" -> "",
+          fields = "chatID" -> EmptyString,
           "dateOf" -> "2000-10-10",
-          "header" -> "",
-          "NOTbody" -> "",
-          "to" -> Seq(""),
-          "BCC" -> Seq(""),
-          "CC" -> Seq("")))))
+          "header" -> EmptyString,
+          "NOTbody" -> EmptyString,
+          "to" -> Seq(EmptyString),
+          "BCC" -> Seq(EmptyString),
+          "CC" -> Seq(EmptyString)))))
 
       status(result) mustBe BAD_REQUEST
     }
@@ -518,10 +518,10 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.toSentOrDraft(draftID = EmptyString).apply(FakeRequest(PATCH, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "status" -> StatusSend))))
+          fields = "status" -> StatusSend))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe MailSentStatus
@@ -536,10 +536,10 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.toSentOrDraft(EmptyString).apply(FakeRequest(PATCH, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "status" -> StatusTrash))))
+          fields = "status" -> StatusTrash))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe EmailUpdated
@@ -554,10 +554,10 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.toSentOrDraft(EmptyString).apply(FakeRequest(PATCH, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "status" -> StatusDraft))))
+          fields = "status" -> StatusDraft))))
 
       status(result) mustBe OK
       contentAsString(result) mustBe EmailUpdated
@@ -572,10 +572,10 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithInvalidToken,
         actorSystemWithInvalidToken,
         emailActions)
-      val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.toSentOrDraft(EmptyString).apply(FakeRequest(PATCH, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "status" -> StatusSend))))
+          fields = "status" -> StatusSend))))
 
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
@@ -590,10 +590,10 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.toSentOrDraft(EmptyString).apply(FakeRequest(PATCH, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "status" -> ""))))
+          fields = "status" -> EmptyString))))
 
       status(result) mustBe BAD_REQUEST
       contentAsString(result) mustBe ImpossibleStatusDraft
@@ -608,10 +608,10 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActions)
-      val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.toSentOrDraft(EmptyString).apply(FakeRequest(PATCH, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "NOTstatus" -> ""))))
+          "NOTstatus" -> EmptyString))))
 
       status(result) mustBe BAD_REQUEST
     }
@@ -625,8 +625,8 @@ class DraftControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         ccWithValidToken,
         actorSystemWithValidToken,
         emailActionsWithNoDestination)
-      val result = controller.toSentOrDraft("").apply(FakeRequest(PATCH, "/draft/:draftID")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+      val result = controller.toSentOrDraft(draftID = EmptyString).apply(FakeRequest(PATCH, "/draft/:draftID")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
           "status" -> StatusSend))))
 

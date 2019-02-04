@@ -93,7 +93,6 @@ import scala.concurrent.{ ExecutionContext, Future }
           Ok(EmailUpdated)
         }
       })
-
   }
 
   /**

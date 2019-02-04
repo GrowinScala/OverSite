@@ -33,10 +33,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "username" -> "pluis@growin.pt",
-          "password" -> ""))))
+          fields = "username" -> "pluis@growin.pt",
+          "password" -> EmptyString))))
       status(result) mustBe CREATED
     }
   }
@@ -49,10 +49,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "username" -> "pluis.growin.pt",
-          "password" -> ""))))
+          fields = "username" -> "pluis.growin.pt",
+          "password" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
       contentAsString(result) mustBe InvalidEmailAddressStatus
 
@@ -67,10 +67,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "NOTusername" -> "pluis@growin.pt",
-          "password" -> ""))))
+          fields = "NOTusername" -> "pluis@growin.pt",
+          "password" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -83,10 +83,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.signIn.apply(FakeRequest(POST, "/signin")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "username" -> "pluis@growin.pt",
-          "NOTpassword" -> ""))))
+          fields = "username" -> "pluis@growin.pt",
+          "NOTpassword" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -99,10 +99,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "NOTusername" -> "pluis@growin.pt",
-          "password" -> ""))))
+          fields = "NOTusername" -> "pluis@growin.pt",
+          "password" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -115,10 +115,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "username" -> "pluis@growin.pt",
-          "NOTpassword" -> ""))))
+          fields = "username" -> "pluis@growin.pt",
+          "NOTpassword" -> EmptyString))))
       status(result) mustBe BAD_REQUEST
     }
   }
@@ -131,10 +131,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "username" -> "pluis@growin.pt",
-          "password" -> ""))))
+          fields = "username" -> "pluis@growin.pt",
+          "password" -> EmptyString))))
       status(result) mustBe OK
     }
   }
@@ -148,10 +148,10 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActionsWithWrongLogin)
       val result = controller.logIn.apply(FakeRequest(POST, "/login")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> "")
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString)
         .withBody(Json.toJson(Json.obj(
-          "username" -> "",
-          "password" -> ""))))
+          fields = "username" -> EmptyString,
+          "password" -> EmptyString))))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe PasswordMissMatchStatus
     }
@@ -165,7 +165,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActions)
       val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe OK
     }
   }
@@ -179,7 +179,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithValidToken,
         usersActionsWithWrongLogin)
       val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe NOT_MODIFIED
     }
   }
@@ -193,7 +193,7 @@ class UsersControllerUnitTest extends PlaySpec with GuiceOneAppPerSuite with Bef
         actorSystemWithInvalidToken,
         usersActionsWithWrongLogin)
       val result = controller.logOut.apply(FakeRequest(PATCH, "/logout")
-        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> ""))
+        .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> EmptyString))
       status(result) mustBe FORBIDDEN
       contentAsString(result) mustBe VerifyLoginStatus
     }

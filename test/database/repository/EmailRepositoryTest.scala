@@ -357,7 +357,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
-        resultSent <- emailActions.getEmails(userCreation.username, "sent")
+        resultSent <- emailActions.getEmails(userCreation.username, status = "sent")
         resultReceived <- Future.sequence(emailCreation.to.get.map(emailActions.getEmails(_, "received")))
       } yield (resultEmailTable, resultSent, resultReceived)
 
@@ -383,7 +383,7 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
         _ <- Future.sequence { resultEmailTable.map(x => emailActions.moveInOutTrashEmail(userCreation.username, x.emailID, moveToTrash = true)) }
-        resultToTrash <- emailActions.getEmails(userCreation.username, "trashed")
+        resultToTrash <- emailActions.getEmails(userCreation.username, status = "trashed")
       } yield (resultEmailTable, resultToTrash)
 
       /** getEmails for sent and received cases */
@@ -402,9 +402,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
-        resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, "sent", x.emailID)) }
+        resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, status = "sent", x.emailID)) }
         resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
-          emailActions.getEmail(to, "received", resultEmailTable.map(emailRow =>
+          emailActions.getEmail(to, status = "received", resultEmailTable.map(emailRow =>
             emailRow.emailID).head)).map(seqEmailInfoDto => seqEmailInfoDto))
         resultTos <- Future.successful(EmailInfoDTO(
           resultEmailTable.head.chatID,
@@ -430,9 +430,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       val result = for {
         _ <- emailActions.insertEmail(userCreation.username, emailCreation)
         resultEmailTable <- db.run(emailTable.result)
-        resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, "sent", x.emailID)) }
+        resultSent <- Future.sequence { resultEmailTable.map(x => emailActions.getEmail(userCreation.username, status = "sent", x.emailID)) }
         resultReceived <- Future.sequence(emailCreation.to.get.map(to =>
-          emailActions.getEmail(to, "received", resultEmailTable.map(emailRow =>
+          emailActions.getEmail(to, status = "received", resultEmailTable.map(emailRow =>
             emailRow.emailID).head)).map(seqEmailInfoDto => seqEmailInfoDto))
         resultTos <- Future.successful(EmailInfoDTO(
           resultEmailTable.head.chatID,
@@ -844,9 +844,9 @@ class EmailRepositoryTest extends AsyncWordSpec with BeforeAndAfterAll with Befo
       } yield resultDestination
 
       result.map { resultDestination =>
-        resultDestination.forall(triplet => emailDraftCreation.to.getOrElse(Seq("")).toSet === triplet._1.toSet) shouldBe true
-        resultDestination.forall(triplet => emailDraftCreation.BCC.getOrElse(Seq("")).toSet === triplet._2.toSet) shouldBe true
-        resultDestination.forall(triplet => emailDraftCreation.CC.getOrElse(Seq("")).toSet === triplet._3.toSet) shouldBe true
+        resultDestination.forall(triplet => emailDraftCreation.to.getOrElse(Seq(EmptyString)).toSet === triplet._1.toSet) shouldBe true
+        resultDestination.forall(triplet => emailDraftCreation.BCC.getOrElse(Seq(EmptyString)).toSet === triplet._2.toSet) shouldBe true
+        resultDestination.forall(triplet => emailDraftCreation.CC.getOrElse(Seq(EmptyString)).toSet === triplet._3.toSet) shouldBe true
       }
     }
   }

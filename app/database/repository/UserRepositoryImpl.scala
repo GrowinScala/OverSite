@@ -5,7 +5,7 @@ import java.util.UUID.randomUUID
 import api.dtos.CreateUserDTO
 import database.mappings.UserMappings._
 import database.mappings.{ LoginRow, UserRow }
-import database.properties.{ DBProperties, DatabaseModule }
+import database.properties.DBProperties
 import definedStrings.AlgorithmStrings._
 import encryption.EncryptString
 import javax.inject.Inject

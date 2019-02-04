@@ -16,8 +16,8 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
 class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends ChatRepository {
-
   val db = dbClass.db
+
   /**
    * Aims to find an chatID already exists in the database
    * @param chatID Reference to an email conversation
@@ -92,7 +92,7 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
         db.run(emailIdsForSentEmails
           .filter(_._1 === chatID)
           .sortBy(_._3.reverse)
-          .take(1)
+          .take(num = 1)
           .result
           .headOption))))
 

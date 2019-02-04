@@ -11,7 +11,6 @@ import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
-import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json._
 import play.api.libs.json.{ JsObject, JsString, Json }
@@ -25,8 +24,6 @@ import scala.concurrent.{ Await, ExecutionContext }
 class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfterAll with BeforeAndAfterEach {
 
   implicit private val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  lazy private val appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().in(Mode.Test)
-  lazy private val injector: Injector = appBuilder.injector()
   lazy implicit private val db: Database = TestDBProperties.db
 
   /* User 1*/

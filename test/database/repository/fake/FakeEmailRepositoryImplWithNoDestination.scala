@@ -25,7 +25,7 @@ class FakeEmailRepositoryImplWithNoDestination extends EmailRepository {
   }
 
   def insertDraft(username: String, draft: CreateEmailDTO): Future[String] = {
-    Future.successful("")
+    Future.successful(EmptyString)
   }
 
   def getDrafts(userEmail: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]] = {
