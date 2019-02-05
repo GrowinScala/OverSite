@@ -3,13 +3,13 @@ language:
 
 scala:
   - 2.12.7
-  -
+
 # Safe list - only do branch build for "master" (keep doing PR builds for
 # every pr)
 branches:
   only:
     - master
-    -
+
 script:
   - sbt clean coverage test coverageReport
 
