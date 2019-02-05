@@ -10,6 +10,7 @@ import definedStrings.ApiStrings._
 import javax.inject._
 import play.api.libs.json._
 import play.api.mvc._
+import database.mappings.EmailMappings._
 
 import scala.concurrent.{ ExecutionContext, Future }
 

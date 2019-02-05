@@ -14,7 +14,8 @@ import definedStrings.DatabaseStrings.EmptyString
 import javax.inject.Inject
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 /**  Class that receives a db path */
 class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends EmailRepository {
