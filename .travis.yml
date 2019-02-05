@@ -1,11 +1,14 @@
+language:
+  scala
+
 scala:
   - 2.12.7
 
-# blocklist
+# Safe list - only do branch build for "master" (keep doing PR builds for
+# every pr)
 branches:
-  except:
-    - RuiV
-    - PedroTest
+  only:
+    - master
 
 script:
   - sbt clean coverage test coverageReport
