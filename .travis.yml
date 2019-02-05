@@ -7,3 +7,8 @@ scala:
 script:
   - sbt clean coverage test coverageReport
 
+# Safe list - only do branch build for "master" (keep doing PR builds for
+# every pr)
+branches:
+  only:
+    - master
