@@ -42,7 +42,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
 
   /** POST /sign end-point */
   "Functional test" should {
-    for (i <- 1 to 1000) s"$i Able to signin and login users " +
+      " Able to signin and login users " +
       "\n create a draft and turn it into an email " +
       "\n get the emails sent and received from different users " +
       "\n give permission to a user from a chat and that user able to see those emails " in {
