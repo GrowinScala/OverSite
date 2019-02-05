@@ -105,21 +105,21 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
           .withHeaders(HOST -> LocalHost)
           .withBody(Json.toJson(user1Credentials))
         status(route(app, logInUser1).get) mustBe OK
-        val tokenUser1 = contentAsJson(route(app, logInUser1).get).\("Token").as[JsString].value
+        val tokenUser1 = contentAsJson(route(app, logInUser1).get).\(fieldName = "Token").as[JsString].value
 
         /** LogIn of User 2*/
         val logInUser2 = FakeRequest(POST, "/login")
           .withHeaders(HOST -> LocalHost)
           .withBody(Json.toJson(user2Credentials))
         status(route(app, logInUser2).get) mustBe OK
-        val tokenUser2 = contentAsJson(route(app, logInUser2).get).\("Token").as[JsString].value
+        val tokenUser2 = contentAsJson(route(app, logInUser2).get).\(fieldName = "Token").as[JsString].value
 
         /** LogIn of User 3*/
         val logInUser3 = FakeRequest(POST, "/login")
           .withHeaders(HOST -> LocalHost)
           .withBody(Json.toJson(user3Credentials))
         status(route(app, logInUser3).get) mustBe OK
-        val tokenUser3 = contentAsJson(route(app, logInUser3).get).\("Token").as[JsString].value
+        val tokenUser3 = contentAsJson(route(app, logInUser3).get).\(fieldName = "Token").as[JsString].value
 
         /** Draft is saved by user1 with user2 as a destination*/
         val insertDraftUser1 = FakeRequest(POST, "/draft")
@@ -131,19 +131,19 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getDraftsUser1 = FakeRequest(GET, "/drafts?isTrash=false")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getDraftsUser1).get) mustBe OK
-        val draftIDUser1 = contentAsJson(route(app, getDraftsUser1).get).head.\("Id").as[JsString].value
+        val draftIDUser1 = contentAsJson(route(app, getDraftsUser1).get).head.\(fieldName = "Id").as[JsString].value
 
         /** Gets the draft with that specific draftID*/
         val getTargetDraftUser1 = FakeRequest(GET, "/drafts/" + draftIDUser1)
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getTargetDraftUser1).get) mustBe OK
         val draft = contentAsJson(route(app, getTargetDraftUser1).get)
-        draft.\("toAddresses") mustBe draftUser1.\("to")
-        draft.\("ccs") mustBe draftUser1.\("CC")
-        draft.\("bccs") mustBe draftUser1.\("BCC")
-        draft.\("header") mustBe draftUser1.\("header")
-        draft.\("body") mustBe draftUser1.\("body")
-        draft.\("draftID").as[String] mustBe draftIDUser1
+        draft.\(fieldName = "toAddresses") mustBe draftUser1.\(fieldName = "to")
+        draft.\(fieldName = "ccs") mustBe draftUser1.\(fieldName = "CC")
+        draft.\(fieldName = "bccs") mustBe draftUser1.\(fieldName = "BCC")
+        draft.\(fieldName = "header") mustBe draftUser1.\(fieldName = "header")
+        draft.\(fieldName = "body") mustBe draftUser1.\(fieldName = "body")
+        draft.\(fieldName = "draftID").as[String] mustBe draftIDUser1
 
         /** Turns the draft to trash */
         val moveToTrashUser1 = FakeRequest(PATCH, "/draft/" + draftIDUser1)
@@ -156,7 +156,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getTrashDraftsUser1 = FakeRequest(GET, "/drafts?isTrash=true")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getTrashDraftsUser1).get) mustBe OK
-        val draftIDTrashUser1 = contentAsJson(route(app, getTrashDraftsUser1).get).head.\("Id").as[JsString].value
+        val draftIDTrashUser1 = contentAsJson(route(app, getTrashDraftsUser1).get).head.\(fieldName = "Id").as[JsString].value
         draftIDUser1 mustEqual draftIDTrashUser1
 
         /** Turns the trash to draft */
@@ -170,7 +170,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getNotTrashDraftsUser1 = FakeRequest(GET, "/drafts?isTrash=false")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getNotTrashDraftsUser1).get) mustBe OK
-        val draftIDNotTrashUser1 = contentAsJson(route(app, getNotTrashDraftsUser1).get).head.\("Id").as[JsString].value
+        val draftIDNotTrashUser1 = contentAsJson(route(app, getNotTrashDraftsUser1).get).head.\(fieldName = "Id").as[JsString].value
         draftIDUser1 mustEqual draftIDNotTrashUser1
 
         /** Send draft from user 1 to user 2*/
@@ -183,13 +183,13 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getEmailsSentUser1 = FakeRequest(GET, "/emails?status=sent")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getEmailsSentUser1).get) mustBe OK
-        val emailIDUser1 = contentAsJson(route(app, getEmailsSentUser1).get).head.\("Id").as[JsString].value
+        val emailIDUser1 = contentAsJson(route(app, getEmailsSentUser1).get).head.\(fieldName = "Id").as[JsString].value
 
         /** Gets emails received by user 2*/
         val getEmailsReceivedUser2 = FakeRequest(GET, "/emails?status=received")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser2)
         status(route(app, getEmailsReceivedUser2).get) mustBe OK
-        val emailIDUser2 = contentAsJson(route(app, getEmailsReceivedUser2).get).head.\("Id").as[JsString].value
+        val emailIDUser2 = contentAsJson(route(app, getEmailsReceivedUser2).get).head.\(fieldName = "Id").as[JsString].value
         /** Verify if the emailIDs are the same*/
         emailIDUser1 mustEqual emailIDUser2
 
@@ -212,8 +212,8 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getEmailUser2Received = FakeRequest(GET, "/emails/" + emailIDUser2)
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser2)
         status(route(app, getEmailUser2Received).get) mustBe OK
-        val emailIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\("emailID").as[JsString].value
-        val chatIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\("chatID").as[JsString].value
+        val emailIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\(fieldName = "emailID").as[JsString].value
+        val chatIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\(fieldName = "chatID").as[JsString].value
         val email = contentAsJson(route(app, getEmailUser2Received).get)
 
         /** Verify if the User 2 still have access to the email*/
@@ -231,13 +231,13 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getSupervisedEmails = FakeRequest(GET, "/shares")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser3)
         status(route(app, getSupervisedEmails).get) mustBe OK
-        val shareIDUser3 = contentAsJson(route(app, getSupervisedEmails).get).head.\("shareID").as[JsString].value
+        val shareIDUser3 = contentAsJson(route(app, getSupervisedEmails).get).head.\(fieldName = "shareID").as[JsString].value
 
         /** User 3 will supervise a shareID of User 1 */
         val getSupervisedEmailsUser3 = FakeRequest(GET, "/shares/" + shareIDUser3)
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser3)
         status(route(app, getSupervisedEmailsUser3).get) mustBe OK
-        val emailIDUser3 = contentAsJson(route(app, getSupervisedEmailsUser3).get).head.\("Id").as[JsString].value
+        val emailIDUser3 = contentAsJson(route(app, getSupervisedEmailsUser3).get).head.\(fieldName = "Id").as[JsString].value
         emailIDUser3 mustEqual emailIDUser2
 
         /** User 3 will get a email of User 1 */
@@ -245,13 +245,13 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser3)
         status(route(app, getSharedEmailIDUser3).get) mustBe OK
         val sharedEmail = contentAsJson(route(app, getSharedEmailIDUser3).get)
-        sharedEmail.\("emailID") mustBe email.\("emailID")
-        sharedEmail.\("chatID") mustBe email.\("chatID")
-        sharedEmail.\("fromAddress") mustBe email.\("fromAddress")
-        sharedEmail.\("header") mustBe email.\("header")
-        sharedEmail.\("body") mustBe email.\("body")
-        sharedEmail.\("dateOf") mustBe email.\("dateOf")
-        sharedEmail.\("username") mustBe email.\("username")
+        sharedEmail.\(fieldName = "emailID") mustBe email.\(fieldName = "emailID")
+        sharedEmail.\(fieldName = "chatID") mustBe email.\(fieldName = "chatID")
+        sharedEmail.\(fieldName = "fromAddress") mustBe email.\(fieldName = "fromAddress")
+        sharedEmail.\(fieldName = "header") mustBe email.\(fieldName = "header")
+        sharedEmail.\(fieldName = "body") mustBe email.\(fieldName = "body")
+        sharedEmail.\(fieldName = "dateOf") mustBe email.\(fieldName = "dateOf")
+        sharedEmail.\(fieldName = "username") mustBe email.\(fieldName = "username")
 
       }
   }
