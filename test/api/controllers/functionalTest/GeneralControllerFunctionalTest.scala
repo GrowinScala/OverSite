@@ -42,7 +42,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
 
   /** POST /sign end-point */
   "Functional test" should {
-      " Able to signin and login users " +
+    " Able to signin and login users " +
       "\n create a draft and turn it into an email " +
       "\n get the emails sent and received from different users " +
       "\n give permission to a user from a chat and that user able to see those emails " in {
@@ -106,21 +106,21 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
           .withHeaders(HOST -> LocalHost)
           .withBody(Json.toJson(user1Credentials))
         status(route(app, logInUser1).get) mustBe OK
-        val tokenUser1 = contentAsJson(route(app, logInUser1).get).\(fieldName ="Token").as[JsString].value
+        val tokenUser1 = contentAsJson(route(app, logInUser1).get).\(fieldName = "Token").as[JsString].value
 
         /** LogIn of User 2*/
         val logInUser2 = FakeRequest(POST, "/login")
           .withHeaders(HOST -> LocalHost)
           .withBody(Json.toJson(user2Credentials))
         status(route(app, logInUser2).get) mustBe OK
-        val tokenUser2 = contentAsJson(route(app, logInUser2).get).\(fieldName ="Token").as[JsString].value
+        val tokenUser2 = contentAsJson(route(app, logInUser2).get).\(fieldName = "Token").as[JsString].value
 
         /** LogIn of User 3*/
         val logInUser3 = FakeRequest(POST, "/login")
           .withHeaders(HOST -> LocalHost)
           .withBody(Json.toJson(user3Credentials))
         status(route(app, logInUser3).get) mustBe OK
-        val tokenUser3 = contentAsJson(route(app, logInUser3).get).\(fieldName ="Token").as[JsString].value
+        val tokenUser3 = contentAsJson(route(app, logInUser3).get).\(fieldName = "Token").as[JsString].value
 
         /** Draft is saved by user1 with user2 as a destination*/
         val insertDraftUser1 = FakeRequest(POST, "/draft")
@@ -133,19 +133,19 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getDraftsUser1).get) mustBe OK
         val draftIDUser1 = contentAsJson(route(app, getDraftsUser1).get)
-          .head.\(fieldName ="Id").as[JsString].value
+          .head.\(fieldName = "Id").as[JsString].value
 
         /** Gets the draft with that specific draftID*/
         val getTargetDraftUser1 = FakeRequest(GET, "/drafts/" + draftIDUser1)
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getTargetDraftUser1).get) mustBe OK
         val draft = contentAsJson(route(app, getTargetDraftUser1).get)
-        draft.\(fieldName ="toAddresses") mustBe draftUser1.\(fieldName ="to")
-        draft.\(fieldName ="ccs") mustBe draftUser1.\(fieldName ="CC")
-        draft.\(fieldName ="bccs") mustBe draftUser1.\(fieldName ="BCC")
-        draft.\(fieldName ="header") mustBe draftUser1.\(fieldName ="header")
-        draft.\(fieldName ="body") mustBe draftUser1.\(fieldName ="body")
-        draft.\(fieldName ="draftID").as[String] mustBe draftIDUser1
+        draft.\(fieldName = "toAddresses") mustBe draftUser1.\(fieldName = "to")
+        draft.\(fieldName = "ccs") mustBe draftUser1.\(fieldName = "CC")
+        draft.\(fieldName = "bccs") mustBe draftUser1.\(fieldName = "BCC")
+        draft.\(fieldName = "header") mustBe draftUser1.\(fieldName = "header")
+        draft.\(fieldName = "body") mustBe draftUser1.\(fieldName = "body")
+        draft.\(fieldName = "draftID").as[String] mustBe draftIDUser1
 
         /** Turns the draft to trash */
         val moveToTrashUser1 = FakeRequest(PATCH, "/draft/" + draftIDUser1)
@@ -158,7 +158,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getTrashDraftsUser1 = FakeRequest(GET, "/drafts?isTrash=true")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getTrashDraftsUser1).get) mustBe OK
-        val draftIDTrashUser1 = contentAsJson(route(app, getTrashDraftsUser1).get).head.\(fieldName ="Id").as[JsString].value
+        val draftIDTrashUser1 = contentAsJson(route(app, getTrashDraftsUser1).get).head.\(fieldName = "Id").as[JsString].value
         draftIDUser1 mustEqual draftIDTrashUser1
 
         /** Turns the trash to draft */
@@ -172,14 +172,14 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getNotTrashDraftsUser1 = FakeRequest(GET, "/drafts?isTrash=false")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
         status(route(app, getNotTrashDraftsUser1).get) mustBe OK
-        val draftIDNotTrashUser1 = contentAsJson(route(app, getNotTrashDraftsUser1).get).head.\(fieldName ="Id").as[JsString].value
+        val draftIDNotTrashUser1 = contentAsJson(route(app, getNotTrashDraftsUser1).get).head.\(fieldName = "Id").as[JsString].value
         draftIDUser1 mustEqual draftIDNotTrashUser1
 
         /** Send draft from user 1 to user 2*/
 
         val sendDraftToEmail = FakeRequest(PATCH, "/draft/" + draftIDUser1)
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
-          .withBody(Json.toJson(Json.obj(fields ="status" -> "send")))
+          .withBody(Json.toJson(Json.obj(fields = "status" -> "send")))
 
         status(route(app, sendDraftToEmail).get) mustBe OK
 
@@ -194,7 +194,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getEmailsReceivedUser2 = FakeRequest(GET, "/emails?status=received")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser2)
         status(route(app, getEmailsReceivedUser2).get) mustBe OK
-        val emailIDUser2 = contentAsJson(route(app, getEmailsReceivedUser2).get).head.\(fieldName ="Id").as[JsString].value
+        val emailIDUser2 = contentAsJson(route(app, getEmailsReceivedUser2).get).head.\(fieldName = "Id").as[JsString].value
         /** Verify if the emailIDs are the same*/
         emailIDUser1 mustEqual emailIDUser2
 
@@ -202,7 +202,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val moveEmailToTrashUser1 = FakeRequest(PATCH, "/emails/" + emailIDUser1)
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
           .withBody(Json.toJson(Json.obj(
-            fields ="toTrash" -> true)))
+            fields = "toTrash" -> true)))
         status(route(app, moveEmailToTrashUser1).get) mustBe OK
 
         /** Gets emails sent by user1 (that are not in trash)*/
@@ -217,8 +217,8 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val getEmailUser2Received = FakeRequest(GET, "/emails/" + emailIDUser2)
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser2)
         status(route(app, getEmailUser2Received).get) mustBe OK
-        val emailIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\(fieldName ="emailID").as[JsString].value
-        val chatIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\(fieldName ="chatID").as[JsString].value
+        val emailIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\(fieldName = "emailID").as[JsString].value
+        val chatIDUser2Received = contentAsJson(route(app, getEmailUser2Received).get).\(fieldName = "chatID").as[JsString].value
         val email = contentAsJson(route(app, getEmailUser2Received).get)
 
         /** Verify if the User 2 still have access to the email*/
@@ -228,7 +228,7 @@ class GeneralControllerFunctionalTest extends PlaySpec with GuiceOneAppPerSuite 
         val user1GivesPermissionToUser3 = FakeRequest(POST, "/shares")
           .withHeaders(CONTENT_TYPE -> JSON, HOST -> LocalHost, TokenKey -> tokenUser1)
           .withBody(Json.toJson(Json.obj(
-            fields ="chatID" -> chatIDUser2Received,
+            fields = "chatID" -> chatIDUser2Received,
             "supervisor" -> usernameUser3)))
         status(route(app, user1GivesPermissionToUser3).get) mustBe OK
 

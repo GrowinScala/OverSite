@@ -23,20 +23,15 @@ import scala.concurrent.{ ExecutionContext, Future }
    * @return inserts the email information to the database
    */
   def draft: Action[JsValue] = tokenValidator(parse.json).async { request =>
+
     val draftResult = request.body.validate[CreateEmailDTO]
 
     draftResult.fold(
-      errors => {
-        Future {
-          BadRequest(jsonErrors(errors))
-        }
-      },
+
+      errors => Future.successful { BadRequest(jsonErrors(errors)) },
       draft => {
-        request.userName.flatMap(
-          emailActions.insertDraft(_, draft))
-        Future.successful {
-          Ok(MailDraftStatus)
-        }
+        request.userName.flatMap(emailActions.insertDraft(_, draft))
+        Future.successful { Ok(MailDraftStatus) }
       })
   }
 
@@ -47,6 +42,7 @@ import scala.concurrent.{ ExecutionContext, Future }
    */
 
   def getDrafts(isTrash: Option[Boolean]): Action[AnyContent] = tokenValidator.async { request =>
+
     implicit val req: RequestHeader = request
 
     request.userName.flatMap(
@@ -55,8 +51,7 @@ import scala.concurrent.{ ExecutionContext, Future }
           val result = drafts.map(draft =>
             MinimalInfoDTO.addLink(
               draft,
-              if (isTrash.getOrElse(false))
-                List(routes.DraftsController.getDraft(draft.Id, isTrash).absoluteURL())
+              if (isTrash.getOrElse(false)) List(routes.DraftsController.getDraft(draft.Id, isTrash).absoluteURL())
               else List(routes.DraftsController.getDraft(draft.Id, Option(false)).absoluteURL())))
           Ok(Json.toJson(result))
       })
@@ -82,16 +77,11 @@ import scala.concurrent.{ ExecutionContext, Future }
     val draftResult = request.body.validate[CreateEmailDTO]
 
     draftResult.fold(
-      errors => {
-        Future {
-          BadRequest(jsonErrors(errors))
-        }
-      },
+
+      errors => Future.successful { BadRequest(jsonErrors(errors)) },
       draft => {
         request.userName.flatMap(emailActions.updateDraft(_, draftID, draft))
-        Future.successful {
-          Ok(EmailUpdated)
-        }
+        Future.successful { Ok(EmailUpdated) }
       })
   }
 
@@ -104,41 +94,32 @@ import scala.concurrent.{ ExecutionContext, Future }
     val draftStatusResult = request.body.validate[DraftStatusDTO]
 
     draftStatusResult.fold(
-      errors => {
-        Future {
-          BadRequest(jsonErrors(errors))
-        }
-      },
-      draft => draft.status match {
 
-        case StatusSend => request.userName.flatMap(username =>
-          emailActions.destinations(username, draftID).flatMap {
-            case (listTos, listBCCs, listCCs) => emailActions.hasDestination(listTos, listBCCs, listCCs).map(
-              bool =>
-                if (bool) {
-                  emailActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
-                  Ok(MailSentStatus)
-                } else
-                  BadRequest(ImpossibleToSendDraft))
-          })
+      errors => Future.successful { BadRequest(jsonErrors(errors)) },
+      draft => draft.status match {
+        case StatusSend =>
+          request.userName.flatMap(username =>
+
+            emailActions.destinations(username, draftID).flatMap {
+              case (listTos, listBCCs, listCCs) => emailActions.hasDestination(listTos, listBCCs, listCCs).map(
+
+                bool =>
+                  if (bool) {
+                    emailActions.takeDraftMakeSent(username, draftID, listTos, listBCCs, listCCs)
+                    Ok(MailSentStatus)
+                  } else
+                    BadRequest(ImpossibleToSendDraft))
+            })
 
         case StatusTrash =>
-          request.userName.map(
-            emailActions.moveInOutTrashDraft(_, draftID, trash = true))
-          Future.successful {
-            Ok(EmailUpdated)
-          }
+          request.userName.map(emailActions.moveInOutTrashDraft(_, draftID, trash = true))
+          Future.successful { Ok(EmailUpdated) }
 
         case StatusDraft =>
-          request.userName.map(
-            emailActions.moveInOutTrashDraft(_, draftID, trash = false))
-          Future.successful {
-            Ok(EmailUpdated)
-          }
+          request.userName.map(emailActions.moveInOutTrashDraft(_, draftID, trash = false))
+          Future.successful { Ok(EmailUpdated) }
 
-        case _ => Future.successful {
-          BadRequest(ImpossibleStatusDraft)
-        }
+        case _ => Future.successful { BadRequest(ImpossibleStatusDraft) }
       })
   }
 }

@@ -17,29 +17,29 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
   val db = dbClass.db
 
   /**
-   * Aims to find an chatID already exists in the database
-   * @param chatID Reference to an email conversation
-   * @return True or False depending if the chatID exists or not
-   */
-  private def existChatID(chatID: String): Future[Boolean] = {
-
-    val tableSearch = chatTable
-      .filter(_.chatID === chatID)
-      .result
-
-    db.run(tableSearch).map(_.length).map {
-      case 1 => true
-      case _ => false
-    }
-  }
-
-  /**
    * Insert a chat into database
    * @param email email passed on json body
    * @param chatID chatID
    * @return
    */
   def insertChat(email: CreateEmailDTO, chatID: String): Future[String] = {
+
+    /**
+     * Aims to find an chatID already exists in the database
+     * @param chatID Reference to an email conversation
+     * @return True or False depending if the chatID exists or not
+     */
+    def existChatID(chatID: String): Future[Boolean] = {
+
+      val tableSearch = chatTable
+        .filter(_.chatID === chatID)
+        .result
+
+      db.run(tableSearch).map(_.length).map {
+        case 1 => true
+        case _ => false
+      }
+    }
 
     val randomChatID = randomUUID().toString
 
@@ -51,23 +51,6 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
         } yield randomChatID
     }
 
-  }
-
-  /**
-   * Query that search for all the emails which have a certain userName involved
-   * @param userEmail the user identity
-   * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
-   */
-  private def auxEmailFilter(userEmail: String, isTrash: Boolean): Query[Rep[String], String, Seq] = {
-
-    emailTable
-      .filter(_.fromAddress === userEmail)
-      .filter(_.isTrash === isTrash)
-      .map(_.emailID)
-      .union(destinationEmailTable
-        .filter(_.username === userEmail)
-        .filter(_.isTrash === isTrash)
-        .map(_.emailID))
   }
 
   /**
@@ -103,21 +86,22 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
 
   }
 
-  /**
-   * Query that selects the emailIDs from the EmailTable that
-   * are returned by the auxiliary query "queryUserName", filters by chatID inputed,
-   * by the state "Sent", and sort by the date.
-   */
-  private def queryChat(userEmail: String, chatID: String, isTrash: Boolean): Query[EmailTable, EmailRow, Seq] = {
-    emailTable
-      .filter(_.emailID in auxEmailFilter(userEmail, isTrash))
-      .filter(_.chatID === chatID)
-      .filter(_.isTrash === isTrash)
-      .sortBy(_.dateOf)
-  }
-
   /** Function that selects emails through userName and chatID*/
   def getEmails(userEmail: String, chatID: String, isTrash: Boolean): Future[Seq[MinimalInfoDTO]] = {
+
+    /**
+     * Query that selects the emailIDs from the EmailTable that
+     * are returned by the auxiliary query "queryUserName", filters by chatID inputed,
+     * by the state "Sent", and sort by the date.
+     */
+    def queryChat(userEmail: String, chatID: String, isTrash: Boolean): Query[EmailTable, EmailRow, Seq] = {
+      emailTable
+        .filter(_.emailID in auxEmailFilter(userEmail, isTrash))
+        .filter(_.chatID === chatID)
+        .filter(_.isTrash === isTrash)
+        .sortBy(_.dateOf)
+    }
+
     val queryResult = queryChat(userEmail, chatID, isTrash)
       .map(emailTable => (emailTable.emailID, emailTable.header))
       .result
@@ -177,14 +161,6 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
     } yield shareID
   }
 
-  def querySharesAux(userEmail: Rep[String]): Query[Rep[String], String, Seq] = {
-    emailTable
-      .filter(_.fromAddress === userEmail)
-      .map(_.emailID)
-      .union(destinationEmailTable
-        .filter(_.username === userEmail)
-        .map(_.emailID))
-  }
   /**
    * Query to get the most recent email header from a chatID, from all chats that are supervised by an user
    * @param userEmail Identification of user by email
@@ -249,6 +225,32 @@ class ChatRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
       .delete
 
     db.run(deletePermissionTable)
+  }
+
+  /**
+   * Query that search for all the emails which have a certain userName involved
+   * @param userEmail the user identity
+   * @return The sequence of emailIDS which userEmail is involved (to, from cc and bcc)
+   */
+  private def auxEmailFilter(userEmail: String, isTrash: Boolean): Query[Rep[String], String, Seq] = {
+
+    emailTable
+      .filter(_.fromAddress === userEmail)
+      .filter(_.isTrash === isTrash)
+      .map(_.emailID)
+      .union(destinationEmailTable
+        .filter(_.username === userEmail)
+        .filter(_.isTrash === isTrash)
+        .map(_.emailID))
+  }
+
+  private def querySharesAux(userEmail: Rep[String]): Query[Rep[String], String, Seq] = {
+    emailTable
+      .filter(_.fromAddress === userEmail)
+      .map(_.emailID)
+      .union(destinationEmailTable
+        .filter(_.username === userEmail)
+        .map(_.emailID))
   }
 
 }

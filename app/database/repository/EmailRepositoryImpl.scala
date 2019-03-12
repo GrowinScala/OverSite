@@ -33,7 +33,7 @@ class EmailRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executi
     val randomChatID = randomUUID().toString
 
     existChatID(chatID).flatMap {
-      case true => Future { chatID }
+      case true => Future.successful { chatID }
       case false =>
         for {
           _ <- db.run(chatTable += ChatRow(randomChatID, email.header))

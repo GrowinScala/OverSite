@@ -76,17 +76,11 @@ import scala.concurrent.{ ExecutionContext, Future }
     val toTrashResult = request.body.validate[TrashInfoDTO]
 
     toTrashResult.fold(
-      errors => {
-        Future {
-          BadRequest(jsonErrors(errors))
-        }
-      },
+
+      errors => Future.successful { BadRequest(jsonErrors(errors)) },
       move => {
-        request.userName.flatMap(
-          chatActions.changeTrash(_, chatID, move.toTrash))
-        Future.successful {
-          Ok
-        }
+        request.userName.flatMap(chatActions.changeTrash(_, chatID, move.toTrash))
+        Future.successful { Ok }
       })
   }
 
@@ -96,16 +90,13 @@ import scala.concurrent.{ ExecutionContext, Future }
    */
   def supervised: Action[JsValue] = tokenValidator(parse.json).async { request =>
     val emailResult = request.body.validate[CreateShareDTO]
+
     emailResult.fold(
-      errors => Future {
-        BadRequest(jsonErrors(errors))
-      },
+
+      errors => Future.successful { BadRequest(jsonErrors(errors)) },
       share => {
-        request.userName.map(
-          chatActions.insertPermission(_, share))
-        Future {
-          Ok
-        }
+        request.userName.map(chatActions.insertPermission(_, share))
+        Future.successful { Ok }
       })
   }
 
@@ -117,9 +108,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
     request.userName.flatMap(
       chatActions.getShares(_).map(
-        emails => {
-          Ok(Json.toJson(emails))
-        }))
+        emails => Ok(Json.toJson(emails))))
   }
 
   /**
@@ -134,11 +123,9 @@ import scala.concurrent.{ ExecutionContext, Future }
     request.userName.flatMap(
       chatActions.getSharedEmails(_, shareID).map(
         emails => {
+          val result = emails.map(
+            email => MinimalInfoDTO.addLink(email, List(routes.EmailsController.getEmail(email.Id, Option("")).absoluteURL())))
 
-          val result = emails.map(email =>
-            MinimalInfoDTO.addLink(
-              email,
-              List(routes.EmailsController.getEmail(email.Id, Option("")).absoluteURL())))
           Ok(Json.toJson(result))
         }))
   }
@@ -149,16 +136,13 @@ import scala.concurrent.{ ExecutionContext, Future }
    */
   def takePermissions: Action[JsValue] = tokenValidator(parse.json).async { request =>
     val shareResult = request.body.validate[CreateShareDTO]
+
     shareResult.fold(
-      errors => Future {
-        BadRequest(jsonErrors(errors))
-      },
+
+      errors => Future.successful { BadRequest(jsonErrors(errors)) },
       share => {
-        request.userName.map(
-          chatActions.deletePermission(_, share.supervisor, share.chatID))
-        Future.successful {
-          Ok
-        }
+        request.userName.map(chatActions.deletePermission(_, share.supervisor, share.chatID))
+        Future.successful { Ok }
       })
   }
 

@@ -1,77 +1,38 @@
 package api.validators
 import akka.actor.ActorSystem
 import akka.stream.{ ActorMaterializer, Materializer }
-import database.mappings.UserMappings.loginTable
-import database.properties.DBProperties
 import definedStrings.ApiStrings._
 import play.api.mvc
 import play.api.mvc.Results._
 import play.api.mvc._
-import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ ExecutionContext, Future }
 
-/** Case class created to replace the first parameter of ActionBuilder */
-case class AuthRequest[A](
-  userName: Future[String],
-  request: Request[A]) extends WrappedRequest[A](request) {
-  override def newWrapper[B](newRequest: Request[B]): AuthRequest[B] =
-    AuthRequest(
-      userName,
-      super.newWrapper(newRequest))
-}
-
 trait TokenValidator extends ActionBuilder[AuthRequest, AnyContent] {
-  override protected def executionContext: ExecutionContext = global
+
   implicit val actorSystem: ActorSystem = ActorSystem()
   implicit val materializer: Materializer = ActorMaterializer()
+
+  def validateToken(token: String): Future[Boolean]
+  def getUserByToken(token: String): Future[String]
+
+  override protected def executionContext: ExecutionContext = global
+
   override def parser: BodyParser[AnyContent] = new mvc.BodyParsers.Default()
 
   override def invokeBlock[A](request: Request[A], block: AuthRequest[A] => Future[Result]): Future[Result] = {
 
     val authToken = request.headers.get(TokenHeader).getOrElse(EmptyString)
+
     validateToken(authToken).flatMap {
       case true =>
         val userName = getUserByToken(authToken)
         block(AuthRequest(userName, request))
 
-      case false =>
-        Future {
-          Forbidden(VerifyLoginStatus)
-        }
+      case false => Future.successful { Forbidden(VerifyLoginStatus) }
     }
   }
 
-  def validateToken(token: String): Future[Boolean]
-
-  def getUserByToken(token: String): Future[String]
 }
 
-/** Class responsible to validate the token */
-class ProdTokenValidator(dbClass: DBProperties) extends TokenValidator {
-
-  val db = dbClass.db
-  /**
-   * Validates the userName and token inserted by the user
-   * @param token token provided from the headers
-   * @return boolean value considering of the token is valid or not
-   */
-  def validateToken(token: String): Future[Boolean] = {
-    val validateTableToken = loginTable.filter(entry => (entry.token === token) && (entry.active === true) && (entry.validDate > System.currentTimeMillis())).result
-    db.run(validateTableToken).map(_.length).map {
-      case 1 => true
-      case _ => false
-    }
-  }
-
-  /**
-   * Corresponds an token to an username
-   * @param token token provided from the headers
-   * @return Username associated to token
-   */
-  def getUserByToken(token: String): Future[String] = {
-    val getUser = loginTable.filter(x => x.token === token).map(_.username).result
-    db.run(getUser).map(_.headOption.getOrElse(""))
-  }
-}
