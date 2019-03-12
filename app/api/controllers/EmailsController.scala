@@ -24,27 +24,21 @@ import scala.concurrent.{ ExecutionContext, Future }
   usersActions: UserRepository)(implicit exec: ExecutionContext)
   extends AbstractController(cc) {
 
-  //val tokenValidator: TokenValidator = new TokenValidator(dbclass.db)
-
   /**
    * Aims to send an email from an user to an userID
    * @return inserts the email information to the database
    */
   def email: Action[JsValue] = tokenValidator(parse.json).async { request =>
+
     val emailResult = request.body.validate[CreateEmailDTO]
 
     emailResult.fold(
-      errors => {
-        Future {
-          BadRequest(jsonErrors(errors))
-        }
-      },
+
+      errors =>
+        Future.successful { BadRequest(jsonErrors(errors)) },
       email => {
-        request.userName.map(
-          emailActions.insertEmail(_, email))
-        Future.successful {
-          Ok(MailSentStatus)
-        }
+        request.userName.map(emailActions.insertEmail(_, email))
+        Future.successful { Ok(MailSentStatus) }
       })
   }
 
@@ -58,11 +52,10 @@ import scala.concurrent.{ ExecutionContext, Future }
     implicit val req: RequestHeader = request
 
     if (PossibleEndPointStatus.contains(status.getOrElse(""))) {
+
       request.userName.flatMap(emailActions.getEmails(_, status.getOrElse("")).map(emails => {
-        val result = emails.map(email =>
-          MinimalInfoDTO.addLink(
-            email,
-            List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
+        val result = emails.map(email => MinimalInfoDTO.addLink(email, List(routes.EmailsController.getEmail(email.Id, status).absoluteURL())))
+
         Ok(Json.toJson(result))
       }))
     } else if (status.getOrElse("") == SatanString) {
@@ -84,8 +77,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 
     if (PossibleEndPointStatus.contains(status.getOrElse(""))) {
       request.userName.flatMap(
-        emailActions.getEmail(_, status.getOrElse(""), emailID).map { email =>
-          Ok(Json.toJson(convertEmailInfoToSender(email, emailID)))
+        emailActions.getEmail(_, status.getOrElse(""), emailID).map {
+          email => Ok(Json.toJson(convertEmailInfoToSender(email, emailID)))
         })
     } else {
       Future.successful { BadRequest(InvalidEndPointStatus) }
@@ -97,20 +90,15 @@ import scala.concurrent.{ ExecutionContext, Future }
    * @param emailID Identification of the email
    */
   def moveInOutTrash(emailID: String): Action[JsValue] = tokenValidator(parse.json).async { request =>
+
     val toTrashResult = request.body.validate[TrashInfoDTO]
 
     toTrashResult.fold(
-      errors => {
-        Future {
-          BadRequest(jsonErrors(errors))
-        }
-      },
+
+      errors => Future { BadRequest(jsonErrors(errors)) },
       move => {
-        request.userName.flatMap(
-          emailActions.moveInOutTrashEmail(_, emailID, move.toTrash))
-        Future.successful {
-          Ok
-        }
+        request.userName.flatMap(emailActions.moveInOutTrashEmail(_, emailID, move.toTrash))
+        Future.successful { Ok }
       })
   }
 

@@ -9,6 +9,7 @@ import scala.concurrent.ExecutionContext
 class Module extends AbstractModule {
   override def configure(): Unit = {
     implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+    implicit val tokenValidationTime: Long = 720
 
     bind(classOf[ChatRepository]).toInstance(new ChatRepositoryImpl(TestDBProperties))
     bind(classOf[UserRepository]).toInstance(new UserRepositoryImpl(TestDBProperties))

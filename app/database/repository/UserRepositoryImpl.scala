@@ -13,7 +13,7 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ ExecutionContext, Future }
 /**  Class that receives a db path */
-class UserRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext) extends UserRepository {
+class UserRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executionContext: ExecutionContext, implicit val tokenValidationTime: Long) extends UserRepository {
   val db = dbClass.db
 
   /**
@@ -48,10 +48,21 @@ class UserRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
    * @return Generated token
    */
   def insertLogin(user: CreateUserDTO): Future[String] = {
+
+    /**
+     * Validates the token for N hours depending on config
+     * @return Current server time plus N hours
+     */
+    def validateNHours: Long = {
+      val currentTime = System.currentTimeMillis()
+      val valid2Hours = currentTime + tokenValidationTime
+      valid2Hours
+    }
+
     val token = randomUUID().toString
 
     for {
-      _ <- db.run(loginTable += LoginRow(user.username, token, validate2Hours, active = true))
+      _ <- db.run(loginTable += LoginRow(user.username, token, validateNHours, active = true))
     } yield token
 
   }
@@ -68,13 +79,4 @@ class UserRepositoryImpl @Inject() (dbClass: DBProperties)(implicit val executio
 
   }
 
-  /**
-   * Validates the token for 1 hour
-   * @return Current server time plus 1 hour
-   */
-  private def validate2Hours: Long = {
-    val currentTime = System.currentTimeMillis()
-    val valid2Hours = currentTime + 7200000
-    valid2Hours
-  }
 }
